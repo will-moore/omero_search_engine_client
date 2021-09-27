@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Client for Omero search engine - Index{% endblock %}
+
+{% block app_content %}
+
+<div class="page-header">
+    <h4>Query Submission Form</h4>
+</div>
+<br><br>
+
+<div id="query">
+
+  <div id="resources" style="display: none" >
+ <p  align="center">
+        <div class="col-md-2">
+          <h3>Search criteria</h3>
+           <form class="form-hrizontal" method="POST" id="reg-form">
+               {{ wtf.quick_form(form) }}
+           </form>
+        <input type="submit"  id="addcondition" onclick="AddConditionFunction()" name="addcondition" value="Add Condition">
+      </div>
+    </p>
+</div>
+
+ <div id ="conditions">
+<div class="col-md-4">
+<h5>AND Condition</h5>
+  <table id="and_condition" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Value</th>
+        <th>
+            <button id="band" class="btn add-more" type="button"></button>
+        </th>
+      </tr>
+    </thead>
+  </table>
+</div>
+<br>
+<div class="col-md-4">
+<h5>NOT Condition</h5>
+ <table id="not_condition" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Value</th>
+        <th>
+            <button id="bnot" class="btn add-more" type="button"></button>
+        </th>
+      </tr>
+    </thead>
+  </table>
+</div>
+<br>
+<div class="col-md-4">
+<h5>OR Condition</h5>
+ <table id="or_condition" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Value</th>
+        <th>
+            <button id="bor" class="btn add-more" type="button"></button>
+        </th>
+      </tr>
+    </thead>
+  </table>
+</div>
+<br>
+<button id="submit_"  onclick="submitQuery()" type="button">Submit Query</button>
+</div>
+</div>
+<br>
+<br>
+<div id="results" class="col-md-4" style="display: none"  >
+    <h4>Results</h4>
+    <br>
+    <label id="no_images"></label>
+    <label id="query_id"></label>
+    <br>
+    <table width="100%">
+  <tr>
+    <td valign="top" width="50%">
+      <div id="myGrid"  class="grid" style="width:600px;height:500px;"></div>
+            <!-- div id="pager" class="grid" style="width:100%;height:25px;"></div -->
+
+    </td>
+  </tr>
+</table>
+
+</div>
+<script src="/static/js/resource_handeler.js"></script>
+<script>
+      var resources_data = {{ resources_data|tojson }};
+      var query_id= {{ task_id|tojson }};
+      var submitqueryurl = "{{ url_for('main.submit_query') }}";
+      var queryresultsurl = "{{ url_for('main.queryresults') }}";
+
+</script>
+
+{% endblock %}

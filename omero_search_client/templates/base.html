@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+{% import "bootstrap/wtf.html" as wtf %}
+{% block head %}
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+ <!-- https://cdnjs.com/libraries/6pac-slickgrid -->
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/slick.grid.min.css">
+    <link rel="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/slick-default-theme.min.css">
+    <link rel="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href={{url_for('static',filename='css/style.css')}} >
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/lib/jquery.event.drop-2.3.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/lib/jquery.event.drag-2.3.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/slick.core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/slick.dataview.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/slick.formatters.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/6pac-slickgrid/2.4.40/slick.grid.min.js"></script>
+    <link rel="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">
+
+    <title>
+  {% block title %}
+         {% if title %}
+        {{ title }}
+        {% else %}
+    Client for Omero search engine
+    {% endif %}
+        {% endblock %}
+  </title>
+
+</head>
+{% endblock %}
+
+<body>
+   <div class="container-fluid">
+        <br>
+    <h3>    A Client for Omero Search Engine
+</h3>
+    <br>
+
+        {% block app_content %}
+
+        {% endblock %}
+    </div>
+<!-- The Modal -->
+  <div class="modal fade" id="displaymessagemodal" role="dialog" >
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 id ="messageHeader" class="modal-title">Heading</h4>
+          <button type="button"  class="Cancel" onclick="cancelFunction()" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div  class="modal-body">
+        <p id="messageBody">Message </p>
+        </div>
+          <div class="modal-body">'
+
+            <div class="progress">
+
+  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 99%"></div>
+
+
+
+
+			</div>
+
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button id ="moelButton" type="messageButton" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  </div>
+</body>
+</html>
