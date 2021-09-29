@@ -328,6 +328,11 @@ function set_resources(resource) {
     for (const [key, value] of Object.entries(resources_data)) {
         if (key == resource) {
             optionHtml = ''
+            if (value==null)
+              {
+              keys_options.innerHTML = optionHtml;
+            break;
+              }
             value.sort();
             for (i in value) {
                 optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
