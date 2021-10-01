@@ -18,7 +18,7 @@ class omero_search_client_app_config (object):
     OMERO_SEARCH_CLIENT_INSTANCE_CONFIG = os.path.join(home_folder, '.omero_search_client.yml')
     if not os.path.isfile(OMERO_SEARCH_CLIENT_INSTANCE_CONFIG):
         LOCAL_CONFIG_FILE = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                         '.omero_search_client.yml')
+                                         'omero_search_client.yml')
         copyfile(LOCAL_CONFIG_FILE, OMERO_SEARCH_CLIENT_INSTANCE_CONFIG)
         #print (LOCAL_CONFIG_FILE, OMERO_SEARCH_CLIENT_INSTANCE_CONFIG)
 
