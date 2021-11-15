@@ -15,7 +15,10 @@ input[type=submit] {
   color: #fff;
   cursor: pointer;
 }
-
+body.wait *, body.wait
+{
+    cursor: progress !important;
+}
  /* added from SilkGrade Examples.css */
 
 * {

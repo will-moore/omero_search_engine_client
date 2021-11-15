@@ -16,21 +16,23 @@
  <p  align="center">
         <div class="col-md-2">
           <h3>Search criteria</h3>
-           <form class="form-hrizontal" method="POST" id="reg-form">
+           <form class="form-horizontal" method="POST" id="reg-form">
                {{ wtf.quick_form(form) }}
            </form>
-        <input type="submit"  id="addcondition" onclick="AddConditionFunction()" name="addcondition" value="Add Condition">
+        <input type="submit"  id="addAndCondition" onclick="addAndConditionFunction()" name="addAndCondition" value="And">
+      <input type="submit"  id="addOrcondition" onclick="addOrConditionFunction()" name="addOrCondition" value="Or">
       </div>
     </p>
 </div>
 
  <div id ="conditions">
 <div class="col-md-4">
-<h5>AND Condition</h5>
-  <table id="and_condition" class="table table-striped">
+<h5>AND Group</h5>
+  <table id="and_group" class="table table-striped">
     <thead>
       <tr>
         <th>Attribute</th>
+        <th>Operator</th>
         <th>Value</th>
         <th>
             <button id="band" class="btn add-more" type="button"></button>
@@ -40,27 +42,14 @@
   </table>
 </div>
 <br>
-<div class="col-md-4">
-<h5>NOT Condition</h5>
- <table id="not_condition" class="table table-striped">
-    <thead>
-      <tr>
-        <th>Attribute</th>
-        <th>Value</th>
-        <th>
-            <button id="bnot" class="btn add-more" type="button"></button>
-        </th>
-      </tr>
-    </thead>
-  </table>
-</div>
 <br>
 <div class="col-md-4">
-<h5>OR Condition</h5>
- <table id="or_condition" class="table table-striped">
+<h5>OR Group</h5>
+ <table id="or_group" class="table table-striped">
     <thead>
       <tr>
         <th>Attribute</th>
+        <th>Operator</th>
         <th>Value</th>
         <th>
             <button id="bor" class="btn add-more" type="button"></button>
@@ -81,16 +70,25 @@
     <label id="no_images"></label>
     <label id="query_id"></label>
     <br>
-    <table width="100%">
-  <tr>
-    <td valign="top" width="50%">
-      <div id="myGrid"  class="grid" style="width:600px;height:500px;"></div>
-            <!-- div id="pager" class="grid" style="width:100%;height:25px;"></div -->
 
-    </td>
-  </tr>
-</table>
 
+
+</div>
+      <div id="myGrid_2" style="height: 600px;width:1200px;" class="ag-theme-alpine"></div>
+
+    <br>
+   <div id="load_results_buttons", style="display: none", class="col-md-7" >
+       <table id="loads_results_table" class="table table-striped">
+    <thead>
+      <tr>
+        <th><button id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
+      </tr>
+    </thead>
+       </table>
+       </div>
+   <br>
+         <button id="exportResults"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
+     <br>
 </div>
 <script src="/static/js/resource_handeler.js"></script>
 <script>
@@ -98,6 +96,16 @@
       var query_id= {{ task_id|tojson }};
       var submitqueryurl = "{{ url_for('main.submit_query') }}";
       var queryresultsurl = "{{ url_for('main.queryresults') }}";
+
+      $(document).ajaxStart(function ()
+{
+    $('body').addClass('wait');
+
+}).ajaxComplete(function () {
+
+    $('body').removeClass('wait');
+
+});
 
 </script>
 

@@ -3,6 +3,85 @@ import json
 from omero_search_client import omero_client_app
 
 
+def get_search_results(results, resource,columns_def):
+    returned_results={}
+    if len(results["results"])==0:
+        returned_results["Error"]="Your query returns no results"
+        return returned_results
+
+    cols=["Id","Name"]
+    values=[]
+
+    urls = {"image": omero_client_app.config.get("IMAGE_URL"),
+            "project": omero_client_app.config.get("PROJECT_ID")}
+    extend_url=urls.get(resource)
+    for item in results["results"]["results"]:
+        value = {}
+        values.append(value)
+        value["Id"] = item["id"]
+        if not extend_url:
+            url_ = omero_client_app.config.get("RESOURCE_URL")
+        else:
+            url_ = extend_url + str(item["id"])
+        value["url"] = url_
+
+        value["Name"]=item.get("name")
+        for k in item["key_values"]:
+            if k['name'] not in cols:
+                cols.append(k['name'])
+            value[k["name"]]=k["value"]
+    columns=[]
+    for col in cols:
+        columns.append({
+            "id": col,
+            "name": col,
+            "field": col,
+            "sortable": True
+        })
+    if not columns_def:
+        columns_def = []
+        for col in cols:
+            columns_def.append({
+                "field": col,
+                "sortable": True,
+                "width": 150,
+            })
+
+        columns_def.append({
+            "field": "url",
+            "sortable": True,
+            "width": 150,
+            "formatter": "urlFormatter",
+
+        })
+    else:
+        for col_def in columns_def:
+            if col_def["field"] not in cols:
+                cols.append(col_def["field"])
+
+    for val in values:
+        if len(val)!=len(cols):
+            for col in cols:
+                if not val.get(col):
+                    val[col]="NA"
+    returned_results["columns"]=columns
+    returned_results["columns_def"]=columns_def
+    returned_results["values"]=values
+    returned_results["server_query_time"]=results["server_query_time"]
+    returned_results["query_details"]=results["query_details"]
+    returned_results["bookmark"]=results["results"]["bookmark"]
+    returned_results["page"] = results["results"]["page"]
+    returned_results["size"] = results["results"]["size"]
+    returned_results["total_pages"] = results["results"]["total_pages"]
+    if len(values)<=results["results"]["size"]:
+        returned_results["contains_all_results"]=True
+    else:
+        returned_results["contains_all_results"] = False
+    returned_results["Error"]=results["Error"]
+
+    return returned_results
+
+
 def get_query_results(task_id, resource=None):
     mod_results = []
     filters = []

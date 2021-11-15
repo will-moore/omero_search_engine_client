@@ -6,6 +6,7 @@ from shutil import copyfile
 def load_configuration_variables_from_file(config):
     # loading application configuration variables from a file
     #print ("Injecting config variables from :%s" % omero_search_client_app_config.OMERO_SEARCH_CLIENT_INSTANCE_CONFIG)
+    print (omero_search_client_app_config.OMERO_SEARCH_CLIENT_INSTANCE_CONFIG)
     with open(omero_search_client_app_config.OMERO_SEARCH_CLIENT_INSTANCE_CONFIG) as f:
         cofg = yaml.load(f)
     for x, y in cofg.items():

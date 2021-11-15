@@ -5,6 +5,16 @@ let cancel_check = false;
 var ajaxCall;
 var task_id;
 var set_query_form = false;
+var bookmark;
+var page=0;
+var query;
+var recieved_results=[];
+var size=0;
+var query;
+var pages_data={};
+var ag_grid;
+var recieved_data=0;
+var columnDefs=[];
 
 
 function cancell_ajaxcall() {
@@ -13,7 +23,7 @@ function cancell_ajaxcall() {
     console.log("Canceled");
     ajaxCall = null;
     return;
-}
+    }
 
 //display message to the user
 function displayMessage(header, body, btn_text) {
@@ -31,18 +41,107 @@ function cancelFunction() {
     $("#moelButton").hide();
 }
 
-function urlFormatter(row, cell, value, columnDef, dataContext) {
+function urlFormatter
+(row, cell, value, columnDef, dataContext) {
     return "<a href=" + value + " target='_blank'>" + value + "</a>";
 }
 
 function valueFormatter(row, cell, value, columnDef, dataContext) {
-    return value.toString();
+try {
+       return value.toString();
+
+}
+catch(err) {
+    alert ("Error "+err+", for value: "+value);
 }
 
-function displayResults(data) {
+}
+
+function loadMoreResultsFunction()
+{
+///#loadMoreResults
+submitQuery();
+}
+function set_global_variables(data)
+{
+    bookmark=data["bookmark"];
+    page=page+1;
+    pages_data[page]=data;
+    recieved_results=recieved_results.concat(data["values"]);
+    size=data["size"];
+    query=data["query_details"];
+    recieved_data=recieved_data+data["values"].length;
+    if (recieved_data>=size){
+    var resultsbutton = document.getElementById('loadMoreResults');
+    resultsbutton.disabled = true;
+    }
+
+}
+
+
+function sizeToFit() {
+  gridOptions.api.sizeColumnsToFit();
+}
+
+
+function getBoolean(id) {
+  //var field = document.querySelector('#' + id);
+  return true;
+}
+
+function getParams() {
+  return {
+    allColumns: getBoolean('allColumns'),
+    //columnSeparator: '\t'
+  };
+}
+
+function exportToCSV() {
+  ag_grid.gridOptions.api.exportDataAsCsv(getParams());
+}
+function autoSizeAll(skipHeader) {
+  var allColumnIds = [];
+  gridOptions.columnApi.getAllColumns().forEach(function (column) {
+    allColumnIds.push(column.colId);
+  });
+
+  gridOptions.columnApi.autoSizeColumns(allColumnIds, skipHeader);
+}
+
+function displayResults(data, new_data=true) {
+   if (new_data)
+   set_global_variables(data);
+
+
+columnDefs =data["columns_def"]
+results = data["values"];
+
+var gridOptions = {
+  defaultColDef: {
+    resizable: true,
+  "filter": true,
+  "animateRows":true,
+  },
+ enableCellTextSelection: true,
+  columnDefs: columnDefs,
+  rowData: null,
+  onColumnResized: function (params) {
+    console.log(params);
+  },
+};
+
+
+ // lookup the container we want the Grid to use
+  const eGridDiv = document.querySelector('#myGrid_2');
+
+  // create the grid passing in the div to use together with the columns & data we want to use
+  if (page==1)
+  ag_grid=new agGrid.Grid(eGridDiv, gridOptions);
+ ag_grid.gridOptions.api.setRowData(recieved_results);
+
     var notice = data["notice"];
     server_query_time = data["server_query_time"];
-    results = data['Results'];
+    //results = data["values"];
     let no_image = results.length;
     if (set_query_form == true) {
         var filters = data["filters"];
@@ -50,7 +149,6 @@ function displayResults(data) {
         var andFilter = filters["and_filters"];
         var notFilter = filters["not_filters"];
         resource = data["resource"]
-
         for (i in orFilter)
             for (const [key, value] of Object.entries(orFilter[i])) {
                 addConditionRow(key, value, "or");
@@ -66,11 +164,20 @@ function displayResults(data) {
 
                 addConditionRow(key, value, "not");
             }
-        message = "No of " + resource + "s: " + no_image + ", Search engine query time: " + server_query_time + " seconds.";
+        message = "No of " + resource + "s: " + recieved_data +"/"+size+", Search engine query time: " + server_query_time + " seconds.";
 
     } else {
         var querytime = (queryendtime - querystarttime) / 1000;
-        message = "No of " + resource + "s: " + no_image + ", Query time: " + querytime + " Second" + ", Search engine query time: " + server_query_time + " seconds.";
+        if (no_image!=size)
+         {
+            message = "No of " + resource + "s: " + recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
+             document.getElementById('loadMoreResults').style.display = "block";
+            }
+        else
+        {
+            message = "No of " + resource + "s: " + recieved_data+ ", Search engine query time: " + server_query_time + " seconds.";
+             document.getElementById('loadMoreResults').style.display = "none";
+            }
     }
 
     var resultsDiv = document.getElementById('results');
@@ -85,33 +192,14 @@ function displayResults(data) {
 
     resultsDiv.style.display = "block";
 
-    if (notice != "None")
-        message = message + "\n\n\r" + notice;
-    $('#no_images').append(message);
-    $('#query_id').append("Query id: " + task_id);
+    $('#no_images').text(message);
 
     var grid;
-    var columns = [{
-            id: "id",
-            name: "Id",
-            field: "id",
-            sortable: true
-        },
-        {
-            id: "name",
-            name: "Name",
-            field: "name",
-            formatter: valueFormatter,
-            sortable: true
-        },
-        {
-            id: "url",
-            name: "URL",
-            field: "url",
-            formatter: urlFormatter,
-            sortable: true
-        },
-    ];
+    var columns = data["columns"];
+     for (var i = 0; i < columns.length; i++) {
+        columns[i].formatter=valueFormatter;
+    }
+
     var options = {
         enableCellNavigation: true,
         enableColumnReorder: false,
@@ -124,98 +212,88 @@ function displayResults(data) {
     for (var i = 0; i < nodes.length; i++) {
         nodes[i].disabled = true;
     }
-    grid = new Slick.Grid("#myGrid", results, columns, options);
 
-    grid.onSort.subscribe(function(e, args) {
-        var cols = args.sortCols;
-
-        results.sort(function(dataRow1, dataRow2) {
-            for (var i = 0, l = cols.length; i < l; i++) {
-                var field = cols[i].sortCol.field;
-                var sign = cols[i].sortAsc ? 1 : -1;
-                var value1 = dataRow1[field],
-                    value2 = dataRow2[field];
-                var result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
-                if (result != 0) {
-                    return result;
-                }
-            }
-            return 0;
-        });
-        grid.invalidate();
-        grid.render();
-    });
     window.location.hash = '#results';
+    document.getElementById('load_results_buttons').style.display = "block";
+    if (new_data)
+    {
+     return;
+    var tr = document.getElementById('loads_results_table').tHead.children[0],
+    th = document.createElement('th');
+    tr.appendChild(th);
+    var pagebutton = document.createElement("BUTTON");
+    pagebutton.innerHTML = page;
+    th.appendChild(pagebutton);
+
+      th.appendChild(pagebutton);
+    pagebutton.addEventListener("click", function() {
+        alert(pagebutton.innerText);
+        displayResults(data, false);
+    });
+    }
 }
 
-
-function get_query_data(condition_table) {
+function get_query_data(group_table_) {
     query_items = [];
-    let andTable = document.getElementById(condition_table);
-    for (var r = 1; r < andTable.rows.length; r++) {
+    let group_table = document.getElementById(group_table_);
+    for (var r = 1; r < group_table.rows.length; r++) {
         query_dict = {}
         query_items[r - 1] = query_dict;
-        name_ = andTable.rows[r].cells[0].innerHTML;
-        value_ = andTable.rows[r].cells[1].innerHTML;
-        query_dict[name_] = value_
+        name_ = group_table.rows[r].cells[0].innerHTML;
+        operator_ = group_table.rows[r].cells[1].innerHTML;
+        value_ = group_table.rows[r].cells[2].innerHTML;
+        //query_dict[name_] = value_
+        query_dict["name"]=name_
+        query_dict["value"]=value_
+        query_dict["operator"]=operator_
     }
     return query_items;
 }
 
-function get_results() {
-    let results = {}
-    let status = "PENDING";
+var filterParams = {
+  suppressAndOrCondition: true,
+  comparator: function (filterLocalDateAtMidnight, cellValue) {
+    var dateAsString = cellValue;
+    if (dateAsString == null) return -1;
+    var dateParts = dateAsString.split('/');
+    var cellDate = new Date(
+      Number(dateParts[2]),
+      Number(dateParts[1]) - 1,
+      Number(dateParts[0])
+    );
 
-    ajaxCall = $.ajax({
-        type: "POST",
-        async: false,
-        url: queryresultsurl + "?task_id=" + task_id + "&resource=" + resource,
-        contentType: "application/json;charset=UTF-8",
-        dataType: 'json',
-        success: function(data) {
-            status = data["Status"];
-            results_ = data['Results'];
-            //alert(typeof(results_));
+    if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
+      return 0;
+    }
 
-            if (status !== 'PENDING') {
+    if (cellDate < filterLocalDateAtMidnight) {
+      return -1;
+    }
 
-                //$('#results').html(data);
+    if (cellDate > filterLocalDateAtMidnight) {
+      return 1;
+    }
+  },
+  browserDatePicker: true,
+};
 
-                //alert ("I got the  results ...and back///"+status+"////"+results);
-
-                //var modal = document.getElementById("modal");
-                //modal.style.display = "none";
-                queryendtime = new Date().getTime();
-                if (status == "FAILURE" || data['error'] != "None") {
-                    $('#displaymessagemodal').modal('hide');
-                    alert("Somthing went wrong, please try again later.");
-                    return;
-                }
-
-                displayResults(data);
-                return;
-            } else {
-                setTimeout(function() {
-                    get_results();
-                }, 600);
-            }
-        }
-    });
-}
 
 function submitQuery() {
     resource = document.getElementById('resourcseFields').value;
 
     querystarttime = new Date().getTime();
-    //alert("I am going to submit the query");
     query_details = {}
     var query = {
         "resource": resource,
         "query_details": query_details
     };
-    var andQuery = get_query_data("and_condition");
-    var orQuery = get_query_data("or_condition");
-    var notQuery = get_query_data("not_condition");
+    if (size>0)
+    {
+    query["bookmark"]=bookmark;
+    query["columns_def"]=columnDefs;
+    }
+    var andQuery = get_query_data("and_group");
+    var orQuery = get_query_data("or_group");
 
     if (andQuery.length == 0 && orQuery.length == 0 && notQuery == 0) {
         alert("There is no query to submit, at least one condition should be selected");
@@ -223,9 +301,14 @@ function submitQuery() {
     }
     query_details["and_filters"] = andQuery;
     query_details["or_filters"] = orQuery;
-    query_details["not_filters"] = notQuery;
 
-    $.ajax({
+    send_the_request(query);
+
+}
+
+function send_the_request(query)
+{
+$.ajax({
         type: "POST",
         url: submitqueryurl,
         contentType: "application/json;charset=UTF-8",
@@ -236,11 +319,7 @@ function submitQuery() {
                 alert(data["Error"]);
                 return;
             }
-            task_id = data['task_id'];
-            header = "Awaiting results";
-            body = "Query submited! Please wait, this may take some time \n\nQuery id is : " + task_id + " \n\nYou may review your results at a later time using this url: \n\n/getqueryresult/?task_id=" + task_id
-            displayMessage(header, body);
-            results = get_results();
+            displayResults(data);
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
             alert("Status: " + textStatus);
@@ -249,8 +328,18 @@ function submitQuery() {
     });
 }
 
+function addAndConditionFunction()
+{
+AddConditionFunction("and");
+}
 
-function AddConditionFunction() {
+function addOrConditionFunction()
+{
+AddConditionFunction("or");
+
+}
+
+function AddConditionFunction(group) {
     let value_fields = document.getElementById('valueFields');
     let condtion = document.getElementById('condtion').value;
 
@@ -266,28 +355,33 @@ function AddConditionFunction() {
         alert("Please select an attribute");
         return;
     }
-    addConditionRow(key, value, condtion);
+    addConditionRow(key, value, condtion, group);
 }
 
-function addConditionRow(key, value, condtion) {
 
-    let tableRef = document.getElementById(condtion + "_condition");
+function addConditionRow(key, value, condtion, group) {
+
+    let tableRef = document.getElementById(group + "_group");
 
     let newRow = tableRef.insertRow(-1);
 
     // Insert cells in the row
     let keyCell = newRow.insertCell(0);
-    let valueCell = newRow.insertCell(1);
-    let removeCell = newRow.insertCell(2);
+    let operatorCell = newRow.insertCell(1);
+    let valueCell = newRow.insertCell(2);
+    let removeCell = newRow.insertCell(3);
 
     // Append a text node to the cells
     let keyText = document.createTextNode(key);
     keyCell.appendChild(keyText);
 
+    let operatorText = document.createTextNode(condtion);
+    operatorCell.appendChild(operatorText)
+
+
     let valueText = document.createTextNode(value);
     valueCell.appendChild(valueText);
 
-    //let newText3 = document.createTextNode();
     var removebutton = document.createElement("BUTTON");
     removebutton.innerHTML = "Remove";
 
@@ -295,8 +389,6 @@ function addConditionRow(key, value, condtion) {
 
     //alert(keys_options.value);
     removebutton.addEventListener("click", function() {
-        //alert("I am going to remove");
-        //var $row = $(this).closest("tr");
         var row = removebutton.parentNode.parentNode;
         row.parentNode.removeChild(row);
     });

@@ -1,4 +1,4 @@
-OMERO_SEARCH_ENGINE_BASE_URL : "http://127.0.0.1:5577/api_v1/"
+OMERO_SEARCH_ENGINE_BASE_URL : "http://127.0.0.1:5577/api_v2/"
 RESOURCE_URL : "https://idr.openmicroscopy.org/webclient"
 IMAGE_URL: "https://idr.openmicroscopy.org/webclient/img_detail/"
 PROJECT_URL: "https://idr.openmicroscopy.org/webclient/?show=project-"
