@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "$id": "organism_schema.json",
+  "name": "Organism Schema",
+  "description": "required and allowed properties for an organism. An organism is any organic, living system that functions as an individual entity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "Organism",
+    "Organism Part"
+  ],
+  "properties": {
+    "Organism": {
+      "type": "string"
+    },
+    "Organism Part": {
+      "type": "array",
+      "items": {
+        "$ref": "organism_part_schema.json"
+      }
+    }
+  }
+}

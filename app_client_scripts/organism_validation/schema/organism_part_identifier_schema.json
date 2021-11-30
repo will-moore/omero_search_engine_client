@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "$id": "organism_part_identifier_scema.json",
+  "name": "Organism Part Identifier",
+  "description": "required: Organism Part Identifier",
+  "type": "string",
+  "titel": "Organism Part Identifier",
+  "format": "regex",
+  "pattern": "^T-[a-zA-Z0-9_.-]*$"
+}
+
