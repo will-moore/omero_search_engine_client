@@ -5,7 +5,7 @@
   "description": "Organism Part",
   "type": "object",
   "additionalProperties": false,
-  "required": ["Organism Part", "Organism Part Identifier"],
+  "required": ["Organism Part"],
   "properties": {
     "Organism Part": {
       "name": "Organism Part",
@@ -13,7 +13,7 @@
     },
      "Organism Part Identifier": {
       "name":"Organism Part Identifier",
-      "$ref": "organism_part_identifier_schema.json"
+      "type": "string"
     }
   }
 }
