@@ -6,15 +6,9 @@ import logging
 import sys
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-
 class Organism_Part(BaseModel):
     Organism_Part: str
-    Organism_Part_Identifier: str
-
-    @validator('Organism_Part_Identifier')
-    def name_must_contain_space(cls, attribute):
-        if not re.match("^T-[A-Za-z0-9_-]*$", attribute):
-            raise ValueError('Organism_Part_Identifier Format Error')
+    Organism_Part_Identifier: Optional [str]
 
 
 class Organism(BaseModel):
@@ -26,8 +20,8 @@ organism_data={
   "Organism": "Homo sapiens",
   "Organism_Part": [{"Organism_Part":"Kidney",
   "Organism_Part_Identifier": "T-71000"},
-                    {"Organism_Part": "Kidney",
-                     "Organism_Part_Identifier": "T-71000"}
+                    {"Organism_Part": "Kidney"
+                     }
                     ]
 }
 try:
