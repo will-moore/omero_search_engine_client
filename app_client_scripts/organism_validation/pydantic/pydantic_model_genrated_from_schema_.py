@@ -3,17 +3,12 @@
 #   timestamp: 2021-11-30T13:22:53+00:00
 #The following command has genrated the model from the jsonschema
 #datamodel-codegen  --input organism_schema.json --input-file-type jsonschema --output model.py
+
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel, Extra, Field, constr
-
-
-class OrganismPartIdentifierSchema(BaseModel):
-    __root__: constr(regex=r'^T-[a-zA-Z0-9_.-]*$') = Field(
-        ..., description='required: Organism Part Identifier'
-    )
+from pydantic import BaseModel, Extra, Field
 
 
 class OrganismPartSchema(BaseModel):
@@ -21,8 +16,8 @@ class OrganismPartSchema(BaseModel):
         extra = Extra.forbid
 
     Organism_Part: str = Field(..., alias='Organism Part')
-    Organism_Part_Identifier: OrganismPartIdentifierSchema = Field(
-        ..., alias='Organism Part Identifier'
+    Organism_Part_Identifier: Optional[str] = Field(
+        None, alias='Organism Part Identifier'
     )
 
 
