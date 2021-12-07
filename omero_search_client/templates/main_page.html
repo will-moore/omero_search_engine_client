@@ -6,25 +6,54 @@
 {% block app_content %}
 
 <div class="page-header">
-    <h4>Query Submission Form</h4>
+    <h4>Query Builder Form<sup>*</sup></h4>
 </div>
-<br><br>
-
 <div id="query">
 
   <div id="resources" style="display: none" >
  <p  align="center">
-        <div class="col-md-2">
-          <h3>Search criteria</h3>
-           <form class="form-horizontal" method="POST" id="reg-form">
-               {{ wtf.quick_form(form) }}
-           </form>
-        <input type="submit"  id="addAndCondition" onclick="addAndConditionFunction()" name="addAndCondition" value="And">
-      <input type="submit"  id="addOrcondition" onclick="addOrConditionFunction()" name="addOrCondition" value="Or">
+        <div class="col-md-5">
+      <br>
+        <form>
+      <div class="form-row">
+
+   <div class="form-group col-md-4">
+      <label for="resourcseFields">Resourse</label>
+      <select id="resourcseFields" class="form-control">
+
+      </select>
+  </div>
+            </div>
+  <div class="form-row">
+      <div class="form-group col-md-4">
+      <label for="keyFields">Attribute</label>
+      <select id="keyFields" class="form-control">
+
+      </select>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="condtion">Operator</label>
+      <select id="condtion" class="form-control">
+
+      </select>
+    </div>
+    <div class="form-group col-md-5">
+      <label for="valueFields">Value</label>
+      <input type="text" class="form-control" id="valueFields">
+    </div>
+  </div>
+
+ </form>
+      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Add condition to the And Group" onclick="addAndConditionFunction()">
+  + And Group
+</button>
+      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Add condition to the Or Group" onclick="addOrConditionFunction()">
+  + Or Group
+</button>
       </div>
     </p>
 </div>
-
+<br>
  <div id ="conditions">
 <div class="col-md-4">
 <h5>AND Group</h5>
@@ -34,6 +63,8 @@
         <th>Attribute</th>
         <th>Operator</th>
         <th>Value</th>
+         <th>Resourse</th>
+
         <th>
             <button id="band" class="btn add-more" type="button"></button>
         </th>
@@ -51,6 +82,7 @@
         <th>Attribute</th>
         <th>Operator</th>
         <th>Value</th>
+          <th>Resourse</th>
         <th>
             <button id="bor" class="btn add-more" type="button"></button>
         </th>
@@ -59,8 +91,14 @@
   </table>
 </div>
 <br>
-<button id="submit_"  onclick="submitQuery()" type="button">Submit Query</button>
+           <button type="button" id="submit_" class="btn btn-primary btn-lg" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
+  Submit Query
+</button>
+
+
 </div>
+    <br>
+              <h6>* You should select the search condition and add it to either "AND Group" or "OR Group" using the provided buttons.</h6>
 </div>
 <br>
 <br>
@@ -70,12 +108,8 @@
     <label id="no_images"></label>
     <label id="query_id"></label>
     <br>
-
-
-
 </div>
       <div id="myGrid_2" style="height: 600px;width:1200px;" class="ag-theme-alpine"></div>
-
     <br>
    <div id="load_results_buttons", style="display: none", class="col-md-7" >
        <table id="loads_results_table" class="table table-striped">
@@ -93,9 +127,11 @@
 <script src="/static/js/resource_handeler.js"></script>
 <script>
       var resources_data = {{ resources_data|tojson }};
+      var operator_choices= {{ operator_choices|tojson }};
       var query_id= {{ task_id|tojson }};
       var submitqueryurl = "{{ url_for('main.submit_query') }}";
       var queryresultsurl = "{{ url_for('main.queryresults') }}";
+
 
       $(document).ajaxStart(function ()
 {
@@ -107,6 +143,14 @@
 
 });
 
+
+        $("form").submit(function (e) {
+            e.preventDefault();
+            
+        });
+
+
 </script>
+
 
 {% endblock %}

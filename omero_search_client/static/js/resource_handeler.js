@@ -345,6 +345,9 @@ function AddConditionFunction(group) {
 
     let key = keys_options.value;
     let value = value_fields.value;
+    let resourse = resourcseFields.value;
+
+
 
     if (!value || value.length === 0) {
         alert("Please select a value");
@@ -355,11 +358,11 @@ function AddConditionFunction(group) {
         alert("Please select an attribute");
         return;
     }
-    addConditionRow(key, value, condtion, group);
+    addConditionRow(key, value, condtion, resourse, group);
 }
 
 
-function addConditionRow(key, value, condtion, group) {
+function addConditionRow(key, value, condtion, resourse, group) {
 
     let tableRef = document.getElementById(group + "_group");
 
@@ -369,7 +372,8 @@ function addConditionRow(key, value, condtion, group) {
     let keyCell = newRow.insertCell(0);
     let operatorCell = newRow.insertCell(1);
     let valueCell = newRow.insertCell(2);
-    let removeCell = newRow.insertCell(3);
+    let resourseCell = newRow.insertCell(3);
+    let removeCell = newRow.insertCell(4);
 
     // Append a text node to the cells
     let keyText = document.createTextNode(key);
@@ -381,6 +385,9 @@ function addConditionRow(key, value, condtion, group) {
 
     let valueText = document.createTextNode(value);
     valueCell.appendChild(valueText);
+
+    let resourseText = document.createTextNode(resourse);
+    resourseCell.appendChild(resourseText);
 
     var removebutton = document.createElement("BUTTON");
     removebutton.innerHTML = "Remove";
@@ -396,20 +403,16 @@ function addConditionRow(key, value, condtion, group) {
 
 
 function set_key_values(key_value) {
-    resource = selected_resource.value;
+    $( "#valueFields" ).val('');
+
+resource = selected_resource.value;
     fetch('/' + resource + '/get_values/?key=' + key_value).then(function(response) {
         {
             response.json().then(function(data) {
                 data.sort();
-
-                optionHtml = ''
-                for (i in data) {
-                    optionHtml += '<option value ="' + data[i] + '">' + data[i] + '</option>'
-                }
-                let value_fields = document.getElementById('valueFields');
-                value_fields.innerHTML = optionHtml;
-
-
+              $( "#valueFields" ).autocomplete({
+      source: data
+    });
             });
 
         }
@@ -440,6 +443,7 @@ function set_resources(resource) {
 
 let selected_resource = document.getElementById('resourcseFields');
 let keys_options = document.getElementById('keyFields');
+let condtions= document.getElementById('condtion');
 selected_resource.onchange = function() {
     resource = selected_resource.value;
     set_resources(resource);
@@ -464,6 +468,17 @@ $(document).ready(function() {
         }, 600);
 
     } else {
+    optionHtml = ''
+    for (key in resources_data) {
+                optionHtml += '<option value ="' + key + '">' + key+ '</option>'
+            }
+       resourcseFields.innerHTML = optionHtml;
+       optionOpHtml = ''
+       for (i in operator_choices)
+       {
+         optionOpHtml += '<option value ="' + operator_choices[i][0] + '">' + operator_choices[i][1]+ '</option>'
+       }
+       condtion.innerHTML = optionOpHtml;
         var resources_con = document.getElementById('resources');
         resources_con.style.display = "block";
         resource = selected_resource.value = 'image';
@@ -471,3 +486,4 @@ $(document).ready(function() {
     }
 
 });
+

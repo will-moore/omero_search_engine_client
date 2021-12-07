@@ -6,15 +6,16 @@ import json
 from omero_search_client import omero_client_app
 from .utils import get_query_results, get_resources,get_search_results
 
+operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
+        , ("not_contains", "not contains"),
+                                        ("gt", ">"),("gte", ">="), ("lt", "<"),
+                                                 ("lte", "<=")]
+
 @main.route('/',methods=['POST', 'GET'])
 def index():
     resources=get_resources()
-    form = SearchFrom()
-    options = []
-    for resource in resources.keys():
-        options.append((resource, resource.capitalize()))
-    form.resourcseFields.choices=options
-    return render_template('main_page.html', resources_data=resources, form=form, task_id="None")#container)
+
+    return render_template('main_page.html', resources_data=resources, operator_choices=operator_choices,task_id="None")#container)
 
 @main.route('/<resource>/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key(resource):
