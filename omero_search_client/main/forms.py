@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, SubmitField, SelectField,FieldList, FormField
+from wtforms import StringField, SubmitField, SelectField,FieldList, FormField, TextField
 from wtforms.validators import Required
 from flask_wtf import FlaskForm
 
@@ -11,7 +11,7 @@ class SearchFrom (Form):
         , ("not_contains", "not contains"),
                                         ("gt", ">"),("gte", ">="), ("lt", "<"),
                                                  ("lte", "<=")], validators=[Required()])
-    valueFields = SelectField(u'Value', choices=[], validators=[Required()])
+    valueFields = TextField(u'Value',  validators=[Required()])
 
 
 

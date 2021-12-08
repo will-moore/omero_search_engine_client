@@ -16,6 +16,26 @@ var ag_grid;
 var recieved_data=0;
 var columnDefs=[];
 
+function changeMainAttributesFunction (){
+/* */
+    var checkbox = document.getElementById("add_main_attibutes");
+    mainvalueFields=document.getElementById("mainvalue");
+    maincondtion=document.getElementById("maincondition");
+    mainkeyFields=document.getElementById("mainkey");
+
+     if (checkbox.checked)
+     {
+        mainvalueFields.style.display = "block";
+        maincondtion.style.display = "block";
+        mainkeyFields.style.display = "block";
+     }
+     else
+     {
+        mainvalueFields.style.display = "none";
+        maincondtion.style.display = "none";
+        mainkeyFields.style.display = "none";
+     }
+}
 
 function cancell_ajaxcall() {
     ajaxCall.onreadystatechange = null;
@@ -295,7 +315,7 @@ function submitQuery() {
     var andQuery = get_query_data("and_group");
     var orQuery = get_query_data("or_group");
 
-    if (andQuery.length == 0 && orQuery.length == 0 && notQuery == 0) {
+    if (andQuery.length == 0 && orQuery.length == 0 ) {
         alert("There is no query to submit, at least one condition should be selected");
         return;
     }
@@ -390,8 +410,8 @@ function addConditionRow(key, value, condtion, resourse, group) {
     resourseCell.appendChild(resourseText);
 
     var removebutton = document.createElement("BUTTON");
-    removebutton.innerHTML = "Remove";
-
+    removebutton.innerHTML = "X Remove";
+    removebutton.setAttribute("class", "btn btn-danger btn-sm");
     removeCell.appendChild(removebutton);
 
     //alert(keys_options.value);
