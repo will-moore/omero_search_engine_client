@@ -184,18 +184,18 @@ var gridOptions = {
 
                 addConditionRow(key, value, "not");
             }
-        message = "No of " + resource + "s: " + recieved_data +"/"+size+", Search engine query time: " + server_query_time + " seconds.";
+        message = "No of images: " + recieved_data +"/"+size+", Search engine query time: " + server_query_time + " seconds.";
 
     } else {
         var querytime = (queryendtime - querystarttime) / 1000;
         if (no_image!=size)
          {
-            message = "No of " + resource + "s: " + recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
+            message = "No of images: " + recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
              document.getElementById('loadMoreResults').style.display = "block";
             }
         else
         {
-            message = "No of " + resource + "s: " + recieved_data+ ", Search engine query time: " + server_query_time + " seconds.";
+            message = "No of images: " + recieved_data+ ", Search engine query time: " + server_query_time + " seconds.";
              document.getElementById('loadMoreResults').style.display = "none";
             }
     }
@@ -262,10 +262,12 @@ function get_query_data(group_table_) {
         name_ = group_table.rows[r].cells[0].innerHTML;
         operator_ = group_table.rows[r].cells[1].innerHTML;
         value_ = group_table.rows[r].cells[2].innerHTML;
+        resourse_=group_table.rows[r].cells[3].innerHTML;
         //query_dict[name_] = value_
         query_dict["name"]=name_
         query_dict["value"]=value_
         query_dict["operator"]=operator_
+        query_dict["resourse"]=resourse_
     }
     return query_items;
 }
@@ -300,6 +302,7 @@ var filterParams = {
 
 function submitQuery() {
     resource = document.getElementById('resourcseFields').value;
+    let quries={}
 
     querystarttime = new Date().getTime();
     query_details = {}
@@ -308,10 +311,10 @@ function submitQuery() {
         "query_details": query_details
     };
     if (size>0)
-    {
-    query["bookmark"]=bookmark;
-    query["columns_def"]=columnDefs;
-    }
+        {
+            query["bookmark"]=bookmark;
+            query["columns_def"]=columnDefs;
+        }
     var andQuery = get_query_data("and_group");
     var orQuery = get_query_data("or_group");
 

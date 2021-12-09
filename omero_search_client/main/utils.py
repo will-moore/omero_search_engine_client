@@ -3,7 +3,103 @@ import json
 from omero_search_client import omero_client_app
 
 
-def get_search_results(results, resource,columns_def):
+def divide_filter(filters):
+    filters_resources={}
+    for filer in filters:
+        if filer["resourse"] not in filters_resources:
+            filters_resources[filer["resourse"]] = []
+        res_and_filter = filters_resources[filer["resourse"]]
+        res_and_filter.append(filer)
+    return filters_resources
+
+def analyize_query(query):
+    and_filters=query.get("query_details").get("and_filters")
+    or_filters = query.get("query_details").get("or_filters")
+    and_filters_resources= {}
+    or_filters_resources= {}
+    if and_filters and  len(and_filters)>0:
+        and_filters_resources = divide_filter(and_filters)
+
+    if or_filters and len(or_filters)>0:
+        or_filters_resources = divide_filter(or_filters)
+    queries_to_send={}
+    or_aded=[]
+    for key, item in and_filters_resources.items():
+        qu={"and_filters":item}
+        queries_to_send[key]=qu
+        if key in or_filters_resources:
+            or_aded.append(key)
+            qu["or_filters"]=or_filters_resources[key]
+
+    if len(or_aded) !=or_filters_resources and len(or_filters_resources)>0:
+        for key, item in or_filters_resources.items()   :
+            if key in or_aded:
+                continue
+            queries_to_send[key]={"or_filters":item}
+    return queries_to_send
+
+
+def seracrh_query(query,resource, main_attributes=None):
+    omero_client_app.logger.info(("%s, %s") % (resource, query))
+    if not main_attributes:
+        q_data = {"query": {'query_details': query}}
+    else:
+        q_data = {"query": {'query_details': query,"main_attributes":{"or_main_attributes":main_attributes}}}
+    try:
+        if query.get("bookmark"):
+            q_data["bookmark"] = query["bookmark"]
+            resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation_page/".format(
+                base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=resource)
+        else:
+            resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation/".format(
+                base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=resource)
+        aa = json.dumps(q_data)
+        resp = requests.get(resource_ext, data=aa)
+        res = resp.text
+        ress = json.loads(res)
+        ress["Error"] = "none"
+        return ress
+    except Exception as ex:
+        omero_client_app.logger.info("Error: " + str(ex))
+        return {"Error": "Something went wrong, please try later"}
+
+
+def get_ids(results, resource):
+    ids=[]
+    for item in results["results"]["results"]:
+        qur_item={}
+        ids.append(qur_item)
+        qur_item["name"]="{resource}_id".format(resource=resource)
+        qur_item["value"]=item["id"]
+        qur_item["operator"]="equals"
+    return ids
+
+def determine_search_results(query_):
+    queries_to_send=analyize_query(query_)
+    results={}
+    image_query= {}
+    other_image_query=[]
+    for resource, query in queries_to_send.items():
+        if resource=="image":
+            image_query=query
+            continue
+
+        res= seracrh_query(query, resource)
+        if res.get("error"):
+            return json.dumps(res)
+        if len(res["results"]) == 0:
+            res["Error"] = "Your query returns no results"
+            return res
+
+        other_image_query+=get_ids(res, resource)
+
+    ress=seracrh_query(image_query, "image",other_image_query)
+
+    columns_def = image_query.get("columns_def")
+
+    return json.dumps(process_search_results(ress, "image", columns_def))
+
+def process_search_results(results, resource, columns_def):
     returned_results={}
     if len(results["results"])==0:
         returned_results["Error"]="Your query returns no results"

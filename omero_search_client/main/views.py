@@ -4,7 +4,7 @@ from flask import render_template, request
 import requests
 import json
 from omero_search_client import omero_client_app
-from .utils import get_query_results, get_resources,get_search_results
+from .utils import get_query_results, get_resources, process_search_results, determine_search_results
 
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains"),
@@ -15,7 +15,7 @@ operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains
 def index():
     resources=get_resources()
 
-    return render_template('main_page.html', resources_data=resources, operator_choices=operator_choices,task_id="None")#container)
+    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None")#container)
 
 @main.route('/<resource>/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key(resource):
@@ -32,26 +32,8 @@ def get_resourcse_key(resource):
 @main.route('/submitquery/',methods=['POST', 'GET'])
 def submit_query():
     query =json.loads(request.data)
-    omero_client_app.logger.info (query.get("query_details"))
-    q_data = {"query": {'query_details': query.get("query_details")}}
+    return determine_search_results(query)
 
-    try:
-        if query.get("bookmark"):
-            q_data["bookmark"]=query["bookmark"]
-            resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation_page/".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"),res_table=query.get("resource"))
-        else:
-            resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation/".format(
-                base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=query.get("resource"))
-        aa = json.dumps(q_data)
-        resp = requests.get(resource_ext, data=aa)
-        res = resp.text
-        ress = json.loads(res)
-        ress["Error"]= "none"
-        columns_def= query.get("columns_def")
-        return json.dumps(get_search_results(ress,query.get("resource"),columns_def))
-    except Exception as ex:
-        omero_client_app.logger.info ("Error: "+ str(ex))
-        return json.dumps({"Error": "Something went wrong, please try later" })
 
 @main.route('/queryresults/',methods=['POST', 'GET'])
 def queryresults():
