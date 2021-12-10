@@ -3,6 +3,7 @@ from .forms import SearchFrom
 from flask import render_template, request
 import requests
 import json
+from urllib.parse import quote
 from omero_search_client import omero_client_app
 from .utils import get_query_results, get_resources, process_search_results, determine_search_results
 
@@ -23,7 +24,7 @@ def get_resourcse_key(resource):
     if not key:
         return json.dumps([])
     search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
-    url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=key)
+    url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
     resp = requests.get(url=url)
     results = resp.text
     values = json.loads(results)

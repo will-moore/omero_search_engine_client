@@ -427,9 +427,10 @@ function addConditionRow(key, value, condtion, resourse, group) {
 
 function set_key_values(key_value) {
     $( "#valueFields" ).val('');
+    resource = selected_resource.value;
+    url="/" + resource + "/get_values/?key=" + encodeURIComponent(key_value);
 
-resource = selected_resource.value;
-    fetch('/' + resource + '/get_values/?key=' + key_value).then(function(response) {
+    fetch(url).then(function(response) {
         {
             response.json().then(function(data) {
                 data.sort();
@@ -458,7 +459,6 @@ function set_resources(resource) {
             keys_options.innerHTML = optionHtml;
             break;
         }
-
     }
     key_value = keys_options.value;
     set_key_values(key_value);
@@ -469,6 +469,18 @@ let keys_options = document.getElementById('keyFields');
 let condtions= document.getElementById('condtion');
 selected_resource.onchange = function() {
     resource = selected_resource.value;
+
+     if (resource=="image")
+        document.getElementById("checkMainAttribute").style.display = "block";
+    else
+    {
+        document.getElementById("checkMainAttribute").style.display = "none";
+        var checkbox = document.getElementById("add_main_attibutes").checked=false;
+        mainvalueFields.style.display = "none";
+        maincondtion.style.display = "none";
+        mainkeyFields.style.display = "none";
+        }
+
     set_resources(resource);
 }
 
@@ -505,6 +517,7 @@ $(document).ready(function() {
         var resources_con = document.getElementById('resources');
         resources_con.style.display = "block";
         resource = selected_resource.value = 'image';
+        document.getElementById("checkMainAttribute").style.display = "block";
         set_resources('image');
     }
 
