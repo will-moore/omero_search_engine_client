@@ -432,14 +432,14 @@ function set_key_values(key_value) {
 
     fetch(url).then(function(response) {
         {
-            response.json().then(function(data) {
-                data.sort();
-              $( "#valueFields" ).autocomplete({
-      source: data
-    });
-            });
-
-        }
+        response.json().then(function(data) {
+            data.sort();
+             $( "#valueFields" ).autocomplete({
+                    source: data,
+                    minLength:0
+                }).bind('focus', function(){ $(this).autocomplete("search"); } );
+                });
+            }
     });
 }
 
@@ -469,7 +469,7 @@ let keys_options = document.getElementById('keyFields');
 let condtions= document.getElementById('condtion');
 selected_resource.onchange = function() {
     resource = selected_resource.value;
-
+/*
      if (resource=="image")
         document.getElementById("checkMainAttribute").style.display = "block";
     else
@@ -480,7 +480,7 @@ selected_resource.onchange = function() {
         maincondtion.style.display = "none";
         mainkeyFields.style.display = "none";
         }
-
+*/
     set_resources(resource);
 }
 
@@ -517,7 +517,7 @@ $(document).ready(function() {
         var resources_con = document.getElementById('resources');
         resources_con.style.display = "block";
         resource = selected_resource.value = 'image';
-        document.getElementById("checkMainAttribute").style.display = "block";
+        //document.getElementById("checkMainAttribute").style.display = "block";
         set_resources('image');
     }
 
