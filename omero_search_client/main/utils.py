@@ -3,6 +3,11 @@ import json
 from omero_search_client import omero_client_app
 
 
+additiona_attributes={"project": ["name","id"],
+                      "image":["id","name","project_name","study_name","project_id","study_id", "dataset_id"]
+    ,"study":["id", "name"]}
+
+
 def divide_filter(filters):
     filters_resources={}
     for filer in filters:
@@ -75,8 +80,17 @@ def get_ids(results, resource):
     return ids
 
 def determine_search_results(query_):
+    '''
+
+    Args:
+        query_: a list contains quries to send to the database, each nelong to one resourse
+        if it is one query it will send the results back
+        otherwise it will query non image resourses and use the results to return the images whihc satisfy the query
+        results an dthe image results
+    Returns:
+
+    '''
     queries_to_send=analyize_query(query_)
-    results={}
     image_query= {}
     other_image_query=[]
     for resource, query in queries_to_send.items():
@@ -90,8 +104,11 @@ def determine_search_results(query_):
         if len(res["results"]) == 0:
             res["Error"] = "Your query returns no results"
             return res
-
-        other_image_query+=get_ids(res, resource)
+        if len (queries_to_send)==1:
+            columns_def = query.get("columns_def")
+            return json.dumps(process_search_results(res, "image", columns_def))
+        else:
+            other_image_query+=get_ids(res, resource)
 
     ress=seracrh_query(image_query, "image",other_image_query)
 
@@ -174,7 +191,7 @@ def process_search_results(results, resource, columns_def):
     else:
         returned_results["contains_all_results"] = False
     returned_results["Error"]=results["Error"]
-
+    returned_results["resource"]=results["resource"]+"s"
     return returned_results
 
 

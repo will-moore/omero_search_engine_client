@@ -184,18 +184,18 @@ var gridOptions = {
 
                 addConditionRow(key, value, "not");
             }
-        message = "No of images: " + recieved_data +"/"+size+", Search engine query time: " + server_query_time + " seconds.";
+        message = "No of "+data["resource"]+" , "+ recieved_data +"/"+size+", Search engine query time: " + server_query_time + " seconds.";
 
     } else {
         var querytime = (queryendtime - querystarttime) / 1000;
         if (no_image!=size)
          {
-            message = "No of images: " + recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
+            message = "No of "+data["resource"]+ ", "+ recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
              document.getElementById('loadMoreResults').style.display = "block";
             }
         else
         {
-            message = "No of images: " + recieved_data+ ", Search engine query time: " + server_query_time + " seconds.";
+            message = "No of "+data["resource"] +", "+ recieved_data+ ", Search engine query time: " + server_query_time + " seconds.";
              document.getElementById('loadMoreResults').style.display = "none";
             }
     }
