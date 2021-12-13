@@ -15,7 +15,7 @@ var pages_data={};
 var ag_grid;
 var recieved_data=0;
 var columnDefs=[];
-
+var current_values=[];
 function changeMainAttributesFunction (){
 /* */
     var checkbox = document.getElementById("add_main_attibutes");
@@ -424,23 +424,39 @@ function addConditionRow(key, value, condtion, resourse, group) {
     });
 }
 
-
+/*
+set autocpmlete values for key using a function to filter the available values
+It solves the issue of having many available values (sometimes tens of thousnads),
+it was freezing the interface */
+function setAutoCompleteValues(){
+    $( "#valueFields" ).autocomplete({
+                    source: setFieldValues(),
+                    minLength:0
+                })//.bind('focus', function(){ $(this).autocomplete("search"); } );
+}
 function set_key_values(key_value) {
     $( "#valueFields" ).val('');
     resource = selected_resource.value;
     url="/" + resource + "/get_values/?key=" + encodeURIComponent(key_value);
 
     fetch(url).then(function(response) {
-        {
+      {
         response.json().then(function(data) {
             data.sort();
-             $( "#valueFields" ).autocomplete({
-                    source: data,
-                    minLength:0
-                }).bind('focus', function(){ $(this).autocomplete("search"); } );
+            current_values=data;
+
+
                 });
             }
     });
+}
+
+function setFieldValues(){
+    let value_fields = document.getElementById('valueFields');
+    val=value_fields.value;
+    if (!val || val.length === 0 )
+        return [];
+    return current_values.filter(x => x.toLowerCase().includes(val.toLowerCase()))
 }
 
 function set_resources(resource) {
@@ -453,6 +469,8 @@ function set_resources(resource) {
             break;
               }
             value.sort();
+             //if (key=="image")
+             //      value.unshift("Project name");
             for (i in value) {
                 optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
             }
