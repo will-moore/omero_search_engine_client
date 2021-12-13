@@ -21,12 +21,7 @@ for image_id, organism_data in org_501_json.items():
     logging.info("%s/%s, checking image id: %s" % (counter, len(org_501_json), image_id))
     try:
         organism = Model(**organism_data)
-        logging.info("Data is valid ")
-        #check if the
-        for part in organism.Organism_Part:
-            if part.Organism_Part.startswith("T-"):
-                logging.info(organism.dict())
-                sys.exit()
+        logging.info("Data is valid ")               
         #logging.info(organism.Organism)
         #logging.info(repr(organism.Organism_Part.Organism_Part_Identifier))
         #logging.info(organism.Organism_Part)
