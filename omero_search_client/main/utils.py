@@ -18,13 +18,13 @@ def divide_filter(filters):
     return filters_resources
 
 def analyize_query(query):
+    all_main_attributes={}
     and_filters=query.get("query_details").get("and_filters")
     or_filters = query.get("query_details").get("or_filters")
     and_filters_resources= {}
     or_filters_resources= {}
     if and_filters and  len(and_filters)>0:
         and_filters_resources = divide_filter(and_filters)
-
     if or_filters and len(or_filters)>0:
         or_filters_resources = divide_filter(or_filters)
     queries_to_send={}
@@ -41,15 +41,42 @@ def analyize_query(query):
             if key in or_aded:
                 continue
             queries_to_send[key]={"or_filters":item}
-    return queries_to_send
+    main_attributes={}
+    for k, qu in queries_to_send.items():
+        if qu.get("and_filters") and len(qu.get("and_filters")):
+            and_main_filter=check_filter_for_main_attributes(qu.get("and_filters"))
+            if len(and_main_filter)>0:
+                main_attributes["and_main_attributes"]=and_main_filter
+
+        if qu.get("or_filters") and len(qu.get("or_filters")):
+            or_main_filter=check_filter_for_main_attributes(qu.get("or_filters"))
+            if len(or_main_filter)>0:
+                main_attributes["or_main_attributes"] = or_main_filter
+        if len(main_attributes)>0:
+            all_main_attributes[k]=main_attributes
+
+
+    return queries_to_send, all_main_attributes
+
+def check_filter_for_main_attributes(filters):
+    and_main_filter=[]
+    for filter in filters:
+        if filter['name']=="Project name":
+            and_main_filter.append(filter)
+            filter["name"]="project_name"
+    for ff in and_main_filter:
+        filters.remove(ff)
+    return and_main_filter
 
 
 def seracrh_query(query,resource, main_attributes=None):
     omero_client_app.logger.info(("%s, %s") % (resource, query))
     if not main_attributes:
         q_data = {"query": {'query_details': query}}
+    elif resource=="image":
+        q_data = {"query": {'query_details': query,"main_attributes":   main_attributes}}
     else:
-        q_data = {"query": {'query_details': query,"main_attributes":{"or_main_attributes":main_attributes}}}
+        q_data = {"query": {'query_details': query, "main_attributes": main_attributes}}
     try:
         if query.get("bookmark"):
             q_data["bookmark"] = query["bookmark"]
@@ -90,15 +117,16 @@ def determine_search_results(query_):
     Returns:
 
     '''
-    queries_to_send=analyize_query(query_)
+    queries_to_send,all_main_attributes=analyize_query(query_)
     image_query= {}
     other_image_query=[]
     for resource, query in queries_to_send.items():
-        if resource=="image":
-            image_query=query
+        if resource == "image" and len(queries_to_send)>1:
+            image_query = query
             continue
 
-        res= seracrh_query(query, resource)
+
+        res= seracrh_query(query, resource, all_main_attributes.get(resource))
         if res.get("error"):
             return json.dumps(res)
         if len(res["results"]) == 0:
@@ -108,8 +136,10 @@ def determine_search_results(query_):
             columns_def = query.get("columns_def")
             return json.dumps(process_search_results(res, "image", columns_def))
         else:
+
             other_image_query+=get_ids(res, resource)
 
+    other_image_query={"or_main_attributes":other_image_query}
     ress=seracrh_query(image_query, "image",other_image_query)
 
     columns_def = image_query.get("columns_def")
@@ -118,7 +148,7 @@ def determine_search_results(query_):
 
 def process_search_results(results, resource, columns_def):
     returned_results={}
-    if len(results["results"])==0:
+    if not results.get("results") or len(results["results"])==0:
         returned_results["Error"]="Your query returns no results"
         return returned_results
 

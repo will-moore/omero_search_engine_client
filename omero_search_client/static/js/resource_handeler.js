@@ -82,6 +82,24 @@ function loadMoreResultsFunction()
 ///#loadMoreResults
 submitQuery();
 }
+
+function wait(ms){
+   var start = new Date().getTime();
+   var end = start;
+   while(end < start + ms) {
+     end = new Date().getTime();
+  }
+}
+
+function loadRemainingResultsFunction() {
+while (recieved_data<size) {
+  wait (5000);
+           submitQuery();
+
+}
+}
+
+
 function set_global_variables(data)
 {
     bookmark=data["bookmark"];
@@ -468,9 +486,12 @@ function set_resources(resource) {
               keys_options.innerHTML = optionHtml;
             break;
               }
-            value.sort();
-             //if (key=="image")
-             //      value.unshift("Project name");
+             if (key=="image")
+                   //#value.unshift("Project name");
+                   value.push("Project name");
+             value.sort();
+
+
             for (i in value) {
                 optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
             }

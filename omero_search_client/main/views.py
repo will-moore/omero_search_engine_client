@@ -18,17 +18,33 @@ def index():
 
     return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None")#container)
 
+
+
+@main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
+def get_resourcse_names(resource):
+    search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
+    url = search_engine_url + "/getresourcenames/"
+    resp = requests.get(url=url)
+    results = resp.text
+    values = json.loads(results)
+    return json.dumps(values)
+
+
 @main.route('/<resource>/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key(resource):
     key = request.args.get("key")
     if not key:
         return json.dumps([])
-    search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
-    url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
-    resp = requests.get(url=url)
-    results = resp.text
-    values = json.loads(results)
-    return json.dumps(values)
+
+    if resource=="image" and key=="Project name":
+        return get_resourcse_names ("project")
+    else:
+        search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
+        url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
+        resp = requests.get(url=url)
+        results = resp.text
+        values = json.loads(results)
+        return json.dumps(values)
 
 @main.route('/submitquery/',methods=['POST', 'GET'])
 def submit_query():
