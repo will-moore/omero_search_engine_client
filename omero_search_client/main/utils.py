@@ -134,7 +134,7 @@ def determine_search_results(query_):
             return res
         if len (queries_to_send)==1:
             columns_def = query.get("columns_def")
-            return json.dumps(process_search_results(res, "image", columns_def))
+            return json.dumps(process_search_results(res, resource, columns_def))
         else:
 
             other_image_query+=get_ids(res, resource)
@@ -156,7 +156,7 @@ def process_search_results(results, resource, columns_def):
     values=[]
 
     urls = {"image": omero_client_app.config.get("IMAGE_URL"),
-            "project": omero_client_app.config.get("PROJECT_ID")}
+            "project": omero_client_app.config.get("PROJECT_URL")}
     extend_url=urls.get(resource)
     for item in results["results"]["results"]:
         value = {}
