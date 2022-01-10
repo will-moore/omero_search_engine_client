@@ -1,3 +1,11 @@
+h3 {
+  color: green;
+}
+h5 {
+  color: blue;
+    background-color:  #D5DC8D;
+
+}
 input {
   border: 1px solid transparent;
   background-color: #f1f1f1;
@@ -15,7 +23,10 @@ input[type=submit] {
   color: #fff;
   cursor: pointer;
 }
-
+body.wait *, body.wait
+{
+    cursor: progress !important;
+}
  /* added from SilkGrade Examples.css */
 
 * {

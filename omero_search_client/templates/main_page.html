@@ -6,32 +6,92 @@
 {% block app_content %}
 
 <div class="page-header">
-    <h4>Query Submission Form</h4>
+    <h4>Query Builder Form<sup>*</sup></h4>
 </div>
-<br><br>
-
 <div id="query">
 
   <div id="resources" style="display: none" >
  <p  align="center">
-        <div class="col-md-2">
-          <h3>Search criteria</h3>
-           <form class="form-hrizontal" method="POST" id="reg-form">
-               {{ wtf.quick_form(form) }}
-           </form>
-        <input type="submit"  id="addcondition" onclick="AddConditionFunction()" name="addcondition" value="Add Condition">
+        <div class="col-md-5">
+      <br>
+        <form>
+      <div class="form-row">
+
+   <div class="form-group col-md-4">
+      <label for="resourcseFields">Resourse</label>
+      <select id="resourcseFields" class="form-control">
+
+      </select>
+  </div>
+            </div>
+  <div class="form-row">
+
+      <div class="form-group col-md-4">
+      <label for="keyFields">Attribute</label>
+      <select id="keyFields" class="form-control">
+
+      </select>
+    </div>
+
+    <div class="form-group col-md-3">
+      <label for="condtion">Operator</label>
+      <select id="condtion" class="form-control">
+      </select>
+    </div>
+    <div class="form-group col-md-5">
+      <label for="valueFields">Value</label>
+      <input type="text" class="form-control" id="valueFields" onkeyup="setAutoCompleteValues()">
+    </div>
+
+       <div id="mainkey" class="form-group col-md-4" style="display: none" >
+      <label for="mainkeyFields">Main Attribute</label>
+      <select id="mainkeyFields" class="form-control">
+
+      </select>
+    </div>
+
+    <div id="maincondition" class="form-group col-md-3" style="display: none" >
+      <label for="maincondtion">Operator</label>
+      <select id="maincondtion" class="form-control">
+      </select>
+    </div>
+    <div id="mainvalue" class="form-group col-md-5" style="display: none" >
+      <label for="mainvalueFields">Value</label>
+      <input type="text" class="form-control" id="mainvalueFields">
+    </div>
+
+        <div class="form-group">
+    <div  id="checkMainAttribute" class="form-check" style="display: none",>
+      <input class="form-check-input" type="checkbox" value="" id="add_main_attibutes" onclick="changeMainAttributesFunction()">
+      <label class="form-check-label" for="add_main_attibutes">
+        Use Addition Attibutes
+      </label>
+    </div>
+  </div>
+  </div>
+
+ </form>
+      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Add condition to the And Group" onclick="addAndConditionFunction()">
+  + And Group
+</button>
+      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Add condition to the Or Group" onclick="addOrConditionFunction()">
+  + Or Group
+</button>
       </div>
     </p>
 </div>
-
+<br>
  <div id ="conditions">
-<div class="col-md-4">
-<h5>AND Condition</h5>
-  <table id="and_condition" class="table table-striped">
+<div class="col-md-5">
+<h5 >AND Group</h5>
+  <table id="and_group" class="table table-striped">
     <thead>
       <tr>
         <th>Attribute</th>
+        <th>Operator</th>
         <th>Value</th>
+         <th>Resourse</th>
+
         <th>
             <button id="band" class="btn add-more" type="button"></button>
         </th>
@@ -40,28 +100,16 @@
   </table>
 </div>
 <br>
-<div class="col-md-4">
-<h5>NOT Condition</h5>
- <table id="not_condition" class="table table-striped">
-    <thead>
-      <tr>
-        <th>Attribute</th>
-        <th>Value</th>
-        <th>
-            <button id="bnot" class="btn add-more" type="button"></button>
-        </th>
-      </tr>
-    </thead>
-  </table>
-</div>
 <br>
-<div class="col-md-4">
-<h5>OR Condition</h5>
- <table id="or_condition" class="table table-striped">
+<div class="col-md-5">
+<h5>OR Group</h5>
+ <table id="or_group" class="table table-striped">
     <thead>
       <tr>
         <th>Attribute</th>
+        <th>Operator</th>
         <th>Value</th>
+          <th>Resourse</th>
         <th>
             <button id="bor" class="btn add-more" type="button"></button>
         </th>
@@ -70,8 +118,25 @@
   </table>
 </div>
 <br>
-<button id="submit_"  onclick="submitQuery()" type="button">Submit Query</button>
+           <button type="button" id="submit_" class="btn btn-dark" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
+  Submit Query
+</button>
+
+
 </div>
+    <br>
+              <h6>* You should select the search condition and add it to either "AND Group" or "OR Group" using the provided buttons.</h6>
+    <p>
+
+    The search will send a query to the search engine to find the results which match the search criteria.
+        <br>
+         <i>
+        <spane> i.e., match all the and conditions and at least one of the or conditions. e.g.,
+    <br>
+      cond1 and cond2 and cond3, … and (condo21 or condor2 or condor3, …)
+            </spane>
+            </i>
+        </p>
 </div>
 <br>
 <br>
@@ -81,24 +146,52 @@
     <label id="no_images"></label>
     <label id="query_id"></label>
     <br>
-    <table width="100%">
-  <tr>
-    <td valign="top" width="50%">
-      <div id="myGrid"  class="grid" style="width:600px;height:500px;"></div>
-            <!-- div id="pager" class="grid" style="width:100%;height:25px;"></div -->
-
-    </td>
-  </tr>
-</table>
-
+</div>
+      <div id="myGrid_2" style="height: 600px;width:1200px;" class="ag-theme-alpine"></div>
+    <br>
+   <div id="load_results_buttons", style="display: none", class="col-md-7" >
+       <table id="loads_results_table" class="table table-striped">
+    <thead>
+      <tr>
+        <th><button id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
+      </tr>
+    <tr>
+        <th><button id="loadRemainingResults"  onclick="loadRemainingResultsFunction()" type="button" style="display: none">Load All the Results</button></th>
+      </tr>
+    </thead>
+       </table>
+       </div>
+   <br>
+         <button id="exportResults"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
+     <br>
 </div>
 <script src="/static/js/resource_handeler.js"></script>
 <script>
       var resources_data = {{ resources_data|tojson }};
+      var operator_choices= {{ operator_choices|tojson }};
       var query_id= {{ task_id|tojson }};
       var submitqueryurl = "{{ url_for('main.submit_query') }}";
       var queryresultsurl = "{{ url_for('main.queryresults') }}";
 
+
+      $(document).ajaxStart(function ()
+{
+    $('body').addClass('wait');
+
+}).ajaxComplete(function () {
+
+    $('body').removeClass('wait');
+
+});
+
+
+        $("form").submit(function (e) {
+            e.preventDefault();
+
+        });
+
+
 </script>
+
 
 {% endblock %}
