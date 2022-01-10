@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "$id": "organism_parrt_schema.json",
+  "name": "Organism Part Schema",
+  "description": "Organism Part",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["Organism Part"],
+  "properties": {
+    "Organism Part": {
+      "name": "Organism Part",
+      "type": "string"
+    },
+     "Organism Part Identifier": {
+      "name":"Organism Part Identifier",
+      "type": "string"
+    }
+  }
+}
