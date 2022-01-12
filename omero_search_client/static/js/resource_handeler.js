@@ -223,11 +223,13 @@ var gridOptions = {
     var conditions_con = document.getElementById('conditions');
 
     var resources_con = document.getElementById('resources');
+    var help = document.getElementById('help');
     conditions_con.disabled = true;
 
     resources_con.style.display = "none";
+    help.style.display = "none";
     var query_cr = document.getElementById('conditions');
-
+help
     resultsDiv.style.display = "block";
 
     $('#no_images').text(message);
