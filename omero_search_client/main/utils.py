@@ -69,7 +69,7 @@ def check_filter_for_main_attributes(filters):
     return and_main_filter
 
 
-def seracrh_query(query,resource, main_attributes=None):
+def seracrh_query(query,resource,bookmark, main_attributes=None):
     omero_client_app.logger.info(("%s, %s") % (resource, query))
     if not main_attributes:
         q_data = {"query": {'query_details': query}}
@@ -78,8 +78,8 @@ def seracrh_query(query,resource, main_attributes=None):
     else:
         q_data = {"query": {'query_details': query, "main_attributes": main_attributes}}
     try:
-        if query.get("bookmark"):
-            q_data["bookmark"] = query["bookmark"]
+        if bookmark:#query.get("bookmark"):
+            q_data["bookmark"] =bookmark #query["bookmark"]
             resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation_page/".format(
                 base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=resource)
         else:
@@ -117,6 +117,7 @@ def determine_search_results(query_):
     Returns:
 
     '''
+    bookmark=query_.get("bookmark")
     queries_to_send,all_main_attributes=analyize_query(query_)
     image_query= {}
     other_image_query=[]
@@ -126,7 +127,7 @@ def determine_search_results(query_):
             continue
 
 
-        res= seracrh_query(query, resource, all_main_attributes.get(resource))
+        res= seracrh_query(query, resource, bookmark , query_.get(resource))
         if res.get("error"):
             return json.dumps(res)
         if len(res["results"]) == 0:
@@ -140,7 +141,7 @@ def determine_search_results(query_):
             other_image_query+=get_ids(res, resource)
 
     other_image_query={"or_main_attributes":other_image_query}
-    ress=seracrh_query(image_query, "image",other_image_query)
+    ress=seracrh_query(image_query, "image",bookmark, other_image_query)
 
     columns_def = image_query.get("columns_def")
 
@@ -153,11 +154,16 @@ def process_search_results(results, resource, columns_def):
         return returned_results
 
     cols=["Id","Name"]
+    if resource=="image":
+        cols.append("Study name")
+        
     values=[]
 
     urls = {"image": omero_client_app.config.get("IMAGE_URL"),
             "project": omero_client_app.config.get("PROJECT_URL")}
     extend_url=urls.get(resource)
+    to_add = False
+
     for item in results["results"]["results"]:
         value = {}
         values.append(value)
@@ -169,6 +175,14 @@ def process_search_results(results, resource, columns_def):
         value["url"] = url_
 
         value["Name"]=item.get("name")
+        value["Project name"] = item.get("project_name")
+        if item.get("screen_name"):
+            to_add=True
+            value["Study name"] = item.get("screen_name")
+        elif  item.get("project_name"):
+            to_add=True
+            value["Study name"] =  item.get("project_name")
+
         for k in item["key_values"]:
             if k['name'] not in cols:
                 cols.append(k['name'])
