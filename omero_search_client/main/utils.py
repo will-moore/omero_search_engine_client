@@ -156,23 +156,28 @@ def process_search_results(results, resource, columns_def):
     cols=["Id","Name"]
     if resource=="image":
         cols.append("Study name")
-        
+
     values=[]
 
     urls = {"image": omero_client_app.config.get("IMAGE_URL"),
             "project": omero_client_app.config.get("PROJECT_URL")}
     extend_url=urls.get(resource)
+    if not extend_url:
+        extend_url = omero_client_app.config.get("RESOURCE_URL")
+    names_ids={}
+
     to_add = False
 
     for item in results["results"]["results"]:
         value = {}
         values.append(value)
         value["Id"] = item["id"]
-        if not extend_url:
-            url_ = omero_client_app.config.get("RESOURCE_URL")
-        else:
-            url_ = extend_url + str(item["id"])
-        value["url"] = url_
+        names_ids[value["Id"]]=item.get("name")
+        #if not extend_url:
+        #    url_ = omero_client_app.config.get("RESOURCE_URL")
+        #else:
+        #    url_ = extend_url + str(item["id"])
+        #value["url"] = url_
 
         value["Name"]=item.get("name")
         value["Project name"] = item.get("project_name")
@@ -193,7 +198,7 @@ def process_search_results(results, resource, columns_def):
             "id": col,
             "name": col,
             "field": col,
-            "sortable": True
+            "sortable": True,
         })
     if not columns_def:
         columns_def = []
@@ -204,13 +209,13 @@ def process_search_results(results, resource, columns_def):
                 "width": 150,
             })
 
-        columns_def.append({
-            "field": "url",
-            "sortable": True,
-            "width": 150,
-            "formatter": "urlFormatter",
+        #columns_def.append({
+        #    "field": "url",
+        #    "sortable": True,
+        #    "width": 150,
+        #    "formatter": "urlFormatter",
 
-        })
+        #})
     else:
         for col_def in columns_def:
             if col_def["field"] not in cols:
@@ -230,6 +235,8 @@ def process_search_results(results, resource, columns_def):
     returned_results["page"] = results["results"]["page"]
     returned_results["size"] = results["results"]["size"]
     returned_results["total_pages"] = results["results"]["total_pages"]
+    returned_results["extend_url"]=extend_url
+    returned_results["names_ids"]=names_ids
     if len(values)<=results["results"]["size"]:
         returned_results["contains_all_results"]=True
     else:
@@ -283,7 +290,7 @@ def get_query_results(task_id, resource=None):
         Error="Something went wrong, please try again later"
     omero_client_app.logger.info("Modified RESULT LENGTH IS:"+ str(len(mod_results)))
     omero_client_app.logger.info("Ststus: "+ status)
-    return {"Status": status, "Results": mod_results, "filters": filters, "resource": resource, "error":Error,"server_query_time":server_query_time, "notice": notice}
+    return {"Status": status, "Results": mod_results, "filters": filters, "resource": resource, "error":Error,"server_query_time":server_query_time, "extend_url":extend_url,"notice": notice}
 
 
 def get_resources():

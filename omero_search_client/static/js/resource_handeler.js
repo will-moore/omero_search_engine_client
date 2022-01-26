@@ -16,6 +16,8 @@ var ag_grid;
 var recieved_data=0;
 var columnDefs=[];
 var current_values=[];
+var extend_url;
+var names_ids;
 function changeMainAttributesFunction (){
 /* */
     var checkbox = document.getElementById("add_main_attibutes");
@@ -113,10 +115,7 @@ function set_global_variables(data)
     var resultsbutton = document.getElementById('loadMoreResults');
     resultsbutton.disabled = true;
     }
-
 }
-
-
 function sizeToFit() {
   gridOptions.api.sizeColumnsToFit();
 }
@@ -137,6 +136,8 @@ function getParams() {
 function exportToCSV() {
   ag_grid.gridOptions.api.exportDataAsCsv(getParams());
 }
+
+
 function autoSizeAll(skipHeader) {
   var allColumnIds = [];
   gridOptions.columnApi.getAllColumns().forEach(function (column) {
@@ -146,12 +147,25 @@ function autoSizeAll(skipHeader) {
   gridOptions.columnApi.autoSizeColumns(allColumnIds, skipHeader);
 }
 
+function url_render(param){
+    //Object.keys(param).forEach(e => console.log(`key=${e}  value=${param[e]}`));
+    return '<a href='+extend_url +param.value+' target="_blank" >'+param.value+'</a>'
+}
+
 function displayResults(data, new_data=true) {
    if (new_data)
    set_global_variables(data);
 
 
 columnDefs =data["columns_def"]
+extend_url=data["extend_url"];
+names_ids=data["names_ids"];
+for (i in data["columns_def"])
+{
+if(data["columns_def"][i]["field"]==="Id" && resource==="image")
+     data["columns_def"][i]['cellRenderer']=url_render;
+     }
+
 results = data["values"];
 
 var gridOptions = {
@@ -178,6 +192,7 @@ var gridOptions = {
  ag_grid.gridOptions.api.setRowData(recieved_results);
 
     var notice = data["notice"];
+
     server_query_time = data["server_query_time"];
     //results = data["values"];
     let no_image = results.length;
