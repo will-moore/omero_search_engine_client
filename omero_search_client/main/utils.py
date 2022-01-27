@@ -153,9 +153,7 @@ def process_search_results(results, resource, columns_def):
         returned_results["Error"]="Your query returns no results"
         return returned_results
 
-    cols=["Id","Name"]
-    if resource=="image":
-        cols.append("Study name")
+    cols=[]
 
     values=[]
 
@@ -202,20 +200,18 @@ def process_search_results(results, resource, columns_def):
         })
     if not columns_def:
         columns_def = []
+        cols.sort()
+        if resource == "image":
+            cols.insert(0, "Study name")
+        cols.insert(0, "Name")
+        cols.insert(0, "Id")
+
         for col in cols:
             columns_def.append({
                 "field": col,
                 "sortable": True,
                 "width": 150,
             })
-
-        #columns_def.append({
-        #    "field": "url",
-        #    "sortable": True,
-        #    "width": 150,
-        #    "formatter": "urlFormatter",
-
-        #})
     else:
         for col_def in columns_def:
             if col_def["field"] not in cols:
