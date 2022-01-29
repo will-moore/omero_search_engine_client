@@ -125,9 +125,7 @@ def determine_search_results(query_):
         if resource == "image" and len(queries_to_send)>1:
             image_query = query
             continue
-
-
-        res= seracrh_query(query, resource, bookmark , query_.get(resource))
+        res= seracrh_query(query, resource, bookmark , all_main_attributes.get(resource))
         if res.get("error"):
             return json.dumps(res)
         if len(res["results"]) == 0:
@@ -141,6 +139,7 @@ def determine_search_results(query_):
             other_image_query+=get_ids(res, resource)
 
     other_image_query={"or_main_attributes":other_image_query}
+
     ress=seracrh_query(image_query, "image",bookmark, other_image_query)
 
     columns_def = image_query.get("columns_def")
