@@ -18,6 +18,8 @@ var columnDefs=[];
 var current_values=[];
 var extend_url;
 var names_ids;
+var main_attributes= ["Project name"];
+
 function changeMainAttributesFunction (){
 /* */
     var checkbox = document.getElementById("add_main_attibutes");
@@ -177,9 +179,13 @@ var gridOptions = {
  enableCellTextSelection: true,
   columnDefs: columnDefs,
   rowData: null,
-  onColumnResized: function (params) {
-    console.log(params);
-  },
+  //onColumnResized: onGridSizeChanged,
+   //function (params) {
+    //console.log(params);
+    //onGridSizeChanged();
+
+
+  //},
 };
 
 
@@ -469,8 +475,36 @@ function setAutoCompleteValues(){
                     minLength:0
                 })//.bind('focus', function(){ $(this).autocomplete("search"); } );
 }
+
+//As main attributes supports equals andnot equals only
+//This function restrict the use to these two operators
+function set_operator_options(key_value)
+{
+condtion = document.getElementById("condtion");
+condtion.value=condtion.options[0].text;
+for (i =0; i< condtion.length; i++  )
+{
+
+if (main_attributes.includes(key_value))
+    {
+         if (condtion.options[i].text!= "equals" && condtion.options[i].text!="not equals")
+            condtion.options[i].style.display = "none";
+
+      }
+ else
+    {
+        condtion.options[i].style.display = "block";
+    }
+
+    }
+}
 function set_key_values(key_value) {
     $( "#valueFields" ).val('');
+
+    set_operator_options(key_value);
+
+
+
     resource = selected_resource.value;
     url="/" + resource + "/get_values/?key=" + encodeURIComponent(key_value);
 
@@ -528,7 +562,9 @@ function set_resources(resource) {
 
 let selected_resource = document.getElementById('resourcseFields');
 let keys_options = document.getElementById('keyFields');
-let condtions= document.getElementById('condtion');
+let keyFields= document.getElementById('keyFields');
+
+
 selected_resource.onchange = function() {
     resource = selected_resource.value;
 /*
@@ -551,9 +587,7 @@ keys_options.onchange = function() {
     set_key_values(key_value);
 }
 
-
 $(document).ready(function() {
-
     if (query_id != "None") {
         set_query_form = true;
         task_id = query_id;
