@@ -154,6 +154,36 @@ function url_render(param){
     return '<a href='+extend_url +param.value+' target="_blank" >'+param.value+'</a>'
 }
 
+function onGridSizeChanged(params) {
+        // get the current grids width
+        var gridWidth = document.getElementById('grid-wrapper').offsetWidth;
+
+        // keep track of which columns to hide/show
+        var columnsToShow = [];
+        var columnsToHide = [];
+
+        // iterate over all columns (visible or not) and work out
+        // now many columns can fit (based on their minWidth)
+        var totalColsWidth = 0;
+        var allColumns = params.columnApi.getAllColumns();
+        for (var i = 0; i < allColumns.length; i++) {
+            let column = allColumns[i];
+            totalColsWidth += column.getMinWidth();
+            if (totalColsWidth > gridWidth) {
+                columnsToHide.push(column.colId);
+            } else {
+                columnsToShow.push(column.colId);
+            }
+        }
+
+        // show/hide columns based on current grid width
+        params.columnApi.setColumnsVisible(columnsToShow, true);
+        params.columnApi.setColumnsVisible(columnsToHide, false);
+
+        // fill out any available space to ensure there are no gaps
+        params.api.sizeColumnsToFit();
+}
+
 function displayResults(data, new_data=true) {
    if (new_data)
    set_global_variables(data);
@@ -499,15 +529,12 @@ if (main_attributes.includes(key_value))
     }
 }
 function set_key_values(key_value) {
+
     $( "#valueFields" ).val('');
 
     set_operator_options(key_value);
-
-
-
     resource = selected_resource.value;
-    url="/" + resource + "/get_values/?key=" + encodeURIComponent(key_value);
-
+    url=getresourcesvalesforkey+ "/?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
@@ -588,6 +615,7 @@ keys_options.onchange = function() {
 }
 
 $(document).ready(function() {
+
     if (query_id != "None") {
         set_query_form = true;
         task_id = query_id;

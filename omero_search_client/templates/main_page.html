@@ -168,14 +168,18 @@
          <button id="exportResults"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
      <br>
 </div>
-<script src="/static/js/resource_handeler.js"></script>
+<!--script src="/searchengineclientstatic/js/resource_handeler.js"></script!-->
+
+<script src={{url_for('static',filename='/js/resource_handeler.js')}}></script>
+
+
 <script>
       var resources_data = {{ resources_data|tojson }};
       var operator_choices= {{ operator_choices|tojson }};
       var query_id= {{ task_id|tojson }};
       var submitqueryurl = "{{ url_for('main.submit_query') }}";
       var queryresultsurl = "{{ url_for('main.queryresults') }}";
-
+      var  getresourcesvalesforkey = "{{ url_for('main.get_resourcse_key') }}";
 
       $(document).ajaxStart(function ()
 {

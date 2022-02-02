@@ -12,6 +12,16 @@ operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains
                                         ("gt", ">"),("gte", ">="), ("lt", "<"),
                                                  ("lte", "<=")]
 
+
+def get_resources_keys_values():
+    pass
+
+    #return { "image":"{{ url_for("main.get_resourcse_key", resource='image') }}",
+    #   "project":"{{ url_for("main.get_resourcse_key", resource='project') }}",
+    #  "screen": "{{ url_for("main.get_resourcse_key", resource='screen') }}",
+    #  "well":"{{ url_for("main.get_resourcse_key", resource='well') }}",
+    #  "plate":"{{ url_for("main.get_resourcse_key", resource='plate') }}"
+    #  }
 @main.route('/',methods=['POST', 'GET'])
 def index():
     resources=get_resources()
@@ -30,9 +40,10 @@ def get_resourcse_names(resource):
     return json.dumps(values)
 
 
-@main.route('/<resource>/get_values/',methods=['POST', 'GET'])
-def get_resourcse_key(resource):
+@main.route('/get_values/',methods=['POST', 'GET'])
+def get_resourcse_key():
     key = request.args.get("key")
+    resource = request.args.get("resource")
     if not key:
         return json.dumps([])
 

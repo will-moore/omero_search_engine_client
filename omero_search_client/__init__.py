@@ -4,9 +4,23 @@ import sys
 from logging.handlers import RotatingFileHandler
 import logging
 import os
-from omero_search_client.configuration.config import omero_search_client_app_config, load_configuration_variables_from_file,configLooader
-omero_client_app = Flask(__name__)
+from urllib.parse import urlparse
+from flask import request, url_for as _url_for
 
+from omero_search_client.configuration.config import omero_search_client_app_config, load_configuration_variables_from_file,configLooader
+main_folder=os.path.dirname(os.path.realpath(__file__))
+
+static_folder=os.path.join(main_folder, "searchengineclientstatic")
+omero_client_app = Flask(__name__, static_url_path="/searchengineclientstatic", static_folder="searchengineclientstatic")
+
+def url_with_host(path):
+    return '/'.join((urlparse(request.host_url).path.rstrip('/'), path.lstrip('/')))
+
+def url_for(*args, **kwargs):
+    if kwargs.get('_external') is True:
+        return _url_for(*args, **kwargs)
+    else:
+        return url_with_host(_url_for(*args, **kwargs))
 
 def create_app(config_name="development"):
     app_config=configLooader.get(config_name)
@@ -28,5 +42,6 @@ def create_app(config_name="development"):
     omero_client_app.logger.info('App  startup')
     from omero_search_client.main import main as routers_blueprint_main
     omero_client_app.register_blueprint(routers_blueprint_main, url_prefix='/')
+    omero_client_app.jinja_env.globals['url_for'] = url_for
     return omero_client_app
 
