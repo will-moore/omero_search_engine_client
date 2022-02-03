@@ -20,13 +20,88 @@ var extend_url;
 var names_ids;
 var main_attributes= ["Project name"];
 
+
+//save query json string to the local user storage, so he cal load it again
+function save_query()
+ {
+    query=get_current_query();
+    if (query==false)
+        return;
+    else
+        $("#confirm_message").modal("show");
+}
+
+//Save query to user local storage
+function download_query()
+{
+filename=document.getElementById("queryfilename").value;
+query=JSON.stringify(get_current_query(), null, 4);
+if (filename) {
+    filename=filename+'.txt'
+    var file_container = document.createElement('a');
+    file_container.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(query));
+    file_container.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        file_container.dispatchEvent(event);
+    }
+    else {
+        file_container.click();
+    }
+    $("#confirm_message").modal("hide");
+    document.getElementById("queryfilename").value="";
+}
+}
+
+//
+function new_query(){
+    query=get_current_query(false);
+    if (query==false)
+        return;
+    if (confirm("Are you sure?") == true) {
+        //remove_all_conditiona("or");
+        //remove_all_conditiona("and");
+        location.reload();
+        return false;
+    }
+}
+function load_query(){
+    $('#load_file').click();
+}
+
+//Load query from file which is located in the user machine
+function load_query_from_file(file)
+{
+    //remove anycondition if any
+    remove_all_conditiona("or");
+    remove_all_conditiona("and");
+    let reader = new FileReader();
+    reader.addEventListener('load', function(e) {
+    let text = e.target.result;
+    data_=JSON.parse(text);
+    data=data_["query_details"]
+    var orFilter = data["or_filters"];
+    var andFilter = data["and_filters"];
+    resource = data_["resource"]
+    for (i in orFilter)
+            {
+            addConditionRow(orFilter[i]["name"],orFilter[i]["value"], orFilter[i]["operator"], resource, 'or');
+            }
+    for (i in andFilter)
+        {
+         addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], resource, 'and');
+
+            }
+        });
+		reader.readAsText(file);
+}
 function changeMainAttributesFunction (){
-/* */
     var checkbox = document.getElementById("add_main_attibutes");
     mainvalueFields=document.getElementById("mainvalue");
     maincondtion=document.getElementById("maincondition");
     mainkeyFields=document.getElementById("mainkey");
-
      if (checkbox.checked)
      {
         mainvalueFields.style.display = "block";
@@ -370,8 +445,37 @@ var filterParams = {
   browserDatePicker: true,
 };
 
+function get_current_query(displaymessage=true)
+{
+   resource = document.getElementById('resourcseFields').value;
+    let quries={}
+
+    querystarttime = new Date().getTime();
+    query_details = {}
+    var query = {
+        "resource": resource,
+        "query_details": query_details
+    };
+    if (size>0)
+        {
+            query["bookmark"]=bookmark;
+            query["columns_def"]=columnDefs;
+        }
+    var andQuery = get_query_data("and_group");
+    var orQuery = get_query_data("or_group");
+
+    if (andQuery.length == 0 && orQuery.length == 0 ) {
+    if (displaymessage==true)
+        alert("There is no query, at least one condition should be selected");
+        return false;
+    }
+    query_details["and_filters"] = andQuery;
+    query_details["or_filters"] = orQuery;
+    return query;
+}
 
 function submitQuery() {
+/*
     resource = document.getElementById('resourcseFields').value;
     let quries={}
 
@@ -395,7 +499,10 @@ function submitQuery() {
     }
     query_details["and_filters"] = andQuery;
     query_details["or_filters"] = orQuery;
-
+    */
+    query=get_current_query();
+    if (query==false)
+        return;
     send_the_request(query);
 
 }
@@ -455,6 +562,15 @@ function AddConditionFunction(group) {
     addConditionRow(key, value, condtion, resourse, group);
 }
 
+function remove_all_conditiona(group)
+{
+    let tableRef = document.getElementById(group + "_group");
+    var rowCount = tableRef.rows.length;
+    for (var i = 1; i < rowCount; i++)
+        {
+            tableRef.deleteRow(1);
+        }
+}
 
 function addConditionRow(key, value, condtion, resourse, group) {
 
@@ -488,7 +604,6 @@ function addConditionRow(key, value, condtion, resourse, group) {
     removebutton.setAttribute("class", "btn btn-danger btn-sm");
     removeCell.appendChild(removebutton);
 
-    //alert(keys_options.value);
     removebutton.addEventListener("click", function() {
         var row = removebutton.parentNode.parentNode;
         row.parentNode.removeChild(row);
@@ -528,6 +643,7 @@ if (main_attributes.includes(key_value))
 
     }
 }
+
 function set_key_values(key_value) {
 
     $( "#valueFields" ).val('');
@@ -646,4 +762,9 @@ $(document).ready(function() {
     }
 
 });
+//Used to load query from local storage
+document.getElementById('load_file').onchange = function () {
+let file = document.querySelector("#load_file").files[0];
+  load_query_from_file(file);
+}
 

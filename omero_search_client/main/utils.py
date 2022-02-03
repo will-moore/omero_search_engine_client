@@ -128,7 +128,9 @@ def determine_search_results(query_):
         res= seracrh_query(query, resource, bookmark , all_main_attributes.get(resource))
         if res.get("error"):
             return json.dumps(res)
-        if len(res["results"]) == 0:
+        if not res.get("results"):
+            res["Error"] = "Something went wrong, please try again later"
+        elif len(res["results"]) == 0:
             res["Error"] = "Your query returns no results"
             return res
         if len (queries_to_send)==1:
@@ -148,7 +150,10 @@ def determine_search_results(query_):
 
 def process_search_results(results, resource, columns_def):
     returned_results={}
-    if not results.get("results") or len(results["results"])==0:
+    if not results.get("results"):
+        returned_results["Error"] = "Something went wrong, please try again later"
+        return returned_results
+    elif len(results["results"])==0:
         returned_results["Error"]="Your query returns no results"
         return returned_results
 

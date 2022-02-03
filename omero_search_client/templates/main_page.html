@@ -5,11 +5,29 @@
 
 {% block app_content %}
 
+
+<input type="file" name="load_file" id="load_file" style="display: none" />
 <div class="page-header">
     <h4>Query Builder Form<sup>*</sup></h4>
 </div>
-<div id="query">
+<br>
 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+   <div class="dropdown">
+   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+     Query
+   </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" onclick="new_query()">New query</a>
+    <a class="dropdown-item" onclick="load_query()">Load query</a>
+    <a class="dropdown-item" onclick="save_query()">Save quert</a>
+
+  </div>
+</div>
+</nav>
+
+
+<div id="query">
   <div id="resources" style="display: none" >
  <p  align="center">
         <div class="col-md-5">
