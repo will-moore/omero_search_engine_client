@@ -12,19 +12,18 @@
 </div>
 <br>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<!---nav class="navbar navbar-expand-lg navbar-light bg-light">
    <div class="dropdown">
-   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+   <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
      Query
    </button>
   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
     <a class="dropdown-item" onclick="new_query()">New query</a>
     <a class="dropdown-item" onclick="load_query()">Load query</a>
     <a class="dropdown-item" onclick="save_query()">Save quert</a>
-
   </div>
 </div>
-</nav>
+</nav!-->
 
 
 <div id="query">
@@ -36,11 +35,12 @@
       <div class="form-row">
 
    <div class="form-group col-md-4">
-      <label for="resourcseFields">Resourse</label>
+      <label for="resourcseFields">Resource</label>
       <select id="resourcseFields" class="form-control">
 
       </select>
   </div>
+
             </div>
   <div class="form-row">
 
@@ -89,10 +89,10 @@
   </div>
 
  </form>
-      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Add condition to the And Group" onclick="addAndConditionFunction()">
+      <button type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Add condition to the 'And Group'" onclick="addAndConditionFunction()">
   + And Group
 </button>
-      <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Add condition to the Or Group" onclick="addOrConditionFunction()">
+      <button type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Add condition to the 'Or Group'" onclick="addOrConditionFunction()">
   + Or Group
 </button>
       </div>
@@ -100,7 +100,16 @@
 </div>
 <br>
  <div id ="conditions">
+
 <div class="col-md-5">
+<div class="float-right">
+  <input class="form-check-input" type="checkbox" value="" id="case_sensitive" >
+  <label class="form-check-label" for="case_sensitive">
+      Case sensitive
+  </label>
+</div>
+<br>
+    <br>
 <h5 >AND Group</h5>
   <table id="and_group" class="table table-striped">
     <thead>
@@ -108,7 +117,7 @@
         <th>Attribute</th>
         <th>Operator</th>
         <th>Value</th>
-         <th>Resourse</th>
+         <th>Resource</th>
 
         <th>
             <button id="band" class="btn add-more" type="button"></button>
@@ -127,7 +136,7 @@
         <th>Attribute</th>
         <th>Operator</th>
         <th>Value</th>
-          <th>Resourse</th>
+          <th>Resource</th>
         <th>
             <button id="bor" class="btn add-more" type="button"></button>
         </th>
@@ -135,13 +144,15 @@
     </thead>
   </table>
 </div>
+
+
 <br>
 
 
 </div>
     <div id="help">
     <br>
-              <h6>* You should select the search condition and add it to either "AND Group" or "OR Group" using the provided buttons.</h6>
+              <h6>* You should select the search condition and add it to either "AND Group" or "OR Group" using the "+Add Group"     and "+or Group" buttons.</h6>
     <p>
 
     The search will send a query to the search engine to find the results which match the search criteria.
@@ -154,10 +165,21 @@
             </i>
         </p>
         <br>
-
-           <button type="button" id="submit_" class="btn btn-dark" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
+    </div>
+    <div id ="query_buttons">
+           <button type="button" id="submit_" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
   Submit Query
 </button>
+         <button type="button" id="save_query" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Save the query to the user local storage" onclick="save_query()">
+  Save Query
+</button>
+          <button type="button" id="load_query" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="load the query from user storage" onclick="load_query()">
+  Load Query
+</button>
+          <button type="button" id="new_query" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Discard all the condition anstart new query" onclick="new_query()">
+  New Query
+</button>
+
 </div>
 <br>
 <br>
@@ -174,7 +196,7 @@
        <table id="loads_results_table" class="table table-striped">
     <thead>
       <tr>
-        <th><button id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
+        <th><button  class="btn btn-primary" id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
       </tr>
     <tr>
         <th><button id="loadRemainingResults"  onclick="loadRemainingResultsFunction()" type="button" style="display: none">Load All the Results</button></th>
@@ -183,7 +205,7 @@
        </table>
        </div>
    <br>
-         <button id="exportResults"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
+         <button id="exportResults" class="btn btn-primary"  style="display: none"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
      <br>
 </div>
 <!--script src="/searchengineclientstatic/js/resource_handeler.js"></script!-->

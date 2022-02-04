@@ -24,18 +24,22 @@ var main_attributes= ["Project name"];
 //save query json string to the local user storage, so he cal load it again
 function save_query()
  {
-    query=get_current_query();
+    query=get_current_query(false);
     if (query==false)
         return;
     else
+    {
         $("#confirm_message").modal("show");
+            document.getElementById("queryfilename").focus();
+
+        }
 }
 
 //Save query to user local storage
 function download_query()
 {
 filename=document.getElementById("queryfilename").value;
-query=JSON.stringify(get_current_query(), null, 4);
+query=JSON.stringify(get_current_query(false), null, 4);
 if (filename) {
     filename=filename+'.txt'
     var file_container = document.createElement('a');
@@ -60,7 +64,7 @@ function new_query(){
     query=get_current_query(false);
     if (query==false)
         return;
-    if (confirm("Are you sure?") == true) {
+    if (confirm("All the conditions will be discarded, process?") == true) {
         //remove_all_conditiona("or");
         //remove_all_conditiona("and");
         location.reload();
@@ -84,6 +88,7 @@ function load_query_from_file(file)
     data=data_["query_details"]
     var orFilter = data["or_filters"];
     var andFilter = data["and_filters"];
+    case_sensitive= data["case_sensitive"];
     resource = data_["resource"]
     for (i in orFilter)
             {
@@ -94,6 +99,8 @@ function load_query_from_file(file)
          addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], resource, 'and');
 
             }
+
+            document.getElementById('case_sensitive').checked=case_sensitive;
         });
 		reader.readAsText(file);
 }
@@ -350,10 +357,14 @@ var gridOptions = {
 
     var resources_con = document.getElementById('resources');
     var help = document.getElementById('help');
+    var submit_button = document.getElementById('submit_');
+    var load_query_button=document.getElementById('load_query');
     conditions_con.disabled = true;
-
+    document.getElementById('exportResults').style.display = "block";
     resources_con.style.display = "none";
     help.style.display = "none";
+    submit_button.style.display = "none";
+    load_query_button.style.display = "none";
     var query_cr = document.getElementById('conditions');
 help
     resultsDiv.style.display = "block";
@@ -408,12 +419,12 @@ function get_query_data(group_table_) {
         name_ = group_table.rows[r].cells[0].innerHTML;
         operator_ = group_table.rows[r].cells[1].innerHTML;
         value_ = group_table.rows[r].cells[2].innerHTML;
-        resourse_=group_table.rows[r].cells[3].innerHTML;
+        resource_=group_table.rows[r].cells[3].innerHTML;
         //query_dict[name_] = value_
         query_dict["name"]=name_
         query_dict["value"]=value_
         query_dict["operator"]=operator_
-        query_dict["resourse"]=resourse_
+        query_dict["resource"]=resource_
     }
     return query_items;
 }
@@ -445,7 +456,7 @@ var filterParams = {
   browserDatePicker: true,
 };
 
-function get_current_query(displaymessage=true)
+function get_current_query(include_addition_information,displaymessage=true)
 {
    resource = document.getElementById('resourcseFields').value;
     let quries={}
@@ -456,7 +467,7 @@ function get_current_query(displaymessage=true)
         "resource": resource,
         "query_details": query_details
     };
-    if (size>0)
+    if (size>0 && include_addition_information ==true)
         {
             query["bookmark"]=bookmark;
             query["columns_def"]=columnDefs;
@@ -471,6 +482,7 @@ function get_current_query(displaymessage=true)
     }
     query_details["and_filters"] = andQuery;
     query_details["or_filters"] = orQuery;
+    query_details["case_sensitive"]=document.getElementById('case_sensitive').checked;
     return query;
 }
 
@@ -500,7 +512,7 @@ function submitQuery() {
     query_details["and_filters"] = andQuery;
     query_details["or_filters"] = orQuery;
     */
-    query=get_current_query();
+    query=get_current_query(true);
     if (query==false)
         return;
     send_the_request(query);
@@ -546,7 +558,7 @@ function AddConditionFunction(group) {
 
     let key = keys_options.value;
     let value = value_fields.value;
-    let resourse = resourcseFields.value;
+    let resource = resourcseFields.value;
 
 
 
@@ -559,7 +571,7 @@ function AddConditionFunction(group) {
         alert("Please select an attribute");
         return;
     }
-    addConditionRow(key, value, condtion, resourse, group);
+    addConditionRow(key, value, condtion, resource, group);
 }
 
 function remove_all_conditiona(group)
@@ -572,7 +584,7 @@ function remove_all_conditiona(group)
         }
 }
 
-function addConditionRow(key, value, condtion, resourse, group) {
+function addConditionRow(key, value, condtion, resource, group) {
 
     let tableRef = document.getElementById(group + "_group");
 
@@ -582,7 +594,7 @@ function addConditionRow(key, value, condtion, resourse, group) {
     let keyCell = newRow.insertCell(0);
     let operatorCell = newRow.insertCell(1);
     let valueCell = newRow.insertCell(2);
-    let resourseCell = newRow.insertCell(3);
+    let resourceCell = newRow.insertCell(3);
     let removeCell = newRow.insertCell(4);
 
     // Append a text node to the cells
@@ -596,8 +608,8 @@ function addConditionRow(key, value, condtion, resourse, group) {
     let valueText = document.createTextNode(value);
     valueCell.appendChild(valueText);
 
-    let resourseText = document.createTextNode(resourse);
-    resourseCell.appendChild(resourseText);
+    let resourceText = document.createTextNode(resource);
+    resourceCell.appendChild(resourceText);
 
     var removebutton = document.createElement("BUTTON");
     removebutton.innerHTML = "X Remove";

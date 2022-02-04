@@ -7,13 +7,12 @@ additiona_attributes={"project": ["name","id"],
                       "image":["id","name","project_name","study_name","project_id","study_id", "dataset_id"]
     ,"study":["id", "name"]}
 
-
 def divide_filter(filters):
     filters_resources={}
     for filer in filters:
-        if filer["resourse"] not in filters_resources:
-            filters_resources[filer["resourse"]] = []
-        res_and_filter = filters_resources[filer["resourse"]]
+        if filer["resource"] not in filters_resources:
+            filters_resources[filer["resource"]] = []
+        res_and_filter = filters_resources[filer["resource"]]
         res_and_filter.append(filer)
     return filters_resources
 
@@ -110,13 +109,14 @@ def determine_search_results(query_):
     '''
 
     Args:
-        query_: a list contains quries to send to the database, each nelong to one resourse
+        query_: a list contains quries to send to the database, each nelong to one resource
         if it is one query it will send the results back
-        otherwise it will query non image resourses and use the results to return the images whihc satisfy the query
+        otherwise it will query non image resources and use the results to return the images whihc satisfy the query
         results an dthe image results
     Returns:
 
     '''
+    case_sensitive=query_.get("query_details").get("case_sensitive")
     bookmark=query_.get("bookmark")
     queries_to_send,all_main_attributes=analyize_query(query_)
     image_query= {}
@@ -125,6 +125,7 @@ def determine_search_results(query_):
         if resource == "image" and len(queries_to_send)>1:
             image_query = query
             continue
+        query["case_sensitive"]=case_sensitive
         res= seracrh_query(query, resource, bookmark , all_main_attributes.get(resource))
         if res.get("error"):
             return json.dumps(res)
@@ -139,7 +140,7 @@ def determine_search_results(query_):
             other_image_query+=get_ids(res, resource)
 
     other_image_query={"or_main_attributes":other_image_query}
-
+    image_query["case_sensitive"]=case_sensitive
     ress=seracrh_query(image_query, "image",bookmark, other_image_query)
 
     columns_def = image_query.get("columns_def")
@@ -188,7 +189,11 @@ def process_search_results(results, resource, columns_def):
         for k in item["key_values"]:
             if k['name'] not in cols:
                 cols.append(k['name'])
-            value[k["name"]]=k["value"]
+            if value.get(k["name"]):
+                value[k["name"]]=value[k["name"]]+"; "+ k["value"]
+            else:
+                value[k["name"]]=k["value"]
+
     columns=[]
     for col in cols:
         columns.append({
