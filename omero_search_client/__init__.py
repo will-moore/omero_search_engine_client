@@ -13,6 +13,10 @@ main_folder=os.path.dirname(os.path.realpath(__file__))
 static_folder=os.path.join(main_folder, "searchengineclientstatic")
 omero_client_app = Flask(__name__, static_url_path="/searchengineclientstatic", static_folder="searchengineclientstatic")
 
+'''
+Refernce for the following two methods is:
+https://stackoverflow.com/questions/25962224/running-a-flask-application-at-a-url-that-is-not-the-domain-root
+'''
 def url_with_host(path):
     return '/'.join((urlparse(request.host_url).path.rstrip('/'), path.lstrip('/')))
 

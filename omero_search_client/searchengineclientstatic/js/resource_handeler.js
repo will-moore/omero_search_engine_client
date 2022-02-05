@@ -675,7 +675,7 @@ function set_key_values(key_value) {
     });
 }
 
-function setFieldValues(){
+async function setFieldValues(){
     let value_fields = document.getElementById('valueFields');
     val=value_fields.value;
     if (!val || val.length === 0  )
