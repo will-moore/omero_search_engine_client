@@ -626,9 +626,11 @@ function addConditionRow(key, value, condtion, resource, group) {
 set autocpmlete values for key using a function to filter the available values
 It solves the issue of having many available values (sometimes tens of thousnads),
 it was freezing the interface */
-function setAutoCompleteValues(){
+function setAutoCompleteValues(event){
+
+
     $( "#valueFields" ).autocomplete({
-                    source: setFieldValues(),
+                    source:  setFieldValues(),
                     minLength:0
                 })//.bind('focus', function(){ $(this).autocomplete("search"); } );
 }
@@ -675,18 +677,17 @@ function set_key_values(key_value) {
     });
 }
 
-async function setFieldValues(){
+ function setFieldValues(){
     let value_fields = document.getElementById('valueFields');
     val=value_fields.value;
-    if (!val || val.length === 0  )
+    if (!val || val.length <2  )
         return [];
     //for performance, when the value is one letter, it will only return all the items which start with this letter
     //otherwise, it will return all the items which contains the value (even ther are  at the middle or at the end of the items)
-    if (val.length ===1)
-        return current_values.filter(x => x.toLowerCase().startsWith(val.toLowerCase()))
+    if (val.length ===2)
+        return  current_values.filter(x => x.toLowerCase().startsWith(val.toLowerCase()))
     else
         return current_values.filter(x => x.toLowerCase().includes(val.toLowerCase()))
-
 }
 
 function set_resources(resource) {
