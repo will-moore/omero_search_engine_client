@@ -277,6 +277,7 @@ function displayResults(data, new_data=true) {
    set_global_variables(data);
 
 
+
 columnDefs =data["columns_def"]
 extend_url=data["extend_url"];
 names_ids=data["names_ids"];
@@ -367,6 +368,7 @@ var gridOptions = {
     var load_query_button=document.getElementById('load_query');
     conditions_con.disabled = true;
     document.getElementById('exportResults').style.display = "block";
+    document.getElementById('reset_results_table_filter').style.display = "block";
     resources_con.style.display = "none";
     help.style.display = "none";
     submit_button.style.display = "none";
