@@ -20,7 +20,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
     <a class="dropdown-item" onclick="new_query()">New query</a>
     <a class="dropdown-item" onclick="load_query()">Load query</a>
-    <a class="dropdown-item" onclick="save_query()">Save quert</a>
+    <a class="dropdown-item" onclick="save_query()">Save query</a>
   </div>
 </div>
 </nav!-->
@@ -190,17 +190,21 @@
     <label id="query_id"></label>
     <br>
 </div>
+            <th><button id="reset_results_table_filter"  onclick="resetResultsTabelFilters()" type="button" >Remove Filter/s</button></th>
+
       <div id="myGrid_2" style="height: 600px;width:1200px;" class="ag-theme-alpine"></div>
     <br>
    <div id="load_results_buttons", style="display: none", class="col-md-7" >
        <table id="loads_results_table" class="table table-striped">
     <thead>
+
       <tr>
         <th><button  class="btn btn-primary" id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
       </tr>
     <tr>
         <th><button id="loadRemainingResults"  onclick="loadRemainingResultsFunction()" type="button" style="display: none">Load All the Results</button></th>
       </tr>
+
     </thead>
        </table>
        </div>

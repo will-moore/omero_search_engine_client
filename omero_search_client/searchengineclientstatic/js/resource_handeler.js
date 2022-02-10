@@ -201,7 +201,13 @@ function set_global_variables(data)
     }
 }
 function sizeToFit() {
-  gridOptions.api.sizeColumnsToFit();
+  ag_grid.gridOptions.api.sizeColumnsToFit();
+}
+
+function resetResultsTabelFilters()
+{
+    ag_grid.gridOptions.api.setFilterModel(null);
+    ag_grid.gridOptions.api.onFilterChanged();
 }
 
 
