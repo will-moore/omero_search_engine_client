@@ -7,7 +7,7 @@ ADD  omero_search_engine_client  /searchengineclient
 ADD start_gunicorn_serch_engine_client.sh /searchengineclient
 RUN cd /searchengineclient
 WORKDIR /searchengineclient
-RUN pip  install -r  requirments.txt
+RUN pip  install -r  requirements.txt
 RUN pip install gunicorn
 EXPOSE 5558
 RUN echo $HOME

@@ -24,7 +24,7 @@ RUN mkdir /etc/searchengineclient
 RUN mkdir /etc/searchengineclient/client_logs
 WORKDIR /searchengineclient
 
-RUN pip3.9 install -r  requirments.txt
+RUN pip3.9 install -r  requirements.txt
 
 RUN pip3.9 install gunicorn
 EXPOSE 5567
