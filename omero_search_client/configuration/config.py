@@ -16,20 +16,28 @@ def update_config_file(updated_configuration):
     is_changed=False
     with open(omero_search_client_app_config.OMERO_SEARCH_CLIENT_INSTANCE_CONFIG) as f:
         configuration = yaml.load(f)
-
+    found=[]
     for key, value in updated_configuration.items():
         if key in configuration:
             if configuration[key]!=value:
                 configuration[key]=value
                 is_changed=True
-                print ("%s is Update, new value is %s "%(key, value))
+                print ("%s is Updated, new value is %s "%(key, value))
+            else:
+                found.append(key)
+    if len(found)!=len(updated_configuration):
+        for key, value in updated_configuration.items():
+            if key not in found:
+                configuration[key] = value
+                print("%s value is added with value %s " % (key, value))
+                is_changed = True
+
     if is_changed:
         with open(omero_search_client_app_config.OMERO_SEARCH_CLIENT_INSTANCE_CONFIG, 'w') as f:
              yaml.dump(configuration, f)
 
 class omero_search_client_app_config (object):
     # the configuration can be loadd from yml file later
-    SECRET_KEY= "sdljhfdkfgsdvbflfvsdfafgdf"
     home_folder = os.path.expanduser('~')
     OMERO_SEARCH_CLIENT_INSTANCE_CONFIG = os.path.join(home_folder, '.omero_search_client.yml')
     DEPLOYED_INSTANCE_CONFIG=r"/etc/searchengineclient/.omero_search_client.yml"

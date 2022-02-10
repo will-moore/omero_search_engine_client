@@ -17,6 +17,14 @@ def set_searchengine_url (url=None):
     else:
         omero_client_app.logger.info("No attribute is provided")
 
+@manager.command
+@manager.option('-s', '--secret_key', help='cache folder path')
+def set_client_secret_key (secret_key=None):
+    if secret_key:
+        update_config_file({"SECRET_KEY":secret_key})
+    else:
+        omero_client_app.logger.info("No value is provided")
+
 #runserver -h 0.0.0.0 -p 5567 --cert=cert.pem --key=key.pem
 if __name__ == '__main__':
     manager.run()
