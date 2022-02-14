@@ -68,7 +68,7 @@ def check_filter_for_main_attributes(filters):
     return and_main_filter
 
 
-def seracrh_query(query,resource,bookmark, main_attributes=None):
+def seracrh_query(query,resource,bookmark,raw_elasticsearch_query, main_attributes=None):
     omero_client_app.logger.info(("%s, %s") % (resource, query))
     if not main_attributes:
         q_data = {"query": {'query_details': query}}
@@ -77,8 +77,9 @@ def seracrh_query(query,resource,bookmark, main_attributes=None):
     else:
         q_data = {"query": {'query_details': query, "main_attributes": main_attributes}}
     try:
-        if bookmark:#query.get("bookmark"):
-            q_data["bookmark"] =bookmark #query["bookmark"]
+        if bookmark:
+            q_data["bookmark"] =bookmark
+            q_data["raw_elasticsearch_query"] = raw_elasticsearch_query
             resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation_page/".format(
                 base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=resource)
         else:
@@ -118,6 +119,7 @@ def determine_search_results(query_):
     '''
     case_sensitive=query_.get("query_details").get("case_sensitive")
     bookmark=query_.get("bookmark")
+    raw_elasticsearch_query=query_.get("raw_elasticsearch_query")
     queries_to_send,all_main_attributes=analyize_query(query_)
     image_query= {}
     other_image_query=[]
@@ -126,7 +128,7 @@ def determine_search_results(query_):
             image_query = query
             continue
         query["case_sensitive"]=case_sensitive
-        res= seracrh_query(query, resource, bookmark , all_main_attributes.get(resource))
+        res= seracrh_query(query, resource, bookmark ,raw_elasticsearch_query, all_main_attributes.get(resource))
         if res.get("error"):
             return json.dumps(res)
         if not res.get("results") or len(res["results"]) == 0:
@@ -141,7 +143,7 @@ def determine_search_results(query_):
 
     other_image_query={"or_main_attributes":other_image_query}
     image_query["case_sensitive"]=case_sensitive
-    ress=seracrh_query(image_query, "image",bookmark, other_image_query)
+    ress=seracrh_query(image_query, "image",bookmark, raw_elasticsearch_query,other_image_query)
 
     columns_def = image_query.get("columns_def")
 
@@ -237,6 +239,7 @@ def process_search_results(results, resource, columns_def):
     returned_results["total_pages"] = results["results"]["total_pages"]
     returned_results["extend_url"]=extend_url
     returned_results["names_ids"]=names_ids
+    returned_results["raw_elasticsearch_query"] = results["raw_elasticsearch_query"]
     if len(values)<=results["results"]["size"]:
         returned_results["contains_all_results"]=True
     else:
@@ -244,7 +247,6 @@ def process_search_results(results, resource, columns_def):
     returned_results["Error"]=results["Error"]
     returned_results["resource"]=results["resource"]+"s"
     return returned_results
-
 
 def get_query_results(task_id, resource=None):
     mod_results = []

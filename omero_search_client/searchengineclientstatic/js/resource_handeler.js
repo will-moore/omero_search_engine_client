@@ -19,6 +19,9 @@ var current_values=[];
 var extend_url;
 var names_ids;
 var main_attributes= ["Project name"];
+var query_details;
+var raw_elasticsearch_query;
+
 
 
 //save query json string to the local user storage, so he cal load it again
@@ -92,11 +95,11 @@ function load_query_from_file(file)
     resource = data_["resource"]
     for (i in orFilter)
             {
-            addConditionRow(orFilter[i]["name"],orFilter[i]["value"], orFilter[i]["operator"], resource, 'or');
+            addConditionRow(orFilter[i]["name"],orFilter[i]["value"], orFilter[i]["operator"], orFilter[i]["resource"], 'or');
             }
     for (i in andFilter)
         {
-         addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], resource, 'and');
+         addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], andFilter[i]["resource"], 'and');
 
             }
 
@@ -189,11 +192,12 @@ while (recieved_data<size) {
 function set_global_variables(data)
 {
     bookmark=data["bookmark"];
+    raw_elasticsearch_query=data["raw_elasticsearch_query"];
     page=page+1;
     pages_data[page]=data;
     recieved_results=recieved_results.concat(data["values"]);
     size=data["size"];
-    query=data["query_details"];
+    query_details=data["query_details"];
     recieved_data=recieved_data+data["values"].length;
     if (recieved_data>=size){
     var resultsbutton = document.getElementById('loadMoreResults');
@@ -233,7 +237,6 @@ function autoSizeAll(skipHeader) {
   gridOptions.columnApi.getAllColumns().forEach(function (column) {
     allColumnIds.push(column.colId);
   });
-
   gridOptions.columnApi.autoSizeColumns(allColumnIds, skipHeader);
 }
 
@@ -464,6 +467,18 @@ var filterParams = {
   browserDatePicker: true,
 };
 
+function get_returned_query_from_server()
+        {
+    resource = document.getElementById('resourcseFields').value;
+    var query_ = {
+        "resource": resource,
+        "query_details": query_details,
+        "raw_elasticsearch_query": raw_elasticsearch_query
+    };
+      query_["bookmark"]=bookmark;
+      query_["columns_def"]=columnDefs;
+      return query_;
+    }
 function get_current_query(include_addition_information,displaymessage=true)
 {
    resource = document.getElementById('resourcseFields').value;
@@ -520,9 +535,17 @@ function submitQuery() {
     query_details["and_filters"] = andQuery;
     query_details["or_filters"] = orQuery;
     */
+
+    if (query_details === undefined)
+     {
+
     query=get_current_query(true);
     if (query==false)
         return;
+        }
+   else
+        query=get_returned_query_from_server()
+
     send_the_request(query);
 
 }
