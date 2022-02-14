@@ -688,14 +688,21 @@ function set_key_values(key_value) {
  function setFieldValues(){
     let value_fields = document.getElementById('valueFields');
     val=value_fields.value;
-    if (!val || val.length <2  )
-        return [];
-    //for performance, when the value is one letter, it will only return all the items which start with this letter
+
+    //for performance, when the length ofthe current values length is bigger than 1000, when the value is one letter, it will only return all the items which start with this letter
     //otherwise, it will return all the items which contains the value (even ther are  at the middle or at the end of the items)
+    if (current_values.length>1000)
+    {
+      if (!val || val.length <2  )
+        return [];
     if (val.length ===2)
-        return  current_values.filter(x => x.toLowerCase().startsWith(val.toLowerCase()))
+            return  current_values.filter(x => x.toLowerCase().startsWith(val.toLowerCase()))
+    else
+         return current_values.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+   }
     else
         return current_values.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+
 }
 
 function set_resources(resource) {
