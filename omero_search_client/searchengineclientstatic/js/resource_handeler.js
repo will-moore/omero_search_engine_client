@@ -536,7 +536,7 @@ function submitQuery() {
     query_details["or_filters"] = orQuery;
     */
 
-    if (query_details === undefined)
+    if (query_details === undefined || size==0)
      {
 
     query=get_current_query(true);
