@@ -1,4 +1,5 @@
 #docker build . -t searchengineclient
+#docker build . -f deployment/docker/centos/Dockerfile -t searchengineclient
 FROM centos/python-36-centos7
 USER root
 RUN yum -y install epel-release
