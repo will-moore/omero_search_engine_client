@@ -1,6 +1,8 @@
 name: Search engine client
 on:
   push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
     branches: [ main ]
   pull_request:
     branches: [ main ]
@@ -36,6 +38,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: get image tag
+      #will be the tag name in case of pushing tag otherwise it will latest
       id: gettags
       run: |
         if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
@@ -50,7 +53,5 @@ jobs:
         context: .
         file: ./deployment/docker/centos/Dockerfile
         push: false
-        #tag will be changed later to and it should have its
-        #tags: openmicroscopy/searchengineclient:0.1.0
         tags: ${{ join(fromJson(steps.gettags.outputs.tags)) }}
 
