@@ -1,11 +1,14 @@
 import requests
 import json
+import os
+
 from omero_search_client import omero_client_app
 
 
 additiona_attributes={"project": ["name","id"],
                       "image":["id","name","project_name","study_name","project_id","study_id", "dataset_id"]
     ,"study":["id", "name"]}
+
 
 def divide_filter(filters):
     filters_resources={}
@@ -294,8 +297,25 @@ def get_query_results(task_id, resource=None):
     omero_client_app.logger.info("Ststus: "+ status)
     return {"Status": status, "Results": mod_results, "filters": filters, "resource": resource, "error":Error,"server_query_time":server_query_time, "extend_url":extend_url,"notice": notice}
 
+def get_restircted_search_terms():
+    '''
+    this method is temporary as the json file should be outside
+    the code and loaded at run time as system attributes
+    this allow the admin to add or remove iterm without touching the code
+    Returns:
+    '''
+    main_dir = os.path.abspath(os.path.dirname(__file__))
+    mm = main_dir.replace("omero_search_client\main", "app_data")
+    ff=os.path.join(mm,"restricted_search_terms.json")
+    print (ff)
+    with open(ff) as json_file:
+        restricted_search_terms = json.load(json_file)
+    return restricted_search_terms
 
-def get_resources():
+def get_resources(mode):
+    if mode == "searchterms":
+        restricted_search_terms=get_restircted_search_terms()
+        restircted_resources={}
     url = "{base_url}api/v1/resources/all/getannotationkeys".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"))
     resources={}
@@ -304,8 +324,9 @@ def get_resources():
         results = resp.text
         resources = json.loads(results)
         to_be_deleted = []
+
         for k, val in resources.items():
-            if val:
+            if val and len(val)>0 :
                 if len(val) == 0:
                     to_be_deleted.append(k)
                 elif len(val) == 1:
@@ -313,6 +334,17 @@ def get_resources():
                         to_be_deleted.append(k)
         for item in to_be_deleted:
             del resources[item]
+
+        if mode == "searchterms":
+            for k, val in resources.items():
+                if k in restricted_search_terms:
+                    bb = list(set(restricted_search_terms[k]) & set(val))
+                    if len(bb) > 0:
+                        restircted_resources[k] = bb
     except Exception as e:
         omero_client_app.logger.info ("Error: "+ str(e))
-    return resources
+
+    if mode=="searchterms":
+        return restircted_resources
+    else:
+        return resources

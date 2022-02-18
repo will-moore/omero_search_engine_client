@@ -24,11 +24,19 @@ def get_resources_keys_values():
     #  }
 @main.route('/',methods=['POST', 'GET'])
 def index():
-    resources=get_resources()
-
+    resources=get_resources("all")
     return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None")#container)
 
+@main.route('/usesearchterms',methods=['POST', 'GET'])
+def usesearchterms ():
+    '''
+    this uses the same template for the main mode
+    may be it is needed to the main template to be more user friendly
+    Returns:
 
+    '''
+    resources=get_resources("searchterms")
+    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None")#container)
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
