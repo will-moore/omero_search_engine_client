@@ -4,11 +4,7 @@ import os
 
 from omero_search_client import omero_client_app
 
-
-additiona_attributes={"project": ["name","id"],
-                      "image":["id","name","project_name","study_name","project_id","study_id", "dataset_id"]
-    ,"study":["id", "name"]}
-
+mapping_names={"project":{"Name (IDR number)":"name"}}
 
 def divide_filter(filters):
     filters_resources={}
@@ -56,20 +52,27 @@ def analyize_query(query):
                 main_attributes["or_main_attributes"] = or_main_filter
         if len(main_attributes)>0:
             all_main_attributes[k]=main_attributes
-
-
     return queries_to_send, all_main_attributes
 
 def check_filter_for_main_attributes(filters):
-    and_main_filter=[]
-    for filter in filters:
-        if filter['name']=="Project name":
-            and_main_filter.append(filter)
-            filter["name"]="project_name"
-    for ff in and_main_filter:
-        filters.remove(ff)
-    return and_main_filter
+    '''
+    check for main attributes e.g. name
+    Args:
+        filters:
+    Returns:
+        main attributes and modify the filters accordingly
 
+    '''
+    main_filter=[]
+    for filter in filters:
+        resource=filter["resource"]
+        if resource in mapping_names :
+            if mapping_names[resource].get(filter["name"]):
+                main_filter.append(filter)
+                filter["name"]=mapping_names[resource].get(filter["name"])
+    for s_filter in main_filter:
+        filters.remove(s_filter)
+    return main_filter
 
 def seracrh_query(query,resource,bookmark,raw_elasticsearch_query, main_attributes=None):
     omero_client_app.logger.info(("%s, %s") % (resource, query))
@@ -111,7 +114,6 @@ def get_ids(results, resource):
 
 def determine_search_results(query_):
     '''
-
     Args:
         query_: a list contains quries to send to the database, each nelong to one resource
         if it is one query it will send the results back
@@ -120,7 +122,11 @@ def determine_search_results(query_):
     Returns:
 
     '''
-    case_sensitive=query_.get("query_details").get("case_sensitive")
+    if query_.get("query_details"):
+        case_sensitive=query_.get("query_details").get("case_sensitive")
+    else:
+        case_sensitive =None
+    mode=query_.get("mode")
     bookmark=query_.get("bookmark")
     raw_elasticsearch_query=query_.get("raw_elasticsearch_query")
     queries_to_send,all_main_attributes=analyize_query(query_)
@@ -139,7 +145,7 @@ def determine_search_results(query_):
             return res
         if len (queries_to_send)==1:
             columns_def = query.get("columns_def")
-            return json.dumps(process_search_results(res, resource, columns_def))
+            return json.dumps(process_search_results(res, resource, columns_def, mode))
         else:
 
             other_image_query+=get_ids(res, resource)
@@ -147,12 +153,10 @@ def determine_search_results(query_):
     other_image_query={"or_main_attributes":other_image_query}
     image_query["case_sensitive"]=case_sensitive
     ress=seracrh_query(image_query, "image",bookmark, raw_elasticsearch_query,other_image_query)
-
     columns_def = image_query.get("columns_def")
+    return json.dumps(process_search_results(ress, "image", columns_def,mode))
 
-    return json.dumps(process_search_results(ress, "image", columns_def))
-
-def process_search_results(results, resource, columns_def):
+def process_search_results(results, resource, columns_def, mode):
     returned_results={}
     if not results.get("results") or len(results["results"])==0:
         returned_results["Error"] = "Your query returns no results"
@@ -167,6 +171,8 @@ def process_search_results(results, resource, columns_def):
     extend_url=urls.get(resource)
     if not extend_url:
         extend_url = omero_client_app.config.get("RESOURCE_URL")
+
+    print(extend_url, "===========================>>>")
     names_ids={}
 
     to_add = False
@@ -207,25 +213,42 @@ def process_search_results(results, resource, columns_def):
             "field": col,
             "sortable": True,
         })
+    # to be used to rest
+    searchtermcols = get_restircted_search_terms()[resource]
+    main_cols=[]
     if not columns_def:
         columns_def = []
         cols.sort()
         if resource == "image":
             cols.insert(0, "Study name")
+            main_cols.append(("Study name"))
         cols.insert(0, "Name")
+        main_cols.append(("Name"))
         cols.insert(0, "Id")
+        main_cols.append(("Id"))
 
         for col in cols:
-            columns_def.append({
-                "field": col,
-                "sortable": True,
-                "width": 150,
-            })
+            if mode=="usesearchterms" and col not in main_cols:
+                if col in searchtermcols:
+                    columns_def.append({
+                        "field": col,
+                        "sortable": True,
+                        #"width": 150,
+                    })
+            else:
+                columns_def.append({
+                    "field": col,
+                    "sortable": True,
+                    #"width": 150,
+                })
     else:
         for col_def in columns_def:
             if col_def["field"] not in cols:
-                cols.append(col_def["field"])
-
+                if mode=="usesearchterms":
+                    if col in searchtermcols:
+                        cols.append(col_def["field"])
+                else:
+                    cols.append(col_def["field"])
     for val in values:
         if len(val)!=len(cols):
             for col in cols:
@@ -299,16 +322,12 @@ def get_query_results(task_id, resource=None):
 
 def get_restircted_search_terms():
     '''
-    this method is temporary as the json file should be outside
-    the code and loaded at run time as system attributes
-    this allow the admin to add or remove iterm without touching the code
-    Returns:
+    The json file is saved in app data folder, it contains the search terms for each resource
+    this allows the admin to add or remove item/s without changing the code
+    Returns: a dict contains the search terms
     '''
-    main_dir = os.path.abspath(os.path.dirname(__file__))
-    mm = main_dir.replace("omero_search_client\main", "app_data")
-    ff=os.path.join(mm,"restricted_search_terms.json")
-    print (ff)
-    with open(ff) as json_file:
+    search_terms=os.path.join(omero_client_app.config.get("APP_DATA_FOLDER"),"restricted_search_terms.json")
+    with open(search_terms) as json_file:
         restricted_search_terms = json.load(json_file)
     return restricted_search_terms
 
@@ -338,9 +357,13 @@ def get_resources(mode):
         if mode == "searchterms":
             for k, val in resources.items():
                 if k in restricted_search_terms:
-                    bb = list(set(restricted_search_terms[k]) & set(val))
-                    if len(bb) > 0:
-                        restircted_resources[k] = bb
+                    search_terms = list(set(restricted_search_terms[k]) & set(val))
+                    if len(search_terms) > 0:
+                        restircted_resources[k] = search_terms
+                resources=restircted_resources
+
+        if "project" in resources:
+            resources["project"].append("Name (IDR number)")
     except Exception as e:
         omero_client_app.logger.info ("Error: "+ str(e))
 

@@ -20,6 +20,7 @@ ADD deployment/docker/centos/run_app.sh /searchengineclient
 RUN cd /searchengineclient
 RUN mkdir /etc/searchengineclient
 RUN mkdir /etc/searchengineclient/client_logs
+RUN mkdir /etc/searchengineclient/app_data
 WORKDIR /searchengineclient
 
 RUN pip3.9 install -r  requirements.txt

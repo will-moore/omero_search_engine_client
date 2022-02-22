@@ -18,7 +18,7 @@ var columnDefs=[];
 var current_values=[];
 var extend_url;
 var names_ids;
-var main_attributes= ["Project name"];
+var main_attributes= ["Name (IDR number)"];
 var query_details;
 var raw_elasticsearch_query;
 
@@ -242,7 +242,11 @@ function autoSizeAll(skipHeader) {
 
 function url_render(param){
     //Object.keys(param).forEach(e => console.log(`key=${e}  value=${param[e]}`));
-    return '<a href='+extend_url +param.value+' target="_blank" >'+param.value+'</a>'
+    if (resource =="screen")
+        return '<a href='+extend_url +' target="_blank" >'+param.value+'</a>'
+    else
+        return '<a href='+extend_url +param.value+' target="_blank" >'+param.value+'</a>'
+
 }
 
 function onGridSizeChanged(params) {
@@ -286,7 +290,7 @@ extend_url=data["extend_url"];
 names_ids=data["names_ids"];
 for (i in data["columns_def"])
 {
-if(data["columns_def"][i]["field"]==="Id" && resource==="image")
+if(data["columns_def"][i]["field"]==="Id")// && resource==="image")
      data["columns_def"][i]['cellRenderer']=url_render;
      }
 
@@ -467,17 +471,34 @@ var filterParams = {
   browserDatePicker: true,
 };
 
+function get_all_records_query()
+{
+query_details = {}
+all_query = {
+        "match_all" : {}
+         }
+        resource = document.getElementById('resourcseFields').value;
+        var query_ = {
+            "resource": resource,
+            "query_details": query_details,
+            "raw_elasticsearch_query": all_query
+        };
+         query_["mode"]=mode;
+          return query_;
+         }
+
+
 function get_returned_query_from_server()
         {
-    resource = document.getElementById('resourcseFields').value;
-    var query_ = {
-        "resource": resource,
-        "query_details": query_details,
-        "raw_elasticsearch_query": raw_elasticsearch_query
-    };
-      query_["bookmark"]=bookmark;
-      query_["columns_def"]=columnDefs;
-      return query_;
+        resource = document.getElementById('resourcseFields').value;
+        var query_ = {
+            "resource": resource,
+            "query_details": query_details,
+            "raw_elasticsearch_query": raw_elasticsearch_query
+        };
+          query_["bookmark"]=bookmark;
+          query_["columns_def"]=columnDefs;
+          return query_;
     }
 function get_current_query(include_addition_information,displaymessage=true)
 {
@@ -506,6 +527,7 @@ function get_current_query(include_addition_information,displaymessage=true)
     query_details["and_filters"] = andQuery;
     query_details["or_filters"] = orQuery;
     query_details["case_sensitive"]=document.getElementById('case_sensitive').checked;
+    query["mode"]=mode;
     return query;
 }
 
@@ -536,7 +558,7 @@ function submitQuery() {
     query_details["or_filters"] = orQuery;
     */
 
-    if (query_details === undefined || size==0)
+    if (query_details === undefined || size==0          )
      {
 
     query=get_current_query(true);
@@ -737,11 +759,10 @@ function set_resources(resource) {
               keys_options.innerHTML = optionHtml;
             break;
               }
-             if (key=="image")
-                   //#value.unshift("Project name");
-                   value.push("Project name");
+             //if (key=="image")
+             //      //#value.unshift("Project name");
+             //      value.push("Project name");
              value.sort();
-
 
             for (i in value) {
                 optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
@@ -811,11 +832,17 @@ $(document).ready(function() {
         //document.getElementById("checkMainAttribute").style.display = "block";
         set_resources('image');
     }
-
 });
 //Used to load query from local storage
 document.getElementById('load_file').onchange = function () {
 let file = document.querySelector("#load_file").files[0];
   load_query_from_file(file);
 }
+
+//this.agGrid.columnApi.setColumnsVisible(["COL_1", "COL_2"], false);
+//this.agGrid.columnApi.setColumnsVisible(["COL_1", "COL_2"], true);
+//const group = this.columnApi.getColumnGroup("MY_GROUP");
+//group.children.forEach(child => this.columnApi.setColumnsVisible(child, false));
+//
+//wehere  col_i is the column id
 

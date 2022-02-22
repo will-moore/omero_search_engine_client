@@ -22,13 +22,13 @@ def get_resources_keys_values():
     #  "well":"{{ url_for("main.get_resourcse_key", resource='well') }}",
     #  "plate":"{{ url_for("main.get_resourcse_key", resource='plate') }}"
     #  }
-@main.route('/',methods=['POST', 'GET'])
-def index():
+@main.route('/advanced',methods=['POST', 'GET'])
+def use_advanced_mode():
     resources=get_resources("all")
-    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None")#container)
+    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="advanced")#container)
 
-@main.route('/usesearchterms',methods=['POST', 'GET'])
-def usesearchterms ():
+@main.route('/',methods=['POST', 'GET'])
+def index ():
     '''
     this uses the same template for the main mode
     may be it is needed to the main template to be more user friendly
@@ -36,7 +36,7 @@ def usesearchterms ():
 
     '''
     resources=get_resources("searchterms")
-    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None")#container)
+    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
@@ -47,7 +47,6 @@ def get_resourcse_names(resource):
     values = json.loads(results)
     return json.dumps(values)
 
-
 @main.route('/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key():
     key = request.args.get("key")
@@ -55,7 +54,7 @@ def get_resourcse_key():
     if not key:
         return json.dumps([])
 
-    if resource=="image" and key=="Project name":
+    if resource=="project" and key=="Name (IDR number)":
         return get_resourcse_names ("project")
     else:
         search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
