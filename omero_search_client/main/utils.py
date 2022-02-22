@@ -327,6 +327,9 @@ def get_restircted_search_terms():
     Returns: a dict contains the search terms
     '''
     search_terms=os.path.join(omero_client_app.config.get("APP_DATA_FOLDER"),"restricted_search_terms.json")
+
+    if not os.path.isfile(search_terms):
+        return {}
     with open(search_terms) as json_file:
         restricted_search_terms = json.load(json_file)
     return restricted_search_terms
@@ -353,6 +356,8 @@ def get_resources(mode):
                         to_be_deleted.append(k)
         for item in to_be_deleted:
             del resources[item]
+        if len(restricted_search_terms)==0:
+            mode="all"
 
         if mode == "searchterms":
             for k, val in resources.items():
