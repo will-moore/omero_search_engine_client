@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
-import sys
 from logging.handlers import RotatingFileHandler
 import logging
 import os
@@ -47,7 +46,7 @@ def create_app(config_name="development"):
     from omero_search_client.main import main as routers_blueprint_main
     omero_client_app.register_blueprint(routers_blueprint_main, url_prefix='/')
     omero_client_app.jinja_env.globals['url_for'] = url_for
-    from  app_data import check_copy_data_file
+    from omero_search_client.app_data import check_copy_data_file
     check_copy_data_file(omero_client_app)
     return omero_client_app
 
