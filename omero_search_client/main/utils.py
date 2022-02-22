@@ -172,7 +172,6 @@ def process_search_results(results, resource, columns_def, mode):
     if not extend_url:
         extend_url = omero_client_app.config.get("RESOURCE_URL")
 
-    print(extend_url, "===========================>>>")
     names_ids={}
 
     to_add = False
@@ -214,7 +213,9 @@ def process_search_results(results, resource, columns_def, mode):
             "sortable": True,
         })
     # to be used to rest
-    searchtermcols = get_restircted_search_terms()[resource]
+    searchtermcols = get_restircted_search_terms().get(resource)
+    if not searchtermcols or len(searchtermcols)==0:
+        mode="advanced"
     main_cols=[]
     if not columns_def:
         columns_def = []
@@ -356,7 +357,7 @@ def get_resources(mode):
                         to_be_deleted.append(k)
         for item in to_be_deleted:
             del resources[item]
-        if len(restricted_search_terms)==0:
+        if not restricted_search_terms or len(restricted_search_terms)==0:
             mode="advanced"
 
         if mode == "searchterms":
