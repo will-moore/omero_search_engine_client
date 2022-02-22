@@ -18,7 +18,7 @@ def set_searchengine_url (url=None):
         omero_client_app.logger.info("No attribute is provided")
 
 @manager.command
-@manager.option('-d', '--url', help='app data folder')
+@manager.option('-a', '--url', help='app data folder')
 def set_app_data_folder (app_data=None):
     if app_data:
         update_config_file({"APP_DATA_FOLDER":app_data})

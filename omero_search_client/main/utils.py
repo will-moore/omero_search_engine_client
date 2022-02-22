@@ -357,7 +357,7 @@ def get_resources(mode):
         for item in to_be_deleted:
             del resources[item]
         if len(restricted_search_terms)==0:
-            mode="all"
+            mode="advanced"
 
         if mode == "searchterms":
             for k, val in resources.items():
