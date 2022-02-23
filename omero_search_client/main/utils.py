@@ -1,10 +1,22 @@
+import copy
+
 import requests
 import json
 import os
 
 from omero_search_client import omero_client_app
 
-mapping_names={"project":{"Name (IDR number)":"name"}}
+mapping_names={"project":{"Name (IDR number)":"name"},"screen":{"Name (IDR number)":"name"}}
+
+
+def get_resourcse_names_from_search_engine(resource):
+    search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
+    url = search_engine_url + "/getresourcenames/"
+    resp = requests.get(url=url)
+    results = resp.text
+    values = json.loads(results)
+    return values
+
 
 def divide_filter(filters):
     filters_resources={}
@@ -15,7 +27,18 @@ def divide_filter(filters):
         res_and_filter.append(filer)
     return filters_resources
 
+def build_names_query():
+    pass
+
 def analyize_query(query):
+    '''
+    analysis the provided query and extract main attributes query and ket/values query
+    Args:
+        query:
+
+    Returns:
+
+    '''
     all_main_attributes={}
     and_filters=query.get("query_details").get("and_filters")
     or_filters = query.get("query_details").get("or_filters")
@@ -34,24 +57,48 @@ def analyize_query(query):
             or_aded.append(key)
             qu["or_filters"]=or_filters_resources[key]
 
-    if len(or_aded) !=or_filters_resources and len(or_filters_resources)>0:
+    if len(or_aded) !=len(or_filters_resources) and len(or_filters_resources)>0:
         for key, item in or_filters_resources.items()   :
             if key in or_aded:
                 continue
             queries_to_send[key]={"or_filters":item}
+
     main_attributes={}
+    to_be_added=[]
     for k, qu in queries_to_send.items():
-        if qu.get("and_filters") and len(qu.get("and_filters")):
+        res=k
+        if qu.get("and_filters") and len(qu.get("and_filters"))>0:
             and_main_filter=check_filter_for_main_attributes(qu.get("and_filters"))
+
             if len(and_main_filter)>0:
+                if and_main_filter[0].get("resource")!=res:
+                    res=and_main_filter[0].get("resource")
                 main_attributes["and_main_attributes"]=and_main_filter
 
-        if qu.get("or_filters") and len(qu.get("or_filters")):
+        if qu.get("or_filters") and len(qu.get("or_filters"))>0:
             or_main_filter=check_filter_for_main_attributes(qu.get("or_filters"))
             if len(or_main_filter)>0:
+                if or_main_filter[0].get("resource")!=res:
+                    res=or_main_filter[0].get("resource")
                 main_attributes["or_main_attributes"] = or_main_filter
+
         if len(main_attributes)>0:
-            all_main_attributes[k]=main_attributes
+            all_main_attributes[res]=main_attributes
+            if not queries_to_send.get(res):
+                to_be_added.append(res)
+    to_be_deleted_res=[]
+    for k, qu in queries_to_send.items():
+        if all_main_attributes.get(key):
+            continue
+        if not qu.get("and_filters") or len(qu.get("and_filters"))==0:
+            if not qu.get("or_filters") or len(qu.get("or_filters")) == 0:
+                to_be_deleted_res.append(k)
+
+
+    for k in to_be_deleted_res:
+        del queries_to_send[k]
+    for res in to_be_added:
+        queries_to_send [res]= {'and_filters': []}
     return queries_to_send, all_main_attributes
 
 def check_filter_for_main_attributes(filters):
@@ -68,10 +115,14 @@ def check_filter_for_main_attributes(filters):
         resource=filter["resource"]
         if resource in mapping_names :
             if mapping_names[resource].get(filter["name"]):
+                pr_names=get_resourcse_names_from_search_engine(resource)
+                if not filter["value"] in pr_names:
+                    filter["resource"]="screen"
                 main_filter.append(filter)
-                filter["name"]=mapping_names[resource].get(filter["name"])
+                filter["name"] = mapping_names[resource].get(filter["name"])
     for s_filter in main_filter:
-        filters.remove(s_filter)
+        if s_filter in filters:
+            filters.remove(s_filter)
     return main_filter
 
 def seracrh_query(query,resource,bookmark,raw_elasticsearch_query, main_attributes=None):
@@ -120,7 +171,6 @@ def determine_search_results(query_):
         otherwise it will query non image resources and use the results to return the images whihc satisfy the query
         results an dthe image results
     Returns:
-
     '''
     if query_.get("query_details"):
         case_sensitive=query_.get("query_details").get("case_sensitive")
@@ -130,6 +180,7 @@ def determine_search_results(query_):
     bookmark=query_.get("bookmark")
     raw_elasticsearch_query=query_.get("raw_elasticsearch_query")
     queries_to_send,all_main_attributes=analyize_query(query_)
+
     image_query= {}
     other_image_query=[]
     for resource, query in queries_to_send.items():
@@ -147,9 +198,7 @@ def determine_search_results(query_):
             columns_def = query.get("columns_def")
             return json.dumps(process_search_results(res, resource, columns_def, mode))
         else:
-
             other_image_query+=get_ids(res, resource)
-
     other_image_query={"or_main_attributes":other_image_query}
     image_query["case_sensitive"]=case_sensitive
     ress=seracrh_query(image_query, "image",bookmark, raw_elasticsearch_query,other_image_query)
@@ -161,31 +210,21 @@ def process_search_results(results, resource, columns_def, mode):
     if not results.get("results") or len(results["results"])==0:
         returned_results["Error"] = "Your query returns no results"
         return returned_results
-
     cols=[]
-
     values=[]
-
     urls = {"image": omero_client_app.config.get("IMAGE_URL"),
-            "project": omero_client_app.config.get("PROJECT_URL")}
+            "project": omero_client_app.config.get("PROJECT_URL"),
+            "screen": omero_client_app.config.get("SCREEN_URL")}
     extend_url=urls.get(resource)
     if not extend_url:
         extend_url = omero_client_app.config.get("RESOURCE_URL")
-
     names_ids={}
-
-    to_add = False
 
     for item in results["results"]["results"]:
         value = {}
         values.append(value)
         value["Id"] = item["id"]
         names_ids[value["Id"]]=item.get("name")
-        #if not extend_url:
-        #    url_ = omero_client_app.config.get("RESOURCE_URL")
-        #else:
-        #    url_ = extend_url + str(item["id"])
-        #value["url"] = url_
 
         value["Name"]=item.get("name")
         value["Project name"] = item.get("project_name")
@@ -377,3 +416,6 @@ def get_resources(mode):
         return restircted_resources
     else:
         return resources
+
+
+#https://idr.openmicroscopy.org/webclient/?show=screen-2151

@@ -5,7 +5,7 @@ import requests
 import json
 from urllib.parse import quote
 from omero_search_client import omero_client_app
-from .utils import get_query_results, get_resources, process_search_results, determine_search_results
+from .utils import get_query_results, get_resources, process_search_results, determine_search_results,get_resourcse_names_from_search_engine
 
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains"),
@@ -40,12 +40,7 @@ def index ():
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
-    search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
-    url = search_engine_url + "/getresourcenames/"
-    resp = requests.get(url=url)
-    results = resp.text
-    values = json.loads(results)
-    return json.dumps(values)
+    return json.dumps(get_resourcse_names_from_search_engine(resource))
 
 @main.route('/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key():
@@ -53,9 +48,10 @@ def get_resourcse_key():
     resource = request.args.get("resource")
     if not key:
         return json.dumps([])
-
     if resource=="project" and key=="Name (IDR number)":
-        return get_resourcse_names ("project")
+        project_names=get_resourcse_names_from_search_engine ("project")
+        screen_names = get_resourcse_names_from_search_engine("screen")
+        return json.dumps (screen_names+project_names)
     else:
         search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
         url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
