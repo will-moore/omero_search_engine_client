@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Client for Omero search engine - Index{% endblock %}
+{% block app_content %}+
+<section class="container py-4" style="float : left;">
+    <div class="row">
+        <div class="col-md-12">
+            <!--h2>Idr options</h2-->
+            <ul id="tabs" class="nav nav-tabs">
+                <li class="nav-item"><a href="" data-target="#home1" data-toggle="tab" class="nav-link small text-uppercase">Home</a></li>
+                <li class="nav-item"><a href="" data-target="#querybuilder" data-toggle="tab" class="nav-link small text-uppercase active">Query Builder</a></li>
+                <li class="nav-item"><a href="" data-target="#templates" data-toggle="tab" class="nav-link small text-uppercase">Templates</a></li>
+            </ul>
+            <br>
+            <div id="tabsContent" class="tab-content">
+                <div id="home1" class="tab-pane fade">
+
+                </div>
+                <div id="querybuilder" class="tab-pane fade active show">
+                    <div class="row pb-2">
+
+
+<input type="file" name="load_file" id="load_file" style="display: none" />
+<div class="page-header">
+   <!--h4>Query Builder Form<sup>*</sup></h4-->
+</div>
+<br>
+<div id="query">
+   <div  id="queryParent">
+      <div id="resources" style="display: none"  >
+         <div id="conanew" class="col-md-5">
+            <div id="template">
+            <br>
+            <form id="and_condition">
+
+               <div class="form-row">
+                  <div class="form-group col-md-4">
+                     <label for="keyFields">Attribute</label>
+                     <select id="keyFields" class="form-control">
+                     </select>
+                  </div>
+                  <div class="form-group col-md-3">
+                     <label for="condtion">Operator</label>
+                     <select id="condtion" class="form-control">
+                     </select>
+                  </div>
+
+                  <div class="form-group col-md-5">
+                     <label for="valueFields">Value</label>
+                     <input type="text" class="form-control" id="valueFields" onfocus="setAutoCompleteValues()">
+                  </div>
+
+               </div>
+            </form>
+                <button type="button" id="insidebutton" data-toggle="tooltip" data-placement="top" title="Add condition to the 'And Group' to build the query" onclick="addAndConditionFunction('+ Or')">
+            and
+      </button>
+         </div>
+
+         </div>
+         <br>
+                  <div id="conaneworpar" >
+         <div id="conanewor" class="col-md-5">
+            <div id="ortemplate" >
+      </div>
+         </div>
+                  </div>
+      </div>
+
+      <button type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Add condition to the 'Or Group'" onclick="addOrConditionFunction('+ Or')">
+      + Or
+      </button>
+   </div>
+   <br>
+   <div id ="conditions">
+      <div class="col-md-5">
+         <div class="float-right">
+            <input class="form-check-input" type="checkbox" value="" id="case_sensitive" >
+            <label class="form-check-label" for="case_sensitive">
+            Case sensitive
+            </label>
+         </div>
+
+
+
+      </div>
+      <br>
+   </div>
+   <div id ="query_buttons">
+      <button type="button" id="submit_" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
+      Submit
+      </button>
+      <button type="button" id="save_query" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Save the query to the user local storage" onclick="save_query()">
+      Save
+      </button>
+      <button type="button" id="load_query" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="load the query from user storage" onclick="load_query()">
+      Load
+      </button>
+      <button type="button" id="new_query" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Discard all the condition anstart new query" onclick="new_query()">
+      New
+      </button>
+   </div>
+   <br>
+   <br>
+   <div id="results" class="col-md-4" style="display: none"  >
+      <h4>Results</h4>
+      <br>
+      <label id="no_images"></label>
+      <label id="query_id"></label>
+      <br>
+   </div>
+   <th><button id="reset_results_table_filter"  onclick="resetResultsTabelFilters()" type="button"  style="display: none" >Remove Filter/s</button></th>
+    <th><button id="display_dide_columns"  onclick="#" type="button"  style="display: none" >Display/Hide Columns</button></th>
+
+
+   <div id="myGrid_2" style="height: 600px;width:1200px;" class="ag-theme-alpine"></div>
+   <br>
+   <div id="load_results_buttons", style="display: none", class="col-md-7" >
+   <table id="loads_results_table" class="table table-striped">
+      <thead>
+         <tr>
+            <th><button  class="btn btn-primary" id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
+         </tr>
+         <tr>
+            <th><button id="loadRemainingResults"  onclick="loadRemainingResultsFunction()" type="button" style="display: none">Load All the Results</button></th>
+         </tr>
+      </thead>
+   </table>
+</div>
+<br>
+<button id="exportResults" class="btn btn-primary"  style="display: none"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
+<br>
+</div>
+<script src={{url_for('static',filename='/js/resource_handeler_new_gui.js')}}></script>
+<script>
+   var resources_data = {{ resources_data|tojson }};
+   var operator_choices= {{ operator_choices|tojson }};
+   var query_id= {{ task_id|tojson }};
+   var mode= {{ mode|tojson }}
+   var submitqueryurl = "{{ url_for('main.submit_query') }}";
+   var queryresultsurl = "{{ url_for('main.queryresults') }}";
+   var  getresourcesvalesforkey = "{{ url_for('main.get_resourcse_key') }}";
+
+   $(document).ajaxStart(function ()
+   {
+   $('body').addClass('wait');
+
+   }).ajaxComplete(function () {
+
+   $('body').removeClass('wait');
+
+   });
+
+
+     $("form").submit(function (e) {
+         e.preventDefault();
+
+     });
+
+
+</script>
+                          </div>
+                </div>
+                <div id="templates" class="tab-pane fade">
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -22,6 +22,14 @@ def get_resources_keys_values():
     #  "well":"{{ url_for("main.get_resourcse_key", resource='well') }}",
     #  "plate":"{{ url_for("main.get_resourcse_key", resource='plate') }}"
     #  }
+
+
+@main.route('/builder',methods=['POST', 'GET'])
+def use_builder_mode():
+    #resources=get_resources("all")
+    return render_template('query_builder.html')#, resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="advanced")#container)
+
+
 @main.route('/advanced',methods=['POST', 'GET'])
 def use_advanced_mode():
     resources=get_resources("all")
@@ -36,7 +44,7 @@ def index ():
 
     '''
     resources=get_resources("searchterms")
-    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
+    return render_template('main_page_new_gui.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
