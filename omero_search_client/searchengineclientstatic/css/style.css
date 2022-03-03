@@ -288,4 +288,6 @@ input.editor-checkbox {
 
 #queryJson {
   width: 90%;
+  /* temp hack! */
+  height: 500px;
 }

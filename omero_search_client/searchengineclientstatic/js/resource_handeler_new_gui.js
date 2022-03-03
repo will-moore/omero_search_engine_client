@@ -960,6 +960,7 @@ let file = document.querySelector("#load_file").files[0];
 
 $(function(){
 
+    // Hide the X button if there's only 1 in the form
     function hideRemoveIfOnlyOneLeft() {
         let $btns = $("button.remove");
         if ($btns.length == 1) {
@@ -967,10 +968,6 @@ $(function(){
         } else {
             $btns.css('visibility', 'visible');
         }
-    }
-
-    function getQueryFromForm() {
-
     }
 
     // update JSON query
@@ -1017,9 +1014,13 @@ $(function(){
         $clause.after($andClause.clone());
         $clause.after("<div>AND</div>");
         updateForm();
-    })
+    });
 
-    // initial update
+    // handle any input/select changes to update textarea
+    $("#and_condition").on("change", "select", updateForm);
+    $("#and_condition").on("keyup", "input", updateForm);
+
+    // initial update of JSON textarea
     updateForm()
 });
 
