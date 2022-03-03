@@ -271,15 +271,22 @@ input.editor-checkbox {
   visibility: hidden;
 }
 
+.form-row label {
+  display: none;
+}
+.form-row:first-child label {
+  display: inline-block;
+}
+
 .or {
-  padding-top: 33px;
+  padding-top: 10px;
   text-align: center;
 }
 
 .remove {
   position: absolute;
   right: 5px;
-  top: 0;
+  bottom: 5px;
   line-height: 1.0;
   padding-left: 4px;
   padding-right: 4px;
@@ -290,4 +297,8 @@ input.editor-checkbox {
   width: 90%;
   /* temp hack! */
   height: 500px;
+}
+
+.and_clause .form-group {
+  margin-bottom: 2px;
 }

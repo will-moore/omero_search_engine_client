@@ -44,22 +44,20 @@
                         <select id="keyFields" class="form-control keyFields">
                         </select>
                      </div>
-                     <div class="form-group col-md-3">
+                     <div class="form-group col-md-2">
                         <label for="condtion">Operator</label>
                         <select id="condtion" class="form-control condition">
                         </select>
                      </div>
-
                      <div class="form-group col-md-4" style="position: relative">
-                        <button class="btn btn-sm btn-outline-danger remove">X</button>
                         <label for="valueFields">Value</label>
                         <input type="text" class="form-control valueFields" id="valueFields" onfocus="setAutoCompleteValues()">
                      </div>
+                     <div class="form-group col-md-1 or"><button class="btn btn-sm btn-outline-danger remove">X</button></div>
                   </div>
-                  <button class="btn btn-success addOR" type="button" data-toggle="tooltip" data-placement="top"
-                     title="Add OR condition to the group">
-                     OR
-                  </button>
+                  <a class="addOR" href="#" title="Add OR condition to the group">
+                     add 'OR' rule...
+                  </a>
                </div>
 
                <button id="addAND" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top"
