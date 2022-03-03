@@ -984,3 +984,53 @@ let file = document.querySelector("#load_file").files[0];
 //wehere  col_i is the column id
 
 
+$(function(){
+
+    function onlyShowOneX() {
+        let $btns = $("button.remove");
+        if ($btns.length == 1) {
+            $btns.css('visibility', 'hidden');
+        } else {
+            $btns.css('visibility', 'visible');
+        }
+    }
+
+    // OR buttons
+    $("#and_condition").on("click", ".addOR", function (event) {
+        let $clause = $(this).parent();
+        let $row = $(".form-row", $clause).last();
+        $row.after($row.clone());
+        onlyShowOneX();
+    });
+
+    // X buttons
+    $("#and_condition").on("click", ".remove", function (event) {
+        let $row = $(this).closest(".form-row");
+        let $clause = $row.parent();
+        $row.remove();
+        // If no rows left, remove clause...
+        if ($(".form-row", $clause).length === 0) {
+            let $and = $clause.prev();
+            if ($and.length == 0) {
+                // in case we're removing the first row
+                $and = $clause.next();
+            }
+            $and.remove();
+            $clause.remove();
+        }
+        onlyShowOneX();
+    });
+
+    // clone empty form row
+    let $andClause = $("#and_condition .and_clause").clone();
+
+    // AND button
+    $("#addAND").on("click", function(){
+        let $form = $(this).parent();
+        let $clause = $(".and_clause", $form).last();
+        $clause.after($andClause.clone());
+        $clause.after("<div>AND</div>");
+        onlyShowOneX();
+    })
+});
+
