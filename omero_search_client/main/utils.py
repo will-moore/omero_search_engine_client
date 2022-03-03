@@ -18,14 +18,201 @@ def get_resourcse_names_from_search_engine(resource):
     return values
 
 
+
+
+class QueryItem (object):
+    def __init__ (self, filter):
+        '''
+        define query and adjust resource if it is needed
+        Args:
+            resource:
+            attribute_name:
+            attribute_value:
+            operator:
+        '''
+        self.resource=filter.get("resource")
+        self.name=filter.get("name")
+        self.value=filter.get("value")
+        self.operator=filter.get("operator")
+        self.adjust_resource()
+        #it will be used when buildingthe query
+        self.query_type="keyvalue"
+
+    def adjust_resource(self):
+        if self.resource in mapping_names :
+            if mapping_names[self.resource].get(self.name):
+                pr_names=get_resourcse_names_from_search_engine(self.resource)
+                if not self.value in pr_names:
+                    ##Assuming that the names is either project or screen
+                    self.resource="screen"
+                self.query_type="main_attribute"
+
+class QueryGroup(object):
+    '''
+    check query list and check it is has more than multiple resource queries
+    '''
+    def __init__ (self, group_type):
+        self.query_list=[]
+        self.group_type = group_type
+        self.resourses_query = {}
+        self.main_attribute={}
+        self.resource=[]
+
+    def add_query(self,query):
+        self.query_list.append(query)
+
+    def divide_filter(self):
+        for filter in self.query_list:
+            if not filter.resource in self.resourses_query:
+                flist=[]
+                self.resourses_query[filter.resource]=flist
+            else:
+                flist=self.resourses_query[filter.resource]
+            flist.append(filter)
+            self.resource=self.resourses_query.keys()
+
+    def adjust_query_main_attributes(self):
+        to_be_removed=[]
+        for resource, queries in self.resourses_query.items():
+            for query in queries:
+                if query.query_type=="main_attribute":
+                    if not resource in self.main_attributes:
+                        self.main_attribute[resource]=[query]
+                    else:
+                        self.main_attribute[resource].append(query)
+                    to_be_removed.append(query)
+            for qu in to_be_removed:
+                query.remove(qu)
+
+class QueryRunner(object, ):
+    def __init__(self,and_query_group,  or_query_group, case_sensitive, mode, bookmark, raw_elasticsearch_query,columns_def):
+        self.or_query_group=or_query_group
+        self.and_query_group=and_query_group
+        self.case_sensitive=case_sensitive
+        self.mode=mode
+        self.bookmark=bookmark
+        self.raw_elasticsearch_query=raw_elasticsearch_query
+        self.image_query={}
+        self.additional_image_conds=[]
+        self.columns_def=columns_def
+
+    def get_iameg_non_image_query(self):
+        res=None
+        for resource, and_query in self.and_query_group.resourses_query.items():
+            if resource=="image":
+                or_queries=[]
+                self.image_query["and_filters"]=and_query
+                self.image_query["or_filters"] = or_queries
+                if self.and_query_group.main_attribute.get(resource):
+                    self.image_query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
+                else:
+                    self.image_query["main_attribute"] =[]
+                for or_grp in self.or_query_group:
+                    if resource in or_grp:
+                        or_queries.append(or_grp[resource])
+
+            else:
+                query={}
+                query["and_filters"]=and_query
+                or_queries = []
+                query["or_filters"] = or_queries
+                for or_grp in self.or_query_group:
+                    if resource in or_grp:
+                        or_queries.append(or_grp["image"])
+                if self.and_query_group.main_attribute.get(resource):
+                    query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
+                else:
+                    query["main_attribute"]= {}
+                res=self.run_query(query, resource)
+                print ("<><><><><>", res)
+                new_cond=get_ids(res, resource)
+                self.additional_image_conds+=new_cond
+
+        self.image_query["main_attribute"]={"or_main_attributes": self.additional_image_conds}
+        print (self.additional_image_conds)
+        return  self.run_query(self.image_query, "image")
+
+    def run_query(self, query_, resource):
+        main_attributes={}
+        query={"and_filters":[],"or_filters":[]}
+
+        if query_.get("and_filters"):
+            for qu in query_.get("and_filters"):
+                query.get("and_filters").append(qu.__dict__)
+
+        if query_.get("or_filters"):
+            for qu_ in query_.get("or_filters"):
+                qq=[]
+                query.get("main_attribute").append(qq)
+                for qu in qu_:
+                    qq.append(qu.__dict__)
+
+        if query_.get("main_attribute"):
+            for key, qu  in query_.get("main_attribute").items():
+                ss=[]
+                main_attributes[key]= ss
+                for q in qu:
+                    ss.append(q.__dict__)
+
+
+        res=seracrh_query(query, resource, self.bookmark, self.raw_elasticsearch_query, main_attributes)
+        if resource!="image":
+            return res
+
+
+        #columns_def = query.get("columns_def")
+        return json.dumps(process_search_results(res, "image",self.columns_def, self.mode))
+
+
+
+
+
+    def run_image_query(self):
+        pass
+
+
+def determine_search_results_(query_):
+    if query_.get("query_details"):
+        case_sensitive = query_.get("query_details").get("case_sensitive")
+    else:
+        case_sensitive = None
+    mode = query_.get("mode")
+    bookmark = query_.get("bookmark")
+    raw_elasticsearch_query = query_.get("raw_elasticsearch_query")
+    and_filters = query_.get("query_details").get("and_filters")
+    or_filters = query_.get("query_details").get("or_filters")
+    columns_def=query_.get("columns_def")
+    and_query_group = QueryGroup("and_filters")
+    or_query_groups = []
+    if and_filters and len(and_filters) > 0:
+        for filter in and_filters:
+            and_query_group.add_query(QueryItem(filter))
+        and_query_group.divide_filter()
+        and_query_group.adjust_query_main_attributes()
+    if or_filters and len(or_filters) > 0:
+        or_query_group = QueryGroup("or_filters")
+        or_query_groups.append(or_query_group)
+        for filters_ in and_filters:
+            for filter in filters_:
+                or_query_group.add_query((QueryItem(filter)))
+            or_query_group.divide_filter()
+            or_query_group.adjust_query_main_attributes()
+    query_runner=QueryRunner(and_query_group, or_query_groups, case_sensitive, mode, bookmark, raw_elasticsearch_query, columns_def)
+    return(query_runner.get_iameg_non_image_query())
+
+
 def divide_filter(filters):
     filters_resources={}
     for filer in filters:
+        print ("===>>>>",filer,filters_resources)
+        print ("================================")
         if filer["resource"] not in filters_resources:
             filters_resources[filer["resource"]] = []
         res_and_filter = filters_resources[filer["resource"]]
         res_and_filter.append(filer)
     return filters_resources
+
+
 
 def build_names_query():
     pass
@@ -46,8 +233,11 @@ def analyize_query(query):
     or_filters_resources= {}
     if and_filters and  len(and_filters)>0:
         and_filters_resources = divide_filter(and_filters)
+    or_counter=0
     if or_filters and len(or_filters)>0:
-        or_filters_resources = divide_filter(or_filters)
+        for or_filter in or_filters:
+            or_filters_resources [or_counter]= divide_filter(or_filter)
+        or_counter+=1
     queries_to_send={}
     or_aded=[]
     for key, item in and_filters_resources.items():
@@ -76,11 +266,16 @@ def analyize_query(query):
                 main_attributes["and_main_attributes"]=and_main_filter
 
         if qu.get("or_filters") and len(qu.get("or_filters"))>0:
-            or_main_filter=check_filter_for_main_attributes(qu.get("or_filters"))
-            if len(or_main_filter)>0:
-                if or_main_filter[0].get("resource")!=res:
-                    res=or_main_filter[0].get("resource")
-                main_attributes["or_main_attributes"] = or_main_filter
+            for index, value in qu.get("or_filters").items():
+                or_main_filters={}
+                or_main_filter=check_filter_for_main_attributes(value)#qu.get("or_filters"))
+                if len(or_main_filter)>0:
+                    if or_main_filter[0].get("resource")!=res:
+                        res=or_main_filter[0].get("resource")
+                    or_main_filters[index]=or_main_filter
+                    print ("=====>>>>",or_main_filters)
+            main_attributes["or_main_attributes"] = or_main_filters
+            print (main_attributes,"=======><?<?<?<<")
 
         if len(main_attributes)>0:
             all_main_attributes[res]=main_attributes
@@ -155,12 +350,16 @@ def seracrh_query(query,resource,bookmark,raw_elasticsearch_query, main_attribut
 
 def get_ids(results, resource):
     ids=[]
+    print ("======>>>>>>",results)
     for item in results["results"]["results"]:
         qur_item={}
-        ids.append(qur_item)
+        #ids.append(qur_item)
         qur_item["name"]="{resource}_id".format(resource=resource)
         qur_item["value"]=item["id"]
         qur_item["operator"]="equals"
+        qur_item["resource"] = resource
+        qur_item_=QueryItem(qur_item)
+        ids.append(qur_item_)
     return ids
 
 def determine_search_results(query_):
@@ -180,7 +379,7 @@ def determine_search_results(query_):
     bookmark=query_.get("bookmark")
     raw_elasticsearch_query=query_.get("raw_elasticsearch_query")
     queries_to_send,all_main_attributes=analyize_query(query_)
-
+    print (queries_to_send,all_main_attributes)
     image_query= {}
     other_image_query=[]
     for resource, query in queries_to_send.items():

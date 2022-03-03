@@ -5,7 +5,7 @@ import requests
 import json
 from urllib.parse import quote
 from omero_search_client import omero_client_app
-from .utils import get_query_results, get_resources, process_search_results, determine_search_results,get_resourcse_names_from_search_engine
+from .utils import get_query_results, get_resources, process_search_results, determine_search_results,get_resourcse_names_from_search_engine, determine_search_results_
 
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains"),
@@ -71,7 +71,7 @@ def get_resourcse_key():
 @main.route('/submitquery/',methods=['POST', 'GET'])
 def submit_query():
     query =json.loads(request.data)
-    return determine_search_results(query)
+    return determine_search_results_(query)# determine_search_results(query)
 
 
 @main.route('/queryresults/',methods=['POST', 'GET'])
