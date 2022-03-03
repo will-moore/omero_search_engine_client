@@ -28,6 +28,10 @@
 <div id="query">
    <div  id="queryParent">
       <div id="resources" style="display: none"  >
+         <div style="float: right" class="col-md-5">
+            <textarea id="queryJson">JSON</textarea>
+         </div>
+
          <div id="conanew" class="col-md-6">
             <div id="template">
             <br>
@@ -37,19 +41,19 @@
                      <div class="form-group col-md-1 or">OR</div>
                      <div class="form-group col-md-4">
                         <label for="keyFields">Attribute</label>
-                        <select id="keyFields" class="form-control">
+                        <select id="keyFields" class="form-control keyFields">
                         </select>
                      </div>
                      <div class="form-group col-md-3">
                         <label for="condtion">Operator</label>
-                        <select id="condtion" class="form-control">
+                        <select id="condtion" class="form-control condition">
                         </select>
                      </div>
 
                      <div class="form-group col-md-4" style="position: relative">
                         <button class="btn btn-sm btn-outline-danger remove">X</button>
                         <label for="valueFields">Value</label>
-                        <input type="text" class="form-control" id="valueFields" onfocus="setAutoCompleteValues()">
+                        <input type="text" class="form-control valueFields" id="valueFields" onfocus="setAutoCompleteValues()">
                      </div>
                   </div>
                   <button class="btn btn-success addOR" type="button" data-toggle="tooltip" data-placement="top"

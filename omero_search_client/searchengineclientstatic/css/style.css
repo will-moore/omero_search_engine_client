@@ -285,3 +285,7 @@ input.editor-checkbox {
   padding-right: 4px;
   visibility: hidden;
 }
+
+#queryJson {
+  width: 90%;
+}

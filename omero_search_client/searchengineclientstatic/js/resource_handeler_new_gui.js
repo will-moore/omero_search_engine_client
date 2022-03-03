@@ -482,57 +482,31 @@ function get_current_query(include_addition_information,displaymessage=true)
     and_conditions=[];
     or_conditions=[];
     //get and condition1
-    queryandnodes=document.getElementById("conanew").childNodes;
-    for ( i in queryandnodes)
-        {
-             if (queryandnodes[i].nodeName=="DIV"  && queryandnodes[i].id.includes("template"))
-            {
-            ext=queryandnodes[i].id.split("_");
-            if (ext.length==1)
-                    ext='';
-            else
-                ext="_"+ext[1];
-            query_dict={};
-            and_conditions.push(query_dict);
-            attribute=document.getElementById("keyFields"+ext).value;
-            condition=document.getElementById("condtion"+ext).value;
-            value=document.getElementById("valueFields"+ext).value;
-            query_dict["name"]=attribute;
-            query_dict["value"]=value;
-            query_dict["operator"]=condition;
-            query_dict["resource"]=get_resource(attribute);
+
+    queryandnodes = document.querySelectorAll('#and_condition .and_clause');
+    console.log(queryandnodes.length);
+    for (let i=0; i<queryandnodes.length; i++) {
+
+        query_dict={};
+
+        let node = queryandnodes[i];
+        // handle each OR...
+        let ors = node.querySelectorAll(".form-row");
+        
+        let or_dicts = [...ors].map(orNode => {
+            return {
+                "name": orNode.querySelector(".keyFields").value,
+                "value": orNode.querySelector(".valueFields").value,
+                "operator": orNode.querySelector(".condition").value,
             }
-            }
-       queryornodes=or_parent.parentNode.childNodes;
-       for ( i in queryornodes)
-            {
-        if (queryornodes[i].nodeName=="DIV"  && queryornodes[i].id.includes("conanewor"))
-            {
-                panel_cond=[];
-        for (j in queryornodes[i].childNodes)
-            {
-        if (queryornodes[i].childNodes[j].nodeName=="DIV"  && queryornodes[i].childNodes[j].id.includes("template") && !queryornodes[i].childNodes[j].id.includes("ortemplate"))
-            {
-            or_conditions.push(panel_cond);
-            console.log("or condition is found "+queryornodes[i].childNodes[j].id);
-            ext_=queryornodes[i].childNodes[j].id.split("_");
-        if (ext_.length==1)
-            ext_='';
-        else
-            ext_="_"+ext_[1];
-       query_dict={};
-       panel_cond.push(query_dict);
-       attribute=document.getElementById("keyFields"+ext_).value;
-       condition=document.getElementById("condtion"+ext_).value;
-       value=document.getElementById("valueFields"+ext_).value;
-       query_dict["name"]=attribute;
-       query_dict["value"]=value;
-       query_dict["operator"]=condition;
-       query_dict["resource"]=get_resource(attribute);
-       }
-                }
-                        }
-                                }
+        });
+        if (or_dicts.length > 1) {
+            or_conditions.push(or_dicts);
+        } else {
+            and_conditions.push(or_dicts[0]);
+        }
+    }
+
     query_details = {}
      var query = {
         "resource": "image",
@@ -986,7 +960,7 @@ let file = document.querySelector("#load_file").files[0];
 
 $(function(){
 
-    function onlyShowOneX() {
+    function hideRemoveIfOnlyOneLeft() {
         let $btns = $("button.remove");
         if ($btns.length == 1) {
             $btns.css('visibility', 'hidden');
@@ -995,12 +969,24 @@ $(function(){
         }
     }
 
+    function getQueryFromForm() {
+
+    }
+
+    // update JSON query
+    function updateForm() {
+        hideRemoveIfOnlyOneLeft();
+
+        query = get_current_query()
+        $("#queryJson").val(JSON.stringify(query, undefined, 4));
+    }
+
     // OR buttons
     $("#and_condition").on("click", ".addOR", function (event) {
         let $clause = $(this).parent();
         let $row = $(".form-row", $clause).last();
         $row.after($row.clone());
-        onlyShowOneX();
+        updateForm();
     });
 
     // X buttons
@@ -1018,10 +1004,10 @@ $(function(){
             $and.remove();
             $clause.remove();
         }
-        onlyShowOneX();
+        updateForm();
     });
 
-    // clone empty form row
+    // clone empty form row before any changes
     let $andClause = $("#and_condition .and_clause").clone();
 
     // AND button
@@ -1030,7 +1016,10 @@ $(function(){
         let $clause = $(".and_clause", $form).last();
         $clause.after($andClause.clone());
         $clause.after("<div>AND</div>");
-        onlyShowOneX();
+        updateForm();
     })
+
+    // initial update
+    updateForm()
 });
 
