@@ -510,27 +510,31 @@ function get_current_query(include_addition_information,displaymessage=true)
             {
                 panel_cond=[];
         for (j in queryornodes[i].childNodes)
-            {
-        if (queryornodes[i].childNodes[j].nodeName=="DIV"  && queryornodes[i].childNodes[j].id.includes("template") && !queryornodes[i].childNodes[j].id.includes("ortemplate"))
-            {
-            or_conditions.push(panel_cond);
-            console.log("or condition is found "+queryornodes[i].childNodes[j].id);
-            ext_=queryornodes[i].childNodes[j].id.split("_");
-        if (ext_.length==1)
-            ext_='';
-        else
-            ext_="_"+ext_[1];
-       query_dict={};
-       panel_cond.push(query_dict);
-       attribute=document.getElementById("keyFields"+ext_).value;
-       condition=document.getElementById("condtion"+ext_).value;
-       value=document.getElementById("valueFields"+ext_).value;
-       query_dict["name"]=attribute;
-       query_dict["value"]=value;
-       query_dict["operator"]=condition;
-       query_dict["resource"]=get_resource(attribute);
-       }
+                    {
+
+                if (queryornodes[i].childNodes[j].nodeName=="DIV"  && queryornodes[i].childNodes[j].id.includes("template") && !queryornodes[i].childNodes[j].id.includes("ortemplate"))
+                    {
+
+                    console.log("or condition is found "+queryornodes[i].childNodes[j].id);
+                    ext_=queryornodes[i].childNodes[j].id.split("_");
+                    if (ext_.length==1)
+                        ext_='';
+                    else
+                        ext_="_"+ext_[1];
+                    query_dict={};
+                    panel_cond.push(query_dict);
+                    attribute=document.getElementById("keyFields"+ext_).value;
+                    condition=document.getElementById("condtion"+ext_).value;
+                    value=document.getElementById("valueFields"+ext_).value;
+                    query_dict["name"]=attribute;
+                    query_dict["value"]=value;
+                    query_dict["operator"]=condition;
+                    query_dict["resource"]=get_resource(attribute);
+               }
                 }
+                if (panel_cond.length>0)
+                                or_conditions.push(panel_cond);
+
                         }
                                 }
     query_details = {}
@@ -543,6 +547,7 @@ function get_current_query(include_addition_information,displaymessage=true)
     query_details["or_filters"] = or_conditions;
     query_details["case_sensitive"]=document.getElementById('case_sensitive').checked;
     query["mode"]=mode;
+
     return query;
 
 }
@@ -772,7 +777,6 @@ It solves the issue of having many available values (sometimes tens of thousnads
 it was freezing the interface */
 function setAutoCompleteValues(){
  document.activeElement.addEventListener("keyup", function() {
- console.log("eees");
         $("#"+document.activeElement.id) .autocomplete({
                    source:  setFieldValues(),
                    minLength:0
@@ -842,7 +846,6 @@ if (cached_key_values[key_value]===undefined)
     }
     else
     {
-    console.log("Hiiii: ", key_value+","+id);
         current_values[id_]=cached_key_values[key_value];
     }
 
@@ -862,7 +865,6 @@ if (cached_key_values[key_value]===undefined)
     //otherwise, it will return all the items which contains the value (even ther are  at the middle or at the end of the items)
     if (current_values.length>1000)
     {
-    console.log("1: val: "+val);
 
       if (!val || val.length <2  )
         return [];
