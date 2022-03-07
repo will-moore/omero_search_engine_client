@@ -28,14 +28,19 @@
 <div id="query">
    <div  id="queryParent">
       <div id="resources" style="display: none"  >
-         <div style="float: right" class="col-md-5">
+         <div style="float: right" class="col-md-6">
+            <button type="button" class="btn btn-info" data-toggle="tooltip" data-placement="top"
+               title="load the query from user storage" onclick="load_query()">
+               Load
+            </button>
+            <br/>
             <textarea id="queryJson">JSON</textarea>
          </div>
 
          <div id="conanew" class="col-md-6">
             <div id="template">
             <br>
-            <form id="and_condition">
+            <form id="search_form">
                <div class="and_clause">
                   <div class="form-row">
                      <div class="form-group col-md-1 or">OR</div>
@@ -59,12 +64,10 @@
                      add 'OR'...
                   </a>
                </div>
-
-               <button id="addAND" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top"
-                  title="Add group">
-                  add AND
-               </button>
             </form>
+            <button id="addAND" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Add group">
+               add AND
+            </button>
          </div>
 
          </div>
@@ -96,12 +99,7 @@
       <button type="button" id="submit_" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
       Submit
       </button>
-      <button type="button" id="save_query" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Save the query to the user local storage" onclick="save_query()">
-      Save
-      </button>
-      <button type="button" id="load_query" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="load the query from user storage" onclick="load_query()">
-      Load
-      </button>
+
       <button type="button" id="new_query" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Discard all the condition anstart new query" onclick="new_query()">
       New
       </button>

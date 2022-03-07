@@ -78,59 +78,57 @@ function new_query(){
         return false;
     }
 }
-function load_query(){
-    $('#load_file').click();
-}
+
 
 //Load query from file which is located in the user machine
-function load_query_from_file(file)
-{
-    //remove anycondition if any
-    remove_all_conditiona("or");
-    remove_all_conditiona("and");
-    let reader = new FileReader();
+// function load_query_from_file(file)
+// {
+//     //remove anycondition if any
+//     remove_all_conditiona("or");
+//     remove_all_conditiona("and");
+//     let reader = new FileReader();
 
-    reader.addEventListener('load', function(e) {
-    let text = e.target.result;
-    data_=JSON.parse(text);
-    data=data_["query_details"]
-    var orFilter = data["or_filters"];
-    var andFilter = data["and_filters"];
-    case_sensitive= data["case_sensitive"];
-    resource = data_["resource"]
-    for (i in orFilter)
-            {
-            addConditionRow(orFilter[i]["name"],orFilter[i]["value"], orFilter[i]["operator"], orFilter[i]["resource"], 'or');
-            }
-    for (i in andFilter)
-        {
-         addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], andFilter[i]["resource"], 'and');
+//     reader.addEventListener('load', function(e) {
+//     let text = e.target.result;
+//     data_=JSON.parse(text);
+//     data=data_["query_details"]
+//     var orFilter = data["or_filters"];
+//     var andFilter = data["and_filters"];
+//     case_sensitive= data["case_sensitive"];
+//     resource = data_["resource"]
+//     for (i in orFilter)
+//             {
+//             addConditionRow(orFilter[i]["name"],orFilter[i]["value"], orFilter[i]["operator"], orFilter[i]["resource"], 'or');
+//             }
+//     for (i in andFilter)
+//         {
+//          addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], andFilter[i]["resource"], 'and');
 
-            }
+//             }
 
-            document.getElementById('case_sensitive').checked=case_sensitive;
-        });
-		reader.readAsText(file);
-		document.querySelector("#load_file")="";
-}
-function changeMainAttributesFunction (){
-    var checkbox = document.getElementById("add_main_attibutes");
-    mainvalueFields=document.getElementById("mainvalue");
-    maincondtion=document.getElementById("maincondition");
-    mainkeyFields=document.getElementById("mainkey");
-     if (checkbox.checked)
-     {
-        mainvalueFields.style.display = "block";
-        maincondtion.style.display = "block";
-        mainkeyFields.style.display = "block";
-     }
-     else
-     {
-        mainvalueFields.style.display = "none";
-        maincondtion.style.display = "none";
-        mainkeyFields.style.display = "none";
-     }
-}
+//             document.getElementById('case_sensitive').checked=case_sensitive;
+//         });
+// 		reader.readAsText(file);
+// 		document.querySelector("#load_file")="";
+// }
+// function changeMainAttributesFunction (){
+//     var checkbox = document.getElementById("add_main_attibutes");
+//     mainvalueFields=document.getElementById("mainvalue");
+//     maincondtion=document.getElementById("maincondition");
+//     mainkeyFields=document.getElementById("mainkey");
+//      if (checkbox.checked)
+//      {
+//         mainvalueFields.style.display = "block";
+//         maincondtion.style.display = "block";
+//         mainkeyFields.style.display = "block";
+//      }
+//      else
+//      {
+//         mainvalueFields.style.display = "none";
+//         maincondtion.style.display = "none";
+//         mainkeyFields.style.display = "none";
+//      }
+// }
 
 function cancell_ajaxcall() {
     ajaxCall.onreadystatechange = null;
@@ -356,7 +354,6 @@ var gridOptions = {
     var resources_con = document.getElementById('resources');
     var help = document.getElementById('help');
     var submit_button = document.getElementById('submit_');
-    var load_query_button=document.getElementById('load_query');
     conditions_con.disabled = true;
     document.getElementById('exportResults').style.display = "block";
     document.getElementById('reset_results_table_filter').style.display = "block";
@@ -483,7 +480,7 @@ function get_current_query(include_addition_information,displaymessage=true)
     or_conditions=[];
     //get and condition1
 
-    queryandnodes = document.querySelectorAll('#and_condition .and_clause');
+    queryandnodes = document.querySelectorAll('#search_form .and_clause');
     console.log(queryandnodes.length);
     for (let i=0; i<queryandnodes.length; i++) {
 
@@ -945,10 +942,10 @@ $(document).ready(function() {
     }
 });
 //Used to load query from local storage
-document.getElementById('load_file').onchange = function () {
-let file = document.querySelector("#load_file").files[0];
-  load_query_from_file(file);
-}
+// document.getElementById('load_file').onchange = function () {
+// let file = document.querySelector("#load_file").files[0];
+//   load_query_from_file(file);
+// }
 
 //this.agGrid.columnApi.setColumnsVisible(["COL_1", "COL_2"], false);
 //this.agGrid.columnApi.setColumnsVisible(["COL_1", "COL_2"], true);
@@ -958,7 +955,13 @@ let file = document.querySelector("#load_file").files[0];
 //wehere  col_i is the column id
 
 
+let $andClause;
+
 $(function(){
+
+    // clone empty form row before any changes
+    // used for building form
+    $andClause = $("#search_form .and_clause").clone();
 
     // Hide the X button if there's only 1 in the form
     function hideRemoveIfOnlyOneLeft() {
@@ -979,15 +982,15 @@ $(function(){
     }
 
     // OR buttons
-    $("#and_condition").on("click", ".addOR", function (event) {
+    $("#search_form").on("click", ".addOR", function (event) {
+        event.preventDefault();
         let $clause = $(this).parent();
-        let $row = $(".form-row", $clause).last();
-        $row.after($row.clone());
+        addOr($clause);
         updateForm();
     });
 
     // X buttons
-    $("#and_condition").on("click", ".remove", function (event) {
+    $("#search_form").on("click", ".remove", function (event) {
         let $row = $(this).closest(".form-row");
         let $clause = $row.parent();
         $row.remove();
@@ -1004,23 +1007,96 @@ $(function(){
         updateForm();
     });
 
-    // clone empty form row before any changes
-    let $andClause = $("#and_condition .and_clause").clone();
-
     // AND button
     $("#addAND").on("click", function(){
-        let $form = $(this).parent();
-        let $clause = $(".and_clause", $form).last();
-        $clause.after($andClause.clone());
-        $clause.after("<div>AND</div>");
+        addAnd();
         updateForm();
     });
 
     // handle any input/select changes to update textarea
-    $("#and_condition").on("change", "select", updateForm);
-    $("#and_condition").on("keyup", "input", updateForm);
+    $("#search_form").on("change", "select", updateForm);
+    $("#search_form").on("keyup", "input", updateForm);
 
     // initial update of JSON textarea
     updateForm()
 });
+
+function addAnd(attribute, operator, value) {
+    let $form = $("#search_form");
+    if ($form.children().length > 0) {
+        $form.append("<div>AND</div>");
+    }
+    let $newRow = $andClause.clone();
+    if (attribute) {
+        $(".keyFields", $newRow).val(attribute);
+    }
+    if (operator) {
+        $(".condition", $newRow).val(operator);
+    }
+    if (value) {
+        $(".valueFields", $newRow).val(value);
+    }
+    $form.append($newRow);
+    return $newRow;
+}
+
+function addOr($and, attribute, operator, value) {
+    let $row = $(".form-row", $and).last();
+    let $newRow = $row.clone();
+    if (attribute) {
+        $(".keyFields", $newRow).val(attribute);
+    }
+    if (operator) {
+        $(".condition", $newRow).val(operator);
+    }
+    if (value) {
+        $(".valueFields", $newRow).val(value);
+    }
+    $row.after($newRow);
+}
+
+function load_query() {
+    // load JSON from textarea and build form...
+    let text = $("#queryJson").val();
+    let jsonData = {};
+    try {
+        jsonData = JSON.parse(text);
+    } catch (error) {
+        alert("Failed to parse JSON");
+        return;
+    }
+    let query_details = jsonData.query_details;
+    if (!query_details) {
+        alert("No 'query_details' in JSON");
+        return;
+    }
+    let and_filters = query_details.and_filters;
+    let or_filters = query_details.or_filters;
+    if (!(and_filters || or_filters)) {
+        alert("No 'and_filters' or 'or_filters' in 'query_details'");
+        return;
+    }
+
+    // Start by clearing form...
+    $("#search_form").empty();
+
+    // handle ANDs...
+    and_filters.forEach(filter => {
+        let { name, operator, value } = filter;
+        addAnd(name, operator, value);
+    });
+
+    // handle ORs...
+    or_filters.forEach(or_filter => {
+        let $and;
+        or_filter.forEach(filter => {
+            let { name, operator, value } = filter;
+            if (!$and) {
+                $and = addAnd(name, operator, value);
+            } else {
+                addOr($and, name, operator, value);
+            }
+        });
+    });
+}
 
