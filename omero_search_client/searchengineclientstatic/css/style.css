@@ -302,3 +302,24 @@ input.editor-checkbox {
 .and_clause .form-group {
   margin-bottom: 2px;
 }
+
+#grid_key_values
+{
+ padding-top: 10px;
+    min-width:200px;
+    height: 400px;
+    width:auto;
+    resize: both;
+    overflow: auto;
+}
+
+#myGrid_2 {
+ padding-top: 10px;
+ width:auto;
+ resize: both;
+ overflow: auto;
+ height: 600px;
+ min-width:1300px;
+ width:auto;
+}
+

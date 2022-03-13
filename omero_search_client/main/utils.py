@@ -17,7 +17,34 @@ def get_resourcse_names_from_search_engine(resource):
     values = json.loads(results)
     return values
 
+def search_values(resource, value):
+    url="{base_url}api/v2/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
+    resp = requests.get(url=url)
+    results = resp.text
+    results= json.loads(results)
+    col_def = []
+    if len(results)>0:
+        for item in results [0]:
+            col={}
+            col_def.append(col)
+            col["field"]=item
+            col["sortable"]= True
+    return {"columnDefs": col_def, "results": results}
 
+def search_key(resource, key):
+    url = "{base_url}api/v2/resources/{resource}/searchvaluesusingkey/?key={key}".format(
+        base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, key=key)
+    resp = requests.get(url=url)
+    results = resp.text
+    results = json.loads(results)
+    col_def = []
+    if results and len(results) > 0:
+        for item in results[0]:
+            col = {}
+            col_def.append(col)
+            col["field"] = item
+            col["sortable"] = True
+    return {"columnDefs": col_def, "results": results}
 
 class QueryItem (object):
     def __init__ (self, filter):

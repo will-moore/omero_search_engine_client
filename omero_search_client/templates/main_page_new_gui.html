@@ -10,12 +10,35 @@
                 <li class="nav-item"><a href="" data-target="#home1" data-toggle="tab" class="nav-link small text-uppercase">Home</a></li>
                 <li class="nav-item"><a href="" data-target="#querybuilder" data-toggle="tab" class="nav-link small text-uppercase active">Query Builder</a></li>
                 <li class="nav-item"><a href="" data-target="#templates" data-toggle="tab" class="nav-link small text-uppercase">Templates</a></li>
-            </ul>
-            <br>
-            <div id="tabsContent" class="tab-content">
-                <div id="home1" class="tab-pane fade">
+                     </ul>
+                    <br>
+                    <div id="tabsContent" class="tab-content">
+                        <div id="home1" class="tab-pane fade">
+                    <div class="modal-body row">
+                      <div class="col-md-3 "style="border-right: 1px solid black;  " >
+                          <h4>Attributes browser</h4>
+                                                          <div id="jstree_resource_div"></div>
+                      </div>
+          <div id="attribute_search_results" class="col-md-9">
 
-                </div>
+                           <form class="form-inline">
+                       <input id ="value_field" class="form-control mr-sm-3" type="search" placeholder="search for any value" aria-label="Search">
+                       <button  id="value_field_search_only" class="btn btn-success " type="submit">Search</button>
+                  </form>
+                    <div>
+
+                       <div id="grid_key_values"  class="ag-theme-alpine"></div>
+
+
+                </div>  </div>
+</div>
+
+
+                    </div>
+
+
+
+
                 <div id="querybuilder" class="tab-pane fade active show">
                     <div class="row pb-2">
 
@@ -117,7 +140,7 @@
     <th><button id="display_dide_columns"  onclick="#" type="button"  style="display: none" >Display/Hide Columns</button></th>
 
 
-   <div id="myGrid_2" style="height: 600px;width:1200px;" class="ag-theme-alpine"></div>
+   <div id="myGrid_2"  class="ag-theme-alpine"></div>
    <br>
    <div id="load_results_buttons", style="display: none", class="col-md-7" >
    <table id="loads_results_table" class="table table-striped">
@@ -144,6 +167,9 @@
    var submitqueryurl = "{{ url_for('main.submit_query') }}";
    var queryresultsurl = "{{ url_for('main.queryresults') }}";
    var  getresourcesvalesforkey = "{{ url_for('main.get_resourcse_key') }}";
+   var  searchresourcesvales = "{{ url_for('main.get_resourcse_using_values_only') }}";
+      var  searchresourcesvalesforkey = "{{ url_for('main.get_values_using_values_using_key') }}";
+
 
    $(document).ajaxStart(function ()
    {

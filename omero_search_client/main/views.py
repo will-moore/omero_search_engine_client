@@ -5,7 +5,7 @@ import requests
 import json
 from urllib.parse import quote
 from omero_search_client import omero_client_app
-from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_
+from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key
 
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains"),
@@ -84,3 +84,16 @@ def get_query_results_withGUI():
     form.resourcseFields.choices = options
     return render_template('main_page.html', resources_data=resources, form=form, task_id=task_id)#container)
 
+
+@main.route('/serachusingvaluesonly/',methods=['POST', 'GET'])
+def get_resourcse_using_values_only():
+    value = request.args.get("value")
+    resource = request.args.get("resource")
+    return json.dumps(search_values(resource,value))
+
+
+@main.route('/serachforvaluesusingkey/',methods=['POST', 'GET'])
+def get_values_using_values_using_key():
+    key = request.args.get("key")
+    resource = request.args.get("resource")
+    return json.dumps(search_key(resource, key))

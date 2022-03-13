@@ -16,7 +16,7 @@ var ag_grid;
 var recieved_data=0;
 var columnDefs=[];
 var current_values={};
-cached_key_values={};
+var cached_key_values={};
 var extend_url;
 var names_ids;
 var main_attributes= ["Name (IDR number)"];
@@ -26,6 +26,7 @@ var no_cloned =0;
 var original_external_int_div = document.getElementById('template'); //Div to Clone
 var or_template = document.getElementById('ortemplate');
 var or_parent=document.getElementById('conanewor');
+var tree_nodes=[];
 
 
 //save query json string to the local user storage, so he cal load it again
@@ -116,6 +117,19 @@ function loadMoreResultsFunction()
 {
     submitQuery();
 }
+
+
+function reset_global_variables(data)
+    {
+    bookmark=null;
+    raw_elasticsearch_query=null;
+    page=0;
+    pages_data={};
+    recieved_results=[];
+    size=0;
+    query_details=null;
+    recieved_data=0;
+    }
 
 
 function set_global_variables(data)
@@ -232,7 +246,6 @@ var gridOptions = {
 
  // lookup the container we want the Grid to use
   const eGridDiv = document.querySelector('#myGrid_2');
-
   // create the grid passing in the div to use together with the columns & data we want to use
   if (page==1)
   ag_grid=new agGrid.Grid(eGridDiv, gridOptions);
@@ -614,6 +627,21 @@ function set_resources(resource, container) {
 }
 
 $(document).ready(function() {
+
+tree_nodes.push({ "id" : "Resource", "parent" : "#", "text" : "Resource", "state": {"opened"    : true }});
+for (resource in resources_data) {
+                tree_nodes.push({ "id" : resource, "parent" : "Resource", "text" : resource, "state": {"opened"    : true }});
+                for (i in resources_data[resource] )
+                {
+                        tree_nodes.push({ "id" : resources_data[resource][i], "parent" : resource, "text" : resources_data[resource][i] });
+
+                        }
+
+                }
+$('#jstree_resource_div').jstree({ 'core' : {
+
+    'data' :  tree_nodes
+} });
     let _keys_options = document.getElementById('keyFields');
     optionHtml = ''
     for (key in resources_data) {
@@ -769,6 +797,11 @@ function load_query() {
         alert("No 'query_details' in JSON");
         return;
     }
+    set_the_query(query_details);
+    }
+
+function set_the_query(query_details)
+{
     let and_filters = query_details.and_filters;
     let or_filters = query_details.or_filters;
     if (!(and_filters || or_filters)) {
@@ -798,4 +831,140 @@ function load_query() {
         });
     });
 }
+
+function check_value(_keys_options, attribute)
+ {
+
+  _keys_options.value = attribute;
+ if (_keys_options.selectedIndex===-1)
+ {
+ let values=resources_data["image"];
+ values.push(attribute);
+ }
+}
+
+function check_attribute(attribute)
+{
+//check if the attribute is in the default list, if not it will add it.
+var elms = document.querySelectorAll("[id='keyFields']");
+for(var i = 0; i < elms.length; i++)
+{
+check_value(elms[i], attribute);
+}
+        }
+
+
+
+
+function onRowDoubleClicked(event) {
+/* when the user double check a row inisde the grid
+it will get he attribute and value pair and set the query builder for using them, then submit a query to get the results*/
+  const  rowNode= event.api.getRowNode(event.node.rowIndex);
+  query={}
+  query["resource"]="image";
+  query_details={};
+  query["query_details"]=query_details;
+  check_attribute(rowNode.data.Attribute);
+  query_details["and_filters"]= [{"name":rowNode.data.Attribute,"value":rowNode.data.Value,"operator":"equals","resource":"image"}];
+  query_details["or_filters"]=[];
+  set_the_query(query_details);
+  query = get_current_query()
+  $("#queryJson").val(JSON.stringify(query, undefined, 4));
+  $("#home1").removeClass("active");
+  $('#querybuilder').tab('show');
+  reset_global_variables();
+
+
+  const eGridDiv = document.querySelector('#myGrid_2');
+  removeAllChildNodes(eGridDiv);
+
+  submitQuery();
+}
+
+function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
+function display_value_search_results(results)
+   {
+   /*
+   Dipsly general search results using any value
+   */
+           if (results["columnDefs"].length>0)
+           {
+           var searchGridOptions = {
+              defaultColDef: {
+              resizable: true,
+              "filter": true,
+              "animateRows":true,
+          },
+            enableCellTextSelection: true,
+            columnDefs: results["columnDefs"],
+            rowData: null,
+            rowSelection: 'single',
+          rowData: null,
+          onCellDoubleClicked: onRowDoubleClicked,
+
+
+        };
+            const searcheGridDiv = document.querySelector('#grid_key_values');
+            var myobj = document.getElementById("demo");
+            searcheGridDiv.innerHTML ='';
+            let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
+            search_ag_grid.gridOptions.api.setRowData(results["results"]);
+            search_ag_grid.gridOptions.api.sizeColumnsToFit();
+    }
+    else
+    alert("No result is found");
+    $('body').removeClass('wait');
+
+   }
+
+
+  $("#value_field_search_only").on("click",  function (event) {
+  /*
+  Search  using values provided by the user*/
+        event.preventDefault();
+        value=$("#value_field").val();
+        query= {"value": $("#value_field").val(), "resource": "image" };
+$('body').addClass('wait');
+        let resource="image";
+        url=searchresourcesvales+ "/?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
+        fetch(url).then(function(response) {
+          {
+            response.json().then(function(data) {
+                display_value_search_results(data);
+                    });
+                }
+        });
+
+    });
+
+
+$('#jstree_resource_div').on("changed.jstree", function (e, data) {
+  console.log(data.selected);
+});
+
+/*
+Query the search engine using the resourse attribute, when the user double click the attribute node
+*/
+$('#jstree_resource_div').bind("dblclick.jstree", function (event) {
+   var node = $(event.target).closest("li");
+    var type = node.attr('rel');
+    var key = node[0].id;
+    $('body').addClass('wait');
+    let resource="image";
+    url=searchresourcesvalesforkey+ "/?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    fetch(url).then(function(response) {
+      {
+        response.json().then(function(data) {
+            display_value_search_results(data);
+                });
+            }
+    });
+
+
+});
 
