@@ -151,7 +151,8 @@ class QueryRunner(object, ):
                     query["main_attribute"]= {}
                 res=self.run_query(query, resource)
                 new_cond=get_ids(res, resource)
-                self.additional_image_conds+=new_cond
+                if new_cond:
+                    self.additional_image_conds+=new_cond
 
         self.image_query["main_attribute"]={"or_main_attributes": self.additional_image_conds}
 

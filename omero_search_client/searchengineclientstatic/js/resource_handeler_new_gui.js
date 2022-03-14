@@ -73,7 +73,14 @@ function new_query(){
     if (query==false)
         return;
     if (confirm("All the conditions will be discarded, process?") == true) {
-        location.reload();
+       reset_global_variables();
+       const eGridDiv = document.querySelector('#myGrid_2');
+        removeAllChildNodes(eGridDiv);
+        document.getElementById("results").style.display='none';
+        $("#search_form").empty();
+        $("#addAND").click();
+
+        //location.reload();
         return false;
     }
 }
@@ -631,7 +638,8 @@ $(document).ready(function() {
 tree_nodes.push({ "id" : "Resource", "parent" : "#", "text" : "Resource", "state": {"opened"    : true }});
 for (resource in resources_data) {
                 tree_nodes.push({ "id" : resource, "parent" : "Resource", "text" : resource, "state": {"opened"    : true }});
-                for (i in resources_data[resource] )
+
+                for (i in resources_data[resource].sort() )
                 {
                         tree_nodes.push({ "id" : resources_data[resource][i], "parent" : resource, "text" : resources_data[resource][i] });
 
@@ -870,11 +878,18 @@ it will get he attribute and value pair and set the query builder for using them
   set_the_query(query_details);
   query = get_current_query()
   $("#queryJson").val(JSON.stringify(query, undefined, 4));
-  $("#home1").removeClass("active");
-  $('#querybuilder').tab('show');
+  $("#home1").removeClass("tab-pane fade active show");
+  $("#home1").addClass("tab-pane fade");
+  $("#querybuilder").removeClass("tab-pane fade");
+  $("#querybuilder").addClass("tab-pane fade active show");
+
+// $("#querybuilder").trigger('click')
+// $('#querybuilder').tab('show');
+
   reset_global_variables();
-  const eGridDiv = document.querySelector('#myGrid_2');
-  removeAllChildNodes(eGridDiv);
+  $("#myGrid_2").empty();
+  //const eGridDiv = document.querySelector('#myGrid_2');
+  //removeAllChildNodes(eGridDiv);
   submitQuery();
 }
 
