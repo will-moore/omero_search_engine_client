@@ -20,8 +20,11 @@ def get_resourcse_names_from_search_engine(resource):
 def search_values(resource, value):
     url="{base_url}api/v2/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
     resp = requests.get(url=url)
-    results = resp.text
-    results= json.loads(results)
+    results_ = resp.text
+    all_results = json.loads(results_)
+    results = all_results.get("returnted_results")
+    total_number = all_results.get("total_number")
+
     col_def = []
     if len(results)>0:
         for item in results [0]:
@@ -29,14 +32,17 @@ def search_values(resource, value):
             col_def.append(col)
             col["field"]=item
             col["sortable"]= True
-    return {"columnDefs": col_def, "results": results}
+    return {"columnDefs": col_def, "results": results, "total_number":total_number, "no_buckets":len(results)}
 
 def search_key(resource, key):
     url = "{base_url}api/v2/resources/{resource}/searchvaluesusingkey/?key={key}".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, key=key)
     resp = requests.get(url=url)
-    results = resp.text
-    results = json.loads(results)
+    results_ = resp.text
+    all_results = json.loads(results_)
+    results=all_results.get("returnted_results")
+    total_number=all_results.get("total_number")
+
     col_def = []
     if results and len(results) > 0:
         for item in results[0]:
@@ -44,7 +50,7 @@ def search_key(resource, key):
             col_def.append(col)
             col["field"] = item
             col["sortable"] = True
-    return {"columnDefs": col_def, "results": results}
+    return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results)}
 
 class QueryItem (object):
     def __init__ (self, filter):

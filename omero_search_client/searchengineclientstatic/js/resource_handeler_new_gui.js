@@ -184,6 +184,8 @@ function exportToCSV() {
   ag_grid.gridOptions.api.exportDataAsCsv(getParams());
 }
 
+
+
 function autoSizeAll(skipHeader) {
   var allColumnIds = [];
   gridOptions.columnApi.getAllColumns().forEach(function (column) {
@@ -894,7 +896,7 @@ function removeAllChildNodes(parentNode) {
     }
 }
 
-function display_value_search_results(results)
+function display_value_search_results(results, resource)
    {
    /*
    Dipsly general search results using any value
@@ -928,6 +930,17 @@ function display_value_search_results(results)
             let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
             search_ag_grid.gridOptions.api.setRowData(results["results"]);
             search_ag_grid.gridOptions.api.sizeColumnsToFit();
+            document.getElementById("help_message").style.display='none';
+           document.getElementById('exportsearchResults').style.display = "block";
+
+            $("#exportsearchResults").on("click",  function (event) {
+
+            search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
+               });
+            $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
+
+
+
     }
     else
     alert("No result is found");
@@ -953,7 +966,7 @@ $('body').addClass('wait');
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
-                display_value_search_results(data);
+                display_value_search_results(data, resource);
                     });
                 }
         });
@@ -979,7 +992,7 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
-            display_value_search_results(data);
+            display_value_search_results(data, resource);
                 });
             }
     });
