@@ -77,6 +77,9 @@ function new_query(){
        const eGridDiv = document.querySelector('#myGrid_2');
         removeAllChildNodes(eGridDiv);
         document.getElementById("results").style.display='none';
+        document.getElementById("reset_results_table_filter").style.display='none';
+
+
         $("#search_form").empty();
         $("#addAND").click();
 
@@ -877,19 +880,11 @@ it will get he attribute and value pair and set the query builder for using them
   query_details["or_filters"]=[];
   set_the_query(query_details);
   query = get_current_query()
-  $("#queryJson").val(JSON.stringify(query, undefined, 4));
-  $("#home1").removeClass("tab-pane fade active show");
-  $("#home1").addClass("tab-pane fade");
-  $("#querybuilder").removeClass("tab-pane fade");
-  $("#querybuilder").addClass("tab-pane fade active show");
-
-// $("#querybuilder").trigger('click')
-// $('#querybuilder').tab('show');
-
+  var someTabTriggerEl = document.querySelector('#tabs  #querybuilder_nav a');
+  var tab = new bootstrap.Tab(someTabTriggerEl);
+  tab.show()
   reset_global_variables();
   $("#myGrid_2").empty();
-  //const eGridDiv = document.querySelector('#myGrid_2');
-  //removeAllChildNodes(eGridDiv);
   submitQuery();
 }
 
