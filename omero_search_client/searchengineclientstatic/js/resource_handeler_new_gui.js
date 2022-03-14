@@ -854,14 +854,14 @@ check_value(elms[i], attribute);
         }
 
 
-
-
 function onRowDoubleClicked(event) {
 /* when the user double check a row inisde the grid
 it will get he attribute and value pair and set the query builder for using them, then submit a query to get the results*/
   const  rowNode= event.api.getRowNode(event.node.rowIndex);
-  query={}
-  query["resource"]="image";
+  let resource=get_resource(rowNode.data.Attribute)
+  if (resource===undefined)
+        resource='image';
+  query["resource"]=resource;
   query_details={};
   query["query_details"]=query_details;
   check_attribute(rowNode.data.Attribute);
@@ -873,17 +873,14 @@ it will get he attribute and value pair and set the query builder for using them
   $("#home1").removeClass("active");
   $('#querybuilder').tab('show');
   reset_global_variables();
-
-
   const eGridDiv = document.querySelector('#myGrid_2');
   removeAllChildNodes(eGridDiv);
-
   submitQuery();
 }
 
-function removeAllChildNodes(parent) {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
+function removeAllChildNodes(parentNode) {
+    while (parentNode.firstChild) {
+        parentNode.removeChild(parentNode.firstChild);
     }
 }
 
@@ -892,6 +889,12 @@ function display_value_search_results(results)
    /*
    Dipsly general search results using any value
    */
+   if (results["Error"] != undefined )
+   {
+        alert (results["Error"]);
+       $('body').removeClass('wait');
+        return;
+   }
            if (results["columnDefs"].length>0)
            {
            var searchGridOptions = {
@@ -928,6 +931,11 @@ function display_value_search_results(results)
   Search  using values provided by the user*/
         event.preventDefault();
         value=$("#value_field").val();
+        if (value==null)
+        {
+        alert("No value is provided ..");
+        return;
+        }
         query= {"value": $("#value_field").val(), "resource": "image" };
 $('body').addClass('wait');
         let resource="image";
@@ -955,7 +963,8 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
     var type = node.attr('rel');
     var key = node[0].id;
     $('body').addClass('wait');
-    let resource="image";
+
+    let resource=get_resource(key);
     url=searchresourcesvalesforkey+ "/?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
     fetch(url).then(function(response) {
       {

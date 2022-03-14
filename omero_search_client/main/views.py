@@ -89,6 +89,8 @@ def get_query_results_withGUI():
 def get_resourcse_using_values_only():
     value = request.args.get("value")
     resource = request.args.get("resource")
+    if not value or not resource:
+        return json.dumps({"Error": "No value is provided"})
     return json.dumps(search_values(resource,value))
 
 
