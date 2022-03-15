@@ -27,6 +27,7 @@ var original_external_int_div = document.getElementById('template'); //Div to Cl
 var or_template = document.getElementById('ortemplate');
 var or_parent=document.getElementById('conanewor');
 var tree_nodes=[];
+var is_new_query=true;
 
 
 //save query json string to the local user storage, so he cal load it again
@@ -230,9 +231,15 @@ function onGridSizeChanged(params) {
 }
 
 function displayResults(data, new_data=true) {
-   if (new_data)
-   set_global_variables(data);
 
+if (is_new_query==true)
+{
+    is_new_query=false;
+    reset_global_variables();
+    $("#myGrid_2").empty();
+}
+   if (new_data)
+        set_global_variables(data);
 columnDefs =data["columns_def"]
 extend_url=data["extend_url"];
 names_ids=data["names_ids"];
@@ -404,6 +411,7 @@ function get_current_query(include_addition_information,displaymessage=true)
 }
 
 function submitQuery() {
+
 
    if (query_details === undefined || size==0)
      {
@@ -703,6 +711,7 @@ $(function(){
         hideRemoveIfOnlyOneLeft();
 
         query = get_current_query()
+        is_new_query=true;
         $("#queryJson").val(JSON.stringify(query, undefined, 4));
     }
 
@@ -755,6 +764,7 @@ $(function(){
 });
 
 function addAnd(attribute, operator, value) {
+    is_new_query=true;
     let $form = $("#search_form");
     if ($form.children().length > 0) {
         $form.append("<div>AND</div>");
@@ -778,6 +788,7 @@ function addAnd(attribute, operator, value) {
 }
 
 function addOr($and, attribute, operator, value) {
+    is_new_query=true;
     let $row = $(".form-row", $and).last();
     let $newRow = $row.clone();
 
@@ -937,7 +948,13 @@ function display_value_search_results(results, resource)
 
             search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
                });
-            $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
+
+              //results["total_number_of_images"], results["total_number_of_buckets"]
+             if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
+                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
+            else
+                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
+
 
 
 

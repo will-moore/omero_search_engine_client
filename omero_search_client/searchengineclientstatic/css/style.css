@@ -323,3 +323,8 @@ input.editor-checkbox {
  width:auto;
 }
 
+ #search_values {
+              float: left;
+    position: relative;
+    left: 50%;
+        }

@@ -42,6 +42,8 @@ def search_key(resource, key):
     all_results = json.loads(results_)
     results=all_results.get("returnted_results")
     total_number=all_results.get("total_number")
+    total_number_of_images=all_results.get("total_number_of_images")
+    total_number_of_buckets=all_results.get("total_number_of_buckets")
 
     col_def = []
     if results and len(results) > 0:
@@ -50,7 +52,7 @@ def search_key(resource, key):
             col_def.append(col)
             col["field"] = item
             col["sortable"] = True
-    return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results)}
+    return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results),"total_number_of_images":total_number_of_images, "total_number_of_buckets":total_number_of_buckets}
 
 class QueryItem (object):
     def __init__ (self, filter):
