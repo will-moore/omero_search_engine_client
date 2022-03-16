@@ -30,6 +30,7 @@ var tree_nodes=[];
 var is_new_query=true;
 
 
+
 //save query json string to the local user storage, so he cal load it again
 function save_query()
  {
@@ -69,7 +70,7 @@ if (filename) {
 }
 
 //
-function new_query(){
+function reset_query(){
     query=get_current_query(false);
     if (query==false)
         return;
@@ -881,10 +882,12 @@ check_value(elms[i], attribute);
 function onRowDoubleClicked(event) {
 /* when the user double check a row inisde the grid
 it will get he attribute and value pair and set the query builder for using them, then submit a query to get the results*/
+
   const  rowNode= event.api.getRowNode(event.node.rowIndex);
-  let resource=get_resource(rowNode.data.Attribute)
+  let resource=get_resource(rowNode.data.Attribute);
   if (resource===undefined)
         resource='image';
+
   query["resource"]=resource;
   query_details={};
   query["query_details"]=query_details;
@@ -898,6 +901,8 @@ it will get he attribute and value pair and set the query builder for using them
   tab.show()
   reset_global_variables();
   $("#myGrid_2").empty();
+  document.getElementById("results").style.display='none';
+  document.getElementById("reset_results_table_filter").style.display='none';
   submitQuery();
 }
 
@@ -905,6 +910,14 @@ function removeAllChildNodes(parentNode) {
     while (parentNode.firstChild) {
         parentNode.removeChild(parentNode.firstChild);
     }
+}
+
+function onSortChangedEvent(event)
+{
+/*
+update row index after sorting
+*/
+  event.api.forEachNode((rowNode,index)=>{ rowNode.rowIndex = index; });
 }
 
 function display_value_search_results(results, resource)
@@ -932,6 +945,7 @@ function display_value_search_results(results, resource)
             rowSelection: 'single',
           rowData: null,
           onCellDoubleClicked: onRowDoubleClicked,
+          onSortChanged : onSortChangedEvent,
 
 
         };
