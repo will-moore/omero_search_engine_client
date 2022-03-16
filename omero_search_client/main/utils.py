@@ -191,6 +191,7 @@ class QueryRunner(object, ):
                     for qu_ in qu:
                         ss.append(qu_.__dict__)
             main_attributes[key]=ss
+        query["case_sensitive"]=self.case_sensitive
         res=seracrh_query(query, resource, self.bookmark, self.raw_elasticsearch_query, main_attributes)
 
         if resource!="image":
@@ -205,7 +206,7 @@ def determine_search_results_(query_):
     if query_.get("query_details"):
         case_sensitive = query_.get("query_details").get("case_sensitive")
     else:
-        case_sensitive = None
+        case_sensitive = False
     mode = query_.get("mode")
     bookmark = query_.get("bookmark")
     raw_elasticsearch_query = query_.get("raw_elasticsearch_query")
