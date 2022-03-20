@@ -31,7 +31,6 @@ def index ():
     this uses the same template for the main mode
     may be it is needed to the main template to be more user friendly
     Returns:
-
     '''
     resources=get_resources("searchterms")
     return render_template('main_page_new_gui.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
@@ -39,6 +38,12 @@ def index ():
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
     return json.dumps(get_resourcse_names_from_search_engine(resource))
+
+@main.route('/get_resources_keys/',methods=['POST', 'GET'])
+def get_resourcses_keys():
+    mode= request.args.get("mode")
+    resources = get_resources(mode)
+    return json.dumps(resources)
 
 @main.route('/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key():
@@ -92,7 +97,6 @@ def get_resourcse_using_values_only():
     if not value or not resource:
         return json.dumps({"Error": "No value is provided"})
     return json.dumps(search_values(resource,value))
-
 
 @main.route('/serachforvaluesusingkey/',methods=['POST', 'GET'])
 def get_values_using_values_using_key():

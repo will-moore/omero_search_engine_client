@@ -143,8 +143,7 @@ function reset_global_variables(data)
     recieved_data=0;
     }
 
-
-function set_global_variables(data)
+function  set_global_variables(data)
     {
     bookmark=data["bookmark"];
     raw_elasticsearch_query=data["raw_elasticsearch_query"];
@@ -647,11 +646,12 @@ function set_resources(resource, container) {
         set_key_values(key_value, container);
 }
 
-$(document).ready(function() {
-
+function set_tree_nodes (mode=true)
+{
+tree_nodes=[];
 tree_nodes.push({ "id" : "Resource", "parent" : "#", "text" : "Resource", "state": {"opened"    : true }});
 for (resource in resources_data) {
-                tree_nodes.push({ "id" : resource, "parent" : "Resource", "text" : resource, "state": {"opened"    : true }});
+                tree_nodes.push({ "id" : resource, "parent" : "Resource", "text" : resource, "state": {"opened"    : mode }});
 
                 for (i in resources_data[resource].sort() )
                 {
@@ -660,10 +660,45 @@ for (resource in resources_data) {
                         }
 
                 }
+                }
+
+function set_tree_events_handller () {
+$('#jstree_resource_div').on("changed.jstree", function (e, data) {
+  console.log(data.selected);
+});
+
+/*
+Query the search engine using the resourse attribute, when the user double click the attribute node
+*/
+$('#jstree_resource_div').bind("dblclick.jstree", function (event) {
+   var node = $(event.target).closest("li");
+    var type = node.attr('rel');
+    var key = node[0].id;
+    $('body').addClass('wait');
+
+    let resource=get_resource(key);
+    url=searchresourcesvalesforkey+ "/?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    fetch(url).then(function(response) {
+      {
+        response.json().then(function(data) {
+            display_value_search_results(data, resource);
+                });
+            }
+    });
+
+
+});
+}
+$(document).ready(function() {
+
+set_tree_nodes();
+
+
 $('#jstree_resource_div').jstree({ 'core' : {
 
     'data' :  tree_nodes
 } });
+
     let _keys_options = document.getElementById('keyFields');
     optionHtml = ''
     for (key in resources_data) {
@@ -895,7 +930,7 @@ it will get he attribute and value pair and set the query builder for using them
   query_details["and_filters"]= [{"name":rowNode.data.Attribute,"value":rowNode.data.Value,"operator":"equals","resource":"image"}];
   query_details["or_filters"]=[];
   set_the_query(query_details);
-  query = get_current_query()
+  query = get_current_query();
   var someTabTriggerEl = document.querySelector('#tabs  #querybuilder_nav a');
   var tab = new bootstrap.Tab(someTabTriggerEl);
   tab.show()
@@ -1004,30 +1039,43 @@ $('body').addClass('wait');
 
     });
 
+set_tree_events_handller();
 
-$('#jstree_resource_div').on("changed.jstree", function (e, data) {
-  console.log(data.selected);
-});
+/**
 
-/*
-Query the search engine using the resourse attribute, when the user double click the attribute node
-*/
-$('#jstree_resource_div').bind("dblclick.jstree", function (event) {
-   var node = $(event.target).closest("li");
-    var type = node.attr('rel');
-    var key = node[0].id;
-    $('body').addClass('wait');
+**/
+  $(function() {
+    $('#commonattr').change(function() {
 
-    let resource=get_resource(key);
-    url=searchresourcesvalesforkey+ "/?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    if ($(this).prop('checked'))
+    {
+        mode= "searchterms"
+        open=true;
+    }
+    else
+    {
+        mode="advanced";
+        open=false  ;
+    }
+
+    url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
-            display_value_search_results(data, resource);
+          resources_data=data;
+          //$("#jstree_resource_div").jstree("init");
+          set_tree_nodes(open);
+          $('#jstree_resource_div').jstree("destroy").empty();
+
+          $('#jstree_resource_div').jstree({ 'core' : {
+
+    'data' :  tree_nodes
+} });
+set_tree_events_handller ();
                 });
             }
     });
 
 
-});
-
+    })
+  })

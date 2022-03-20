@@ -1,9 +1,6 @@
-import copy
-
 import requests
 import json
 import os
-
 from omero_search_client import omero_client_app
 
 mapping_names={"project":{"Name (IDR number)":"name"},"screen":{"Name (IDR number)":"name"}}
@@ -42,7 +39,7 @@ def search_key(resource, key):
     all_results = json.loads(results_)
     results=all_results.get("returnted_results")
     total_number=all_results.get("total_number")
-    total_number_of_images=all_results.get("total_number_of_images")
+    total_number_of_images=all_results.get("total_items")
     total_number_of_buckets=all_results.get("total_number_of_buckets")
 
     col_def = []
@@ -447,6 +444,7 @@ def get_restircted_search_terms():
     return restricted_search_terms
 
 def get_resources(mode):
+    restricted_search_terms=None
     if mode == "searchterms":
         restricted_search_terms=get_restircted_search_terms()
         restircted_resources={}

@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-12">
             <ul id="tabs" class="nav nav-tabs">
-                <li class="nav-item"><a href="#home1" data-toggle="tab" data-target="#home1"  class="nav-link small text-uppercase active">Home</a></li>
+                <li class="nav-item"><a href="#home1" data-toggle="tab" data-target="#home1"  class="nav-link small text-uppercase active"> Attribute Browser </a></li>
                 <li class="nav-item" id="querybuilder_nav"><a href="#querybuilder" data-toggle="tab"  data-target="#querybuilder" class="nav-link small text-uppercase ">Query Builder</a></li>
                 <li class="nav-item"><a href="#templates"  data-toggle="tab" data-target="#templates" class="nav-link small text-uppercase">Templates</a></li>
                      </ul>
@@ -17,9 +17,15 @@
                        <input id ="value_field" class="form-control mr-sm-3" type="search" placeholder="search for any value" aria-label="Search">
                        <button  id="value_field_search_only" class="btn btn-success " type="submit">Search</button>
                   </form>
+
                     <div class="modal-body row">
 
                       <div class="col-md-3 "style="border-right: 1px solid black;  " >
+
+                        <label for="commonattr">Common attribute: </label>
+                          <input type="checkbox" id ="commonattr" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="mini">
+                          <br><br>
+
                           <h4>Attributes browser</h4>
                           <div id="jstree_resource_div"></div>
                       </div>
@@ -187,8 +193,8 @@
    var queryresultsurl = "{{ url_for('main.queryresults') }}";
    var  getresourcesvalesforkey = "{{ url_for('main.get_resourcse_key') }}";
    var  searchresourcesvales = "{{ url_for('main.get_resourcse_using_values_only') }}";
-      var  searchresourcesvalesforkey = "{{ url_for('main.get_values_using_values_using_key') }}";
-
+   var  searchresourcesvalesforkey = "{{ url_for('main.get_values_using_values_using_key') }}";
+   var  getresourceskeysusingmode ="{{  url_for('main.get_resourcses_keys') }}";
 
    $(document).ajaxStart(function ()
    {
