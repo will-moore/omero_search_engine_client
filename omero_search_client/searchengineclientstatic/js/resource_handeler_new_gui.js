@@ -648,6 +648,7 @@ function set_resources(resource, container) {
 
 function set_tree_nodes (mode=true)
 {
+
 tree_nodes=[];
 tree_nodes.push({ "id" : "Resource", "parent" : "#", "text" : "Resource", "state": {"opened"    : true }});
 for (resource in resources_data) {
@@ -655,18 +656,40 @@ for (resource in resources_data) {
 
                 for (i in resources_data[resource].sort() )
                 {
-                        tree_nodes.push({ "id" : resources_data[resource][i], "parent" : resource, "text" : resources_data[resource][i] });
+                if (resources_data[resource][i].trim().length>22)
+                text= resources_data[resource][i].substr(0, 22) +  "...";
+                else
+                text= resources_data[resource][i];
+                        tree_nodes.push(
+                        {
+                        "id" : resources_data[resource][i],
+                         "parent" : resource,
+                         "text" : text,//resources_data[resource][i]
+                         "title":text
+                         }
+                      );
 
                         }
 
                 }
                 }
 
+function create_tree(){
+
+    $('#jstree_resource_div').jstree({ 'core' : {
+        'data' :  tree_nodes
+    } });
+}
+
 function set_tree_events_handller () {
 $('#jstree_resource_div').on("changed.jstree", function (e, data) {
   console.log(data.selected);
 });
-
+$('#jstree_resource_div').on('hover_node.jstree',function(e,data){
+    //$("#"+data.node.id).prop("title","SOSOSOSOSO");
+    var node = $(event.target).closest("li");
+    node.prop("title",node[0].id);
+});
 /*
 Query the search engine using the resourse attribute, when the user double click the attribute node
 */
@@ -693,11 +716,8 @@ $(document).ready(function() {
 
 set_tree_nodes();
 
+create_tree();
 
-$('#jstree_resource_div').jstree({ 'core' : {
-
-    'data' :  tree_nodes
-} });
 
     let _keys_options = document.getElementById('keyFields');
     optionHtml = ''
@@ -1067,10 +1087,7 @@ set_tree_events_handller();
           set_tree_nodes(open);
           $('#jstree_resource_div').jstree("destroy").empty();
 
-          $('#jstree_resource_div').jstree({ 'core' : {
-
-    'data' :  tree_nodes
-} });
+create_tree();
 set_tree_events_handller ();
                 });
             }
@@ -1079,3 +1096,4 @@ set_tree_events_handller ();
 
     })
   })
+
