@@ -76,12 +76,10 @@ function reset_query(){
         return;
     if (confirm("All the conditions will be discarded, process?") == true) {
        reset_global_variables();
-       const eGridDiv = document.querySelector('#myGrid_2');
+        const eGridDiv = document.querySelector('#myGrid_2');
         removeAllChildNodes(eGridDiv);
         document.getElementById("results").style.display='none';
         document.getElementById("reset_results_table_filter").style.display='none';
-
-
         $("#search_form").empty();
         $("#addAND").click();
 
@@ -686,7 +684,6 @@ $('#jstree_resource_div').on("changed.jstree", function (e, data) {
   console.log(data.selected);
 });
 $('#jstree_resource_div').on('hover_node.jstree',function(e,data){
-    //$("#"+data.node.id).prop("title","SOSOSOSOSO");
     var node = $(event.target).closest("li");
     node.prop("title",node[0].id);
 });
@@ -1065,7 +1062,9 @@ set_tree_events_handller();
 
 **/
   $(function() {
+
     $('#commonattr').change(function() {
+
 
     if ($(this).prop('checked'))
     {
@@ -1089,6 +1088,7 @@ set_tree_events_handller();
 
 create_tree();
 set_tree_events_handller ();
+update_key_fields();
                 });
             }
     });
@@ -1096,4 +1096,32 @@ set_tree_events_handller ();
 
     })
   })
+
+
+function update_key_fields(){
+
+const keyFields = document.querySelectorAll('#keyFields');
+
+for (i in keyFields)
+{
+__keys_options=keyFields[i];
+key=__keys_options.value;
+
+ //et __keys_options=container.querySelector(".keyFields");
+    optionHtml = '';
+    for (const [key, value] of Object.entries(resources_data)) {
+            if (value==null)
+              {
+                __keys_options.innerHTML = optionHtml;
+                break;
+              }
+             value.sort();
+            for (i in value) {
+                optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
+            }
+    }
+        __keys_options.innerHTML = optionHtml;
+        __keys_options.value=key;
+        }
+}
 

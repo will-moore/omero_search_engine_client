@@ -118,6 +118,9 @@ class QueryGroup(object):
 
 class QueryRunner(object, ):
     def __init__(self,and_query_group,  or_query_group, case_sensitive, mode, bookmark, raw_elasticsearch_query,columns_def):
+        print (type(or_query_group))
+        print(type(and_query_group))
+        print ("=============================")
         self.or_query_group=or_query_group
         self.and_query_group=and_query_group
         self.case_sensitive=case_sensitive
@@ -130,37 +133,46 @@ class QueryRunner(object, ):
 
     def get_iameg_non_image_query(self):
         res=None
-        for resource, and_query in self.and_query_group.resourses_query.items():
-            if resource=="image":
-                or_queries=[]
-                self.image_query["and_filters"]=and_query
-                self.image_query["or_filters"] = or_queries
-                if self.and_query_group.main_attribute.get(resource):
-                    self.image_query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
+        or_queries=[]
+        if len (self.and_query_group.query_list)==0:
+            print ("I AM ZERO so, I will not work !!!!!")
+            print (type(self.or_query_group))
+            for or_grp_ in self.or_query_group:
+                print (or_grp_.__dict__)
+                for resource, or_grp in or_grp_.resourses_query.items():
+                    or_queries.append(or_grp_.resourses_query[resource])
+            self.image_query["or_filters"] = or_queries
+        else:
+            for resource, and_query in self.and_query_group.resourses_query.items():
+                if resource=="image":
+                    or_queries=[]
+                    self.image_query["and_filters"]=and_query
+                    self.image_query["or_filters"] = or_queries
+                    if self.and_query_group.main_attribute.get(resource):
+                        self.image_query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
+                    else:
+                        self.image_query["main_attribute"] =[]
+                    for or_grp in self.or_query_group:
+                        if resource in or_grp.resourses_query:
+                            or_queries.append(or_grp.resourses_query[resource])
                 else:
-                    self.image_query["main_attribute"] =[]
-                for or_grp in self.or_query_group:
-                    if resource in or_grp.resourses_query:
-                        or_queries.append(or_grp.resourses_query[resource])
-            else:
-                query={}
-                query["and_filters"]=and_query
-                or_queries = []
-                query["or_filters"] = or_queries
-                for or_grp in self.or_query_group:
-                    if resource in or_grp:
-                        or_queries.append(or_grp["image"])
-                if self.and_query_group.main_attribute.get(resource):
-                    query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
-                else:
-                    query["main_attribute"]= {}
-                res=self.run_query(query, resource)
-                new_cond=get_ids(res, resource)
-                if new_cond:
-                    self.additional_image_conds+=new_cond
-
+                    query={}
+                    query["and_filters"]=and_query
+                    or_queries = []
+                    query["or_filters"] = or_queries
+                    for or_grp in self.or_query_group:
+                        if resource in or_grp:
+                            or_queries.append(or_grp.resourses_query[resource])
+                    if self.and_query_group.main_attribute.get(resource):
+                        query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
+                    else:
+                        query["main_attribute"]= {}
+                    res=self.run_query(query, resource)
+                    new_cond=get_ids(res, resource)
+                    if new_cond:
+                        self.additional_image_conds+=new_cond
+        print (len(or_queries))
         self.image_query["main_attribute"]={"or_main_attributes": self.additional_image_conds}
-
         return  self.run_query(self.image_query, "image")
 
     def run_query(self, query_, resource):
@@ -221,7 +233,6 @@ def determine_search_results_(query_):
         for filters_ in or_filters:
             or_query_group = QueryGroup("or_filters")
             or_query_groups.append(or_query_group)
-            inside_or_filter=[]
             for filter in filters_:
                 or_query_group.add_query((QueryItem(filter)))
             or_query_group.divide_filter()
