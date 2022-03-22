@@ -124,6 +124,7 @@ catch(err) {
 
 function loadMoreResultsFunction()
 {
+    document.getElementById('loadMoreResults').disabled=true;
     submitQuery(false);
 }
 
@@ -140,7 +141,7 @@ function reset_global_variables(data)
         recieved_data=0;
     }
 
-function  set_global_variables(data)
+function set_global_variables(data)
     {
     bookmark=data["bookmark"];
     raw_elasticsearch_query=data["raw_elasticsearch_query"];
@@ -150,10 +151,14 @@ function  set_global_variables(data)
     size=data["size"];
     query_details=data["query_details"];
     recieved_data=recieved_data+data["values"].length;
-    if (recieved_data>=size){
     var resultsbutton = document.getElementById('loadMoreResults');
+    if (recieved_data>=size){
+
     resultsbutton.disabled = true;
     }
+    else
+    resultsbutton.disabled= false;
+
 }
 function sizeToFit() {
   ag_grid.gridOptions.api.sizeColumnsToFit();
@@ -264,7 +269,7 @@ var gridOptions = {
   const eGridDiv = document.querySelector('#myGrid_2');
   // create the grid passing in the div to use together with the columns & data we want to use
   if (page==1)
-  ag_grid=new agGrid.Grid(eGridDiv, gridOptions);
+    ag_grid=new agGrid.Grid(eGridDiv, gridOptions);
   ag_grid.gridOptions.api.setRowData(recieved_results);
   var notice = data["notice"];
 
