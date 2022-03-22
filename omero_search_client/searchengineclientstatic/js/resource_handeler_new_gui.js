@@ -82,7 +82,6 @@ function reset_query(){
         document.getElementById("reset_results_table_filter").style.display='none';
         $("#search_form").empty();
         $("#addAND").click();
-
         //location.reload();
         return false;
     }
@@ -125,20 +124,20 @@ catch(err) {
 
 function loadMoreResultsFunction()
 {
-    submitQuery();
+    submitQuery(false);
 }
 
 
 function reset_global_variables(data)
     {
-    bookmark=null;
-    raw_elasticsearch_query=null;
-    page=0;
-    pages_data={};
-    recieved_results=[];
-    size=0;
-    query_details=null;
-    recieved_data=0;
+        bookmark=null;
+        raw_elasticsearch_query=null;
+        page=0;
+        pages_data={};
+        recieved_results=[];
+        size=0;
+        query_details=null;
+        recieved_data=0;
     }
 
 function  set_global_variables(data)
@@ -408,9 +407,9 @@ function get_current_query(include_addition_information,displaymessage=true)
 
 }
 
-function submitQuery() {
-
-
+function submitQuery(reset=true) {
+   if (reset==true)
+            reset_global_variables();
    if (query_details === undefined || size==0)
      {
         query=get_current_query(true);
@@ -1125,3 +1124,6 @@ key=__keys_options.value;
         }
 }
 
+function searchforvalue()
+{
+}
