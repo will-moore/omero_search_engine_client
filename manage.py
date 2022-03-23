@@ -10,6 +10,14 @@ It is also can be used to application script command
 '''
 
 @manager.command
+@manager.option('-u', '--url', help='client url')
+def set_client_url (url=None):
+    if url:
+        update_config_file({"OMERO_SEARCH_ENGINE_CLIENT_URL":url})
+    else:
+        omero_client_app.logger.info("No attribute is provided")
+
+@manager.command
 @manager.option('-u', '--url', help='Search engine url')
 def set_searchengine_url (url=None):
     if url:

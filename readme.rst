@@ -28,3 +28,9 @@ Also, it is needed to setup app data folder using the following command:
 It is possible to deploy the app and the searchengine using Docker images. For more information, please use the following link:
 https://github.com/ome/omero_search_engine/blob/main/docs/configuration/configuration_installtion.rst
 
+If you would like to use an existing deployment of this `searchengine` for all endpoints (except `/`)
+then you can set the `client URL`:
+
+.. code-block::
+
+     path/to/python manage.py set_client_url -u "http://idr.openmicroscopy.org/searchengine"

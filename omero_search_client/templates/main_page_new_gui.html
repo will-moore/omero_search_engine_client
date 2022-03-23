@@ -190,12 +190,12 @@
    var operator_choices= {{ operator_choices|tojson }};
    var query_id= {{ task_id|tojson }};
    var mode= {{ mode|tojson }}
-   var submitqueryurl = "{{ url_for('main.submit_query') }}";
-   var queryresultsurl = "{{ url_for('main.queryresults') }}";
-   var  getresourcesvalesforkey = "{{ url_for('main.get_resourcse_key') }}";
-   var  searchresourcesvales = "{{ url_for('main.get_resourcse_using_values_only') }}";
-   var  searchresourcesvalesforkey = "{{ url_for('main.get_values_using_values_using_key') }}";
-   var  getresourceskeysusingmode ="{{  url_for('main.get_resourcses_keys') }}";
+   var submitqueryurl = "{{ client_url }}{{ url_for('main.submit_query') }}";
+   var queryresultsurl = "{{ client_url }}{{ url_for('main.queryresults') }}";
+   var  getresourcesvalesforkey = "{{ client_url }}{{ url_for('main.get_resourcse_key') }}";
+   var  searchresourcesvales = "{{ client_url }}{{ url_for('main.get_resourcse_using_values_only') }}";
+   var  searchresourcesvalesforkey = "{{ client_url }}{{ url_for('main.get_values_using_values_using_key') }}";
+   var  getresourceskeysusingmode ="{{ client_url }}{{  url_for('main.get_resourcses_keys') }}";
 
    $(document).ajaxStart(function ()
    {

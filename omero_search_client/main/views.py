@@ -25,6 +25,13 @@ def use_advanced_mode():
     resources=get_resources("all")
     return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="advanced")#container)
 
+
+@main.route('/searchterms',methods=['POST', 'GET'])
+def searchterms ():
+    resources=get_resources("searchterms")
+    return resources
+
+
 @main.route('/',methods=['POST', 'GET'])
 def index ():
     '''
@@ -33,7 +40,9 @@ def index ():
     Returns:
     '''
     resources=get_resources("searchterms")
-    return render_template('main_page_new_gui.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
+    # if client_url is set, all other URLs will be based on that URL
+    client_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_CLIENT_URL", "")
+    return render_template('main_page_new_gui.html', client_url=client_url, resources_data=resources, operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
