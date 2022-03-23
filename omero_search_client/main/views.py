@@ -39,10 +39,10 @@ def index ():
     may be it is needed to the main template to be more user friendly
     Returns:
     '''
-    resources=get_resources("searchterms")
     # if client_url is set, all other URLs will be based on that URL
     client_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_CLIENT_URL", "")
-    return render_template('main_page_new_gui.html', client_url=client_url, resources_data=resources, operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
+    return render_template('main_page_new_gui.html', client_url=client_url, operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
+
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):

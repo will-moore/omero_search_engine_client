@@ -713,11 +713,19 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
 
 });
 }
-$(document).ready(function() {
 
-set_tree_nodes();
+// This is called when the page is ready
+$(document).ready(async function() {
 
-create_tree();
+    // wait while we load resources_data...
+    await fetch(searchtermsurl).then(rsp => rsp.json()).then(data => {
+        resources_data = data;
+    });
+
+    // now we can build tree etc...
+    set_tree_nodes();
+
+    create_tree();
 
 
     let _keys_options = document.getElementById('keyFields');

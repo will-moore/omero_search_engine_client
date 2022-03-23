@@ -186,10 +186,12 @@
 </div>
 <script src={{url_for('static',filename='/js/resource_handeler_new_gui.js')}}></script>
 <script>
-   var resources_data = {{ resources_data|tojson }};
+   // resources_data loaded via searchtermsurl when page loads
+   var resources_data = {};
    var operator_choices= {{ operator_choices|tojson }};
    var query_id= {{ task_id|tojson }};
    var mode= {{ mode|tojson }}
+   var searchtermsurl = "{{ client_url }}{{ url_for('main.searchterms') }}";
    var submitqueryurl = "{{ client_url }}{{ url_for('main.submit_query') }}";
    var queryresultsurl = "{{ client_url }}{{ url_for('main.queryresults') }}";
    var  getresourcesvalesforkey = "{{ client_url }}{{ url_for('main.get_resourcse_key') }}";
