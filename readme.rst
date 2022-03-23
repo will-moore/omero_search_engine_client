@@ -15,7 +15,7 @@ The following command will configure the url for the search engine:
 
 .. code-block::
 
-     path/to/python manage.py set_searchengine_url "serahc engine url"
+     path/to/python manage.py set_searchengine_url -u "serahc engine url"
 
 If the serahc engine run locally, its url should be something like that: "http://127.0.0.1:5577/"
 
