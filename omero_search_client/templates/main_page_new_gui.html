@@ -1,28 +1,39 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Client for Omero search engine - Index{% endblock %}
-{% block app_content %}+
+{% block app_content %}
 <section class="container py-4" style="float : left;">
+
     <div class="row">
-        <div class="col-md-12">
-            <div style="float: right">
-              <label for="commonattr">Common attribute mode: </label>
-                          <input type="checkbox" id ="commonattr" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="mini">
-            </div>
-            <br>
-            <ul id="tabs" class="nav nav-tabs">
-                <li class="nav-item"><a href="#home1" data-toggle="tab" data-target="#home1"  class="nav-link small text-uppercase active"> Attribute Browser </a></li>
-                <li class="nav-item" id="querybuilder_nav"><a href="#querybuilder" data-toggle="tab"  data-target="#querybuilder" class="nav-link small text-uppercase ">Query Builder</a></li>
-                <li class="nav-item"><a href="#templates"  data-toggle="tab" data-target="#templates" class="nav-link small text-uppercase">Templates</a></li>
-                     </ul>
-                    <br>
-                    <div id="tabsContent" class="tab-content">
-                        <div id="home1" class="tab-pane fade active show">
-                             <form class="form-inline">
+            <div class="pull-right">
+
+      <label for="commonattr">Common attributes mode: </label>
+    <input type="checkbox" id ="commonattr" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="mini">
+
+        </div>
+
+                    <div class="col-md-12">
+                        <div style="float: right">
+                  <form class="form-inline">
                        <input id ="value_field" class="form-control mr-sm-3" type="search" placeholder="search for any value" aria-label="Search">
                        <button  id="value_field_search_only" class="btn btn-success " type="submit">Search</button>
                   </form>
+            </div>
+            <br>
+         <ul id="tabs" class="nav nav-tabs">
+        <li class="nav-item" id="querybuilder_nav">
+            <a href="#querybuilder" data-toggle="tab"  data-target="#querybuilder" class="nav-link md text-Capitalize active">
+            Query Builder</a></li>
+        <li class="nav-item" id="attributebrwoser_nav">
+            <a href="#attributebrwoser" data-toggle="tab" data-target="#attributebrwoser"  class="nav-link md text-Capitalize "> Attribute Browser </a></li>
+        <li class="nav-item"><a href="#templates"  data-toggle="tab" data-target="#templates" class="nav-link md text-Capitalize">Templates</a></li>
+             <li class="nav-item" id="help_nav"><a href="#templates"  data-toggle="tab" data-target="#help" class="nav-link md text-Capitalize">Help</a></li>
 
+
+                     </ul>
+                    <br>
+                    <div id="tabsContent" class="tab-content">
+                        <div id="attributebrwoser" class="tab-pane fade">
                     <div class="modal-body row">
 
                       <div class="col-md-3 "style="border-right: 1px solid black;  " >
@@ -31,33 +42,11 @@
                           <div id="jstree_resource_div"></div>
                       </div>
           <div id="attribute_search_results" class="col-md-9">
-
               <div class="m-4" id="help_message">
-
-
-
-        <a href="#" class="list-group-item list-group-item-action list-group-item-primary">
-            Double click on the desired attribute node in the tree on the left-hand side to browse the available values. The results will be in a table that contains rows (buckets) which each contain the attribute, value and the number of items. To explore the values inside the bucket, double click the relvant row.
-        </a>
-        <a href="#" class="list-group-item list-group-item-success">
-            It is possible to use the value search field to search for a value whose attribute is not known.
-
-        </a>
-                   <a href="#" class="list-group-item list-group-item-danger">
-            The search results are limited to 9999, paging will be added later to allow pulling all the results .
-
-        </a>
-                  <a href="#" class="list-group-item list-group-item-action list-group-item-primary">
-                  "Query Builder" tab contains a search form that can be used to build a complex query. Queries which are built using "Query Builder" return all the results by applying paging.
-                  </a>
-
-
-
 </div>
                <div>
                          <label id="total_number_in_buckets"></label>
                    <br>
-
                        <div id="grid_key_values"  class="ag-theme-alpine"></div>
                    <br>
                 </div>
@@ -65,7 +54,7 @@
           </div>
 </div>
                     </div>
-                <div id="querybuilder" class="tab-pane fade ">
+                <div id="querybuilder" class="tab-pane fade active show">
                     <div class="row pb-2">
 
 
@@ -107,7 +96,7 @@
                         <label for="valueFields">Value</label>
                         <input type="text" class="form-control valueFields" id="valueFields" onfocus="setAutoCompleteValues()">
                      </div>
-                     <div class="form-group col-md-1 or"><button class="btn btn-sm btn-outline-danger remove">X</button></div>
+                                      <div class="form-group col-md-1 or"><button id="remove_row" class="btn btn-sm btn-outline-danger remove">X</button></div>
                   </div>
                   <a class="addOR" href="#" title="Add OR condition to the group">
                      add 'OR'...
@@ -184,7 +173,7 @@
 <button id="exportResults" class="btn btn-primary"  style="display: none"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
 <br>
 </div>
-<script src={{url_for('static',filename='/js/resource_handeler_new_gui.js')}}></script>
+<script src={{url_for('static',filename='js/resource_handeler_new_gui.js')}}></script>
 <script>
    var resources_data = {{ resources_data|tojson }};
    var operator_choices= {{ operator_choices|tojson }};
@@ -219,6 +208,24 @@
                     <h3>
 Under construction, please visit later!
                         </h3>
+            </div>
+
+                                     <div id="help" class="tab-pane fade">
+                                         <p>
+                                             "Query Builder" tab contains a search form that can be used to build a complex query. Queries which are built using "Query Builder" return all the results by applying paging.
+                                         </p>
+            <p> Double click on the desired attribute node in the tree on the left-hand side inside the "Attribute Browser" tab to browse the available values.
+               The results will be in a table that contains rows (buckets) which each contain the attribute, value and the number of items. To explore the values inside the bucket, double click the relvant row.
+           </p>
+       <p>
+            It is possible to use the value search field to search for a value whose attribute is not known.
+</p>
+    <p>
+       <mark> The search results are limited to 9999, paging will be added later to allow pulling all the results .</mark>
+</p>
+
+
+
             </div>
         </div>
     </div>

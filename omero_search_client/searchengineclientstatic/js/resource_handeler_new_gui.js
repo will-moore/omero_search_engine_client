@@ -67,6 +67,7 @@ if (filename) {
     $("#confirm_message").modal("hide");
     document.getElementById("queryfilename").value="";
 }
+display_hide_remove_buttons();
 }
 
 //
@@ -414,7 +415,12 @@ function get_current_query(include_addition_information,displaymessage=true)
 
 function submitQuery(reset=true) {
    if (reset==true)
+   {
             reset_global_variables();
+              $("#myGrid_2").empty();
+              document.getElementById("results").style.display='none';
+               document.getElementById("reset_results_table_filter").style.display='none';
+     }
    if (query_details === undefined || size==0)
      {
         query=get_current_query(true);
@@ -463,16 +469,45 @@ function set_query_fields(container)
                 set_key_values(key_value,container);
             }
 
-    valueFields_.addEventListener("focus", function() {
-
-    setAutoCompleteValues();
+        //valueFields_.removeEventListener("focus", setAutoCompleteValues, true);
+        //valueFields_.removeEventListener("focus", setAutoCompleteValues, false);
+   // valueFields_.removeEventListener("focus", setAutoCompleteValues);
+    valueFields_.addEventListener("focus", e => {
+    setAutoCompleteValues(null);
         });
 
-        valueFields_.addEventListener("change", function() {
+
+       //valueFields_.removeEventListener("change", setAutoCompleteValues);
+        valueFields_.addEventListener("change", e => {
+                        value=valueFields_.value;
+
+         if (value.indexOf("Value:")>-1 && value.indexOf("Attribute:")>-1)
+        {
+        vals=value.split(", Value:");
+        attr=vals[0].split("Attribute: ")[1].trim();
+        container=valueFields_.parentNode.parentNode;
+        key_value=container.querySelector(".keyFields");
+        valueFields_.blur();
+        valueFields_.value=vals[1].trim();
+        //if($("+valueFields_+" option:contains('"+attr+')").length ==0)
+
+       // if($(key_value).options[attr].length ==0)
+        //if($("#id option:contains('option_name')").length ==0)
+            //{
+
+ if (get_resource(attr)==undefined)
+ {
+            $(key_value).append(new Option(attr, attr));
+            resources_data['image'].push(attr);
+  }
+
+
+        key_value.value=attr;
+    }
         query = get_current_query()
         $("#queryJson").val(JSON.stringify(query, undefined, 4));
-
     });
+
 
       optionHtml = '';
       let condtion__ = container.querySelector('.condition');
@@ -523,24 +558,90 @@ function addConditionRow(key, value, condtion, resource, group) {
     });
 }
 
+function toto_function(data)
+{
+
+container=document.activeElement.parentNode.parentNode;
+  //if ($(container.querySelector(".valueFields")).hasClass('ui-autocomplete-input')) {
+  //      $(container.querySelector(".valueFields")).autocomplete("destroy");
+//}
+        //
+  //      $(container.querySelector(".valueFields")).autocomplete = null;
+  if (data !=null)
+  {
+   $(container.querySelector(".valueFields")) .autocomplete({
+                   source:  data,
+                    delay:500,
+                   minLen: 0
+                   });
+  }
+
+  else
+  {
+        $(container.querySelector(".valueFields")) .autocomplete({
+                   source:  setFieldValues(data),
+                    delay:500,
+                   minLen: 0
+});
+
+}
+//after selecting the item, and menu is hiding it will sned the value input out of focus,
+//so it will update the fields with the correct values
+$(container.querySelector(".valueFields")).autocomplete({
+  close: function( event, ui ) {
+  container.querySelector(".valueFields").blur();
+  }
+});
+
+
+/*
+$(container.querySelector(".valueFields")) .autocomplete({
+    select: function( event, ui ) {
+        if (ui.item.value.indexOf("Value:")>-1 && ui.item.value.indexOf("Attribute:")>-1)
+        {
+
+    vals=ui.item.value.split(", Value:");
+    attr=vals[0].split("Attribute: ")[1];
+
+    let value_fields = document.activeElement;//document.getElementById('valueFields'+id);
+    container=document.activeElement.parentNode.parentNode;
+    key_value=container.querySelector(".keyFields");
+    value_fields.blur();
+    value_fields.value=vals[1].trim();
+    key_value.value=attr.trim();
+    //value_fields.blur()
+    //key_value.focus();
+      }
+    var getKeys = function(event)
+      {
+          }
+
+    }
+
+});
+*/
+
+
+}
 /*
 set autocpmlete values for key using a function to filter the available values
 It solves the issue of having many available values (sometimes tens of thousnads),
 it was freezing the interface */
-function setAutoCompleteValues(){
-        container=document.activeElement.parentNode.parentNode;
-        document.activeElement.addEventListener("keyup", function() {
-        $(container.querySelector(".valueFields")) .autocomplete({
-                   source:  setFieldValues(),
-                   minLength:0
-        });
-    });
+function setAutoCompleteValues(data=null){
+        //document.activeElement.removeEventListener("keyup", toto_function);
+        //document.activeElement.addEventListener("keyup", e =>{toto_function(data)});//, {once: true}) ;
+        document.activeElement.addEventListener("keyup", e => {
 
-
+   //exclude arrow keys from keyup event
+    var code = (e.keyCode || e.which);
+    if(code == 37 || code == 38 || code == 39 || code == 40) {
+        return;
+    }
+        toto_function(data)}) ;
 }
 
 
-//As main attributes supports equals andnot equals only
+//As main attributes supports equals and not equals only
 //This function restrict the use to these two operators
 function set_operator_options(key_value, container)
 {
@@ -558,22 +659,28 @@ function set_operator_options(key_value, container)
             {
                 condition.options[i].style.display = "block";
           }
-
         }
     }
 
 function get_resource(attribute)
 {
- for (resource in resources_data) {
-                if (resources_data[resource].includes(attribute))
-                {
-                return resource;
+     for (resource in resources_data) {
+                    if (resources_data[resource].includes(attribute))
+                    {
+                    return resource;
+                    }
                 }
-            }
 }
 
 
 function set_key_values(key_value, container) {
+    if (key_value=="Any")
+    {
+            cached_key_values[key_value]=[];
+            return;
+      }
+
+
 
     container.querySelector(".valueFields").value='';
     resource=get_resource(key_value);
@@ -582,7 +689,7 @@ function set_key_values(key_value, container) {
     {
         //let selected_resource_ = document.getElementById('resourcseFields'+id);
         //resource = selected_resource_.value;
-        url=getresourcesvalesforkey+ "/?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
+        url=getresourcesvalesforkey+ "?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
@@ -593,18 +700,47 @@ function set_key_values(key_value, container) {
                 }
         });
     }
-
-
 }
 
-function setFieldValues(){
+function setFieldValues(data=null){
     let value_fields = document.activeElement;//document.getElementById('valueFields'+id);
     container=document.activeElement.parentNode.parentNode;
     key_value=container.querySelector(".keyFields").value;
     current_value=cached_key_values[key_value];
     let val=value_fields.value;
+      if (data != null)
+    {
+         console.log("data has value====>>>>>>> 11");
+        return data;//.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+}
+    if (key_value=="Any" && val.length>2)
+    {
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge')+"&&return_attribute_value="+ encodeURIComponent(true);
+
+//  const request = async () => {
+//    const response = await fetch(url);
+//    const json = await response.json();
+//    console.log("JSON IS:",json);
+//    return json;
+ $('body').addClass('wait');
+    fetch(url).then(function(response) {
+          {
+          console.log("VALUE: ", val);
+            response.json().then(function(data) {
+            $('body').removeClass('wait');
+
+            toto_function(data);
+            //console.log("datatata", data);
+            //return data.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+
+                    });
+                }
+        });
+    }
     //for performance, when the length of the current values length is bigger than 1000, when the value is one letter, it will only return all the items which start with this letter
     //otherwise, it will return all the items which contains the value (even ther are  at the middle or at the end of the items)
+    if (current_value==undefined)
+    return [];
     if (current_value.length>1000)
     {
     console.log("1: val: "+val);
@@ -627,7 +763,7 @@ function setFieldValues(){
 
 function set_resources(resource, container) {
     let __keys_options=container.querySelector(".keyFields");
-    optionHtml = '';
+    optionHtml ='<option value ="Any">Any</option>';
     for (const [key, value] of Object.entries(resources_data)) {
        // if (key == resource) {
             if (value==null)
@@ -701,7 +837,7 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
     $('body').addClass('wait');
 
     let resource=get_resource(key);
-    url=searchresourcesvalesforkey+ "/?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    url=searchresourcesvalesforkey+ "?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
@@ -829,8 +965,11 @@ function addAnd(attribute, operator, value) {
     let $newRow = $andClause.clone();
 
     $form.append($newRow);
-    //set key values and auto complete
+
     set_query_fields($newRow.children()[0]);
+
+    //set key values and auto complete
+
 
     if (attribute) {
         $(".keyFields", $newRow).val(attribute);
@@ -840,7 +979,9 @@ function addAnd(attribute, operator, value) {
     }
     if (value) {
         $(".valueFields", $newRow).val(value);
+
     }
+
     return $newRow;
 }
 
@@ -851,7 +992,6 @@ function addOr($and, attribute, operator, value) {
 
     $row.after($newRow);
     //set key values and auto complete
-    set_query_fields($newRow[0]);
       if (attribute) {
         $(".keyFields", $newRow).val(attribute);
     }
@@ -861,6 +1001,10 @@ function addOr($and, attribute, operator, value) {
     if (value) {
         $(".valueFields", $newRow).val(value);
     }
+    // I have added this line to reset the value as it is copied with its value, this should be invistigated  later
+    else
+     $(".valueFields", $newRow).val('');
+    set_query_fields($newRow[0]);
 
 }
 function load_query() {
@@ -879,6 +1023,8 @@ function load_query() {
         return;
     }
     set_the_query(query_details);
+    display_hide_remove_buttons();
+
     }
 
 function set_the_query(query_details)
@@ -919,8 +1065,12 @@ function check_value(_keys_options, attribute)
   _keys_options.value = attribute;
  if (_keys_options.selectedIndex===-1)
  {
- let values=resources_data["image"];
- values.push(attribute);
+
+     let values=resources_data["image"];
+     values.push(attribute);
+     $(_keys_options).append(new Option(attribute, attribute));
+
+
  }
 }
 
@@ -930,10 +1080,21 @@ function check_attribute(attribute)
 var elms = document.querySelectorAll("[id='keyFields']");
 for(var i = 0; i < elms.length; i++)
 {
-check_value(elms[i], attribute);
+    check_value(elms[i], attribute);
 }
         }
 
+
+function display_hide_remove_buttons(){
+   let btns=document.querySelectorAll("#remove_row");
+   btns.forEach(function (btn) {
+    if (btns.length == 1) {
+            btn.style.visibility = "hidden";
+        } else {
+            btn.style.visibility = "visible";
+        }
+        });
+        }
 
 function onRowDoubleClicked(event) {
 /* when the user double check a row inisde the grid
@@ -943,23 +1104,31 @@ it will get he attribute and value pair and set the query builder for using them
   let resource=get_resource(rowNode.data.Attribute);
   if (resource===undefined)
         resource='image';
+        resources_data[resource].push(rowNode.data.Attribute);
 
-  query["resource"]=resource;
-  query_details={};
-  query["query_details"]=query_details;
-  check_attribute(rowNode.data.Attribute);
-  query_details["and_filters"]= [{"name":rowNode.data.Attribute,"value":rowNode.data.Value,"operator":"equals","resource":"image"}];
-  query_details["or_filters"]=[];
-  set_the_query(query_details);
+  addAnd(rowNode.data.Attribute,"equals" , rowNode.data.Value);
+
+ display_hide_remove_buttons();
+
+
+  //query["resource"]=resource;
+  //query_details={};
+  //query["query_details"]=query_details;
+  //check_attribute(rowNode.data.Attribute);
+  //query_details["and_filters"]= [{"name":rowNode.data.Attribute,"value":rowNode.data.Value,"operator":"equals","resource":resource}];
+  //query_details["or_filters"]=[];
+  //set_the_query(query_details);
   query = get_current_query();
-  var someTabTriggerEl = document.querySelector('#tabs  #querybuilder_nav a');
-  var tab = new bootstrap.Tab(someTabTriggerEl);
-  tab.show()
-  reset_global_variables();
-  $("#myGrid_2").empty();
-  document.getElementById("results").style.display='none';
-  document.getElementById("reset_results_table_filter").style.display='none';
-  submitQuery();
+  var querybuilderTab = document.querySelector('#tabs  #querybuilder_nav a');
+  var tab = new bootstrap.Tab(querybuilderTab);
+  tab.show();
+   $("#queryJson").val(JSON.stringify(query, undefined, 4));
+  document.getElementById("submit_").click();
+  //reset_global_variables();
+  //$("#myGrid_2").empty();
+  //document.getElementById("results").style.display='none';
+  //document.getElementById("reset_results_table_filter").style.display='none';
+  //submitQuery();
 }
 
 function removeAllChildNodes(parentNode) {
@@ -1024,17 +1193,14 @@ function display_value_search_results(results, resource)
                 $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
             else
                 $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
-
-
-
-
-    }
+   }
     else
     alert("No result is found");
     $('body').removeClass('wait');
-
+    var attributebrwoserTab = document.querySelector('#tabs  #attributebrwoser_nav a');
+    var tab = new bootstrap.Tab(attributebrwoserTab);
+    tab.show();
    }
-
 
   $("#value_field_search_only").on("click",  function (event) {
   /*
@@ -1049,7 +1215,7 @@ function display_value_search_results(results, resource)
         query= {"value": $("#value_field").val(), "resource": "image" };
 $('body').addClass('wait');
         let resource="image";
-        url=searchresourcesvales+ "/?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
@@ -1057,13 +1223,11 @@ $('body').addClass('wait');
                     });
                 }
         });
-
     });
 
-set_tree_events_handller();
+    set_tree_events_handller();
 
 /**
-
 **/
   $(function() {
 
@@ -1090,9 +1254,9 @@ set_tree_events_handller();
           set_tree_nodes(open);
           $('#jstree_resource_div').jstree("destroy").empty();
 
-create_tree();
-set_tree_events_handller ();
-update_key_fields();
+        create_tree();
+        set_tree_events_handller ();
+        update_key_fields();
                 });
             }
     });
@@ -1131,4 +1295,11 @@ key=__keys_options.value;
 
 function searchforvalue()
 {
+}
+
+function display_help()
+{
+ var helptab = document.querySelector('#tabs  #help_nav a');
+  var tab = new bootstrap.Tab(helptab);
+  tab.show()
 }
