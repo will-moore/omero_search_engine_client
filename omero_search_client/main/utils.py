@@ -2,11 +2,12 @@ import requests
 import json
 import os
 from omero_search_client import omero_client_app
+import operator
 
 mapping_names={"project":{"Name (IDR number)":"name"},"screen":{"Name (IDR number)":"name"}}
 
 
-def get_resourcse_names_from_search_engine(resource):
+def get_resourcse_names_from_search_engine(resource, ):
     search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
     url = search_engine_url + "/getresourcenames/"
     resp = requests.get(url=url)
@@ -14,16 +15,37 @@ def get_resourcse_names_from_search_engine(resource):
     values = json.loads(results)
     return values
 
-def search_values(resource, value):
+def search_values(resource, value,return_attribute_value=False):
     url="{base_url}api/v2/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
     resp = requests.get(url=url)
     results_ = resp.text
     all_results = json.loads(results_)
     results = all_results.get("returnted_results")
+    for re in results:
+        if "Number of images" not in re:
+            print ("Error: ", re)
+    results.sort(key=operator.itemgetter('Number of images'), reverse=True)
+
     total_number = all_results.get("total_number")
+
+    if return_attribute_value:
+        returned_values=[]
+        co=0
+        for res in results:
+            co+=1
+            atr_val="Attribute: "+res["Attribute"]+", Value:"+res["Value"]
+            returned_values.append((atr_val))
+            #if co==30:
+            #    returned_values.append(("Show more results"))
+            #    break
+        return returned_values
+
+
+
 
     col_def = []
     if len(results)>0:
+        #print (results)
         for item in results [0]:
             col={}
             col_def.append(col)
@@ -118,9 +140,6 @@ class QueryGroup(object):
 
 class QueryRunner(object, ):
     def __init__(self,and_query_group,  or_query_group, case_sensitive, mode, bookmark, raw_elasticsearch_query,columns_def):
-        print (type(or_query_group))
-        print(type(and_query_group))
-        print ("=============================")
         self.or_query_group=or_query_group
         self.and_query_group=and_query_group
         self.case_sensitive=case_sensitive
@@ -135,10 +154,7 @@ class QueryRunner(object, ):
         res=None
         or_queries=[]
         if len (self.and_query_group.query_list)==0:
-            print ("I AM ZERO so, I will not work !!!!!")
-            print (type(self.or_query_group))
             for or_grp_ in self.or_query_group:
-                print (or_grp_.__dict__)
                 for resource, or_grp in or_grp_.resourses_query.items():
                     or_queries.append(or_grp_.resourses_query[resource])
             self.image_query["or_filters"] = or_queries
@@ -171,7 +187,6 @@ class QueryRunner(object, ):
                     new_cond=get_ids(res, resource)
                     if new_cond:
                         self.additional_image_conds+=new_cond
-        print (len(or_queries))
         self.image_query["main_attribute"]={"or_main_attributes": self.additional_image_conds}
         return  self.run_query(self.image_query, "image")
 
@@ -348,13 +363,13 @@ def process_search_results(results, resource, columns_def, mode):
         main_cols.append(("Id"))
 
         for col in cols:
-            if mode=="usesearchterms" and col not in main_cols:
-                if col in searchtermcols:
-                    columns_def.append({
-                        "field": col,
-                        "sortable": True,
-                        #"width": 150,
-                    })
+            #if mode=="usesearchterms" and col not in main_cols:
+            if col in searchtermcols:
+                columns_def.append({
+                    "field": col,
+                    "sortable": True,
+                    #"width": 150,
+                })
             else:
                 columns_def.append({
                     "field": col,
@@ -459,7 +474,7 @@ def get_resources(mode):
     if mode == "searchterms":
         restricted_search_terms=get_restircted_search_terms()
         restircted_resources={}
-    url = "{base_url}api/v1/resources/all/getannotationkeys".format(
+    url = "{base_url}api/v1/resources/all/getannotationkeys/".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"))
     resources={}
     try:

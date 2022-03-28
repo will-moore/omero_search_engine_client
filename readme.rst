@@ -15,7 +15,7 @@ The following command will configure the url for the search engine:
 
 .. code-block::
 
-     path/to/python manage.py set_searchengine_url "serahc engine url"
+     path/to/python manage.py set_searchengine_url -u "serahc engine url"
 
 If the serahc engine run locally, its url should be something like that: "http://127.0.0.1:5577/"
 
@@ -23,7 +23,7 @@ Also, it is needed to setup app data folder using the following command:
 
 .. code-block::
 
-      path/to/python manage.py set_app_data_folder path/to/data/folder
+      path/to/python manage.py set_app_data_folder -a path/to/data/folder
 
 It is possible to deploy the app and the searchengine using Docker images. For more information, please use the following link:
 https://github.com/ome/omero_search_engine/blob/main/docs/configuration/configuration_installtion.rst

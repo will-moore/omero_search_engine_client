@@ -4,9 +4,8 @@
 {% block head %}
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
   <!--link rel="stylesheet" href="/resources/demos/style.css"!-->
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
   <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
@@ -29,6 +28,8 @@
 
 <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 
 
   <title>
@@ -36,7 +37,7 @@
          {% if title %}
         {{ title }}
         {% else %}
-    Client for Omero search engine
+    IDR search engine
     {% endif %}
         {% endblock %}
   </title>
@@ -45,10 +46,15 @@
 {% endblock %}
 
 <body>
-   <div id="main_container" class="container-fluid">
-        <br>
-    <h3>IDR Search Engine </h3>
-    <br>
+   <div id="main_container" class="container">
+  <div class="jumbotron text-center">
+      <div class="container">
+        <h1>Welcome To the IDR Search Engine</h1>
+        <p>IDR search engine app is used to search metadata (key-value pairs)
+ </p>
+        <a href="#" onclick="display_help()" class="btn btn-primary">Read More</a>
+      </div>
+    </div>
 
         {% block app_content %}
 
@@ -106,5 +112,6 @@
     </div>
   </div>
 </div>
+
 </body>
 </html>

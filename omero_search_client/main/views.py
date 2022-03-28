@@ -8,9 +8,9 @@ from omero_search_client import omero_client_app
 from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key
 
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
-        , ("not_contains", "not contains"),
-                                        ("gt", ">"),("gte", ">="), ("lt", "<"),
-                                                 ("lte", "<=")]
+        , ("not_contains", "not contains")]
+                                        #("gt", ">"),("gte", ">="), ("lt", "<"),
+                                        #         ("lte", "<=")]
 
 
 
@@ -102,10 +102,11 @@ def get_query_results_withGUI():
 @main.route('/serachusingvaluesonly/',methods=['POST', 'GET'])
 def get_resourcse_using_values_only():
     value = request.args.get("value")
+    return_attribute_value = request.args.get("return_attribute_value")
     resource = request.args.get("resource")
     if not value or not resource:
-        return json.dumps({"Error": "No value is provided"})
-    return json.dumps(search_values(resource,value))
+         return json.dumps({"Error": "No value is provided"})
+    return json.dumps(search_values(resource,value,return_attribute_value))
 
 @main.route('/serachforvaluesusingkey/',methods=['POST', 'GET'])
 def get_values_using_values_using_key():
