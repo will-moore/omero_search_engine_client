@@ -1,6 +1,6 @@
 from . import main
 from .forms import SearchFrom
-from flask import render_template, request
+from flask import render_template, request, jsonify
 import requests
 import json
 from urllib.parse import quote
@@ -37,37 +37,36 @@ def index ():
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
-    return json.dumps(get_resourcse_names_from_search_engine(resource))
+    return jsonify(get_resourcse_names_from_search_engine(resource))
 
 @main.route('/get_resources_keys/',methods=['POST', 'GET'])
 def get_resourcses_keys():
     mode= request.args.get("mode")
     resources = get_resources(mode)
-    return json.dumps(resources)
+    return jsonify(resources)
 
 @main.route('/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key():
     key = request.args.get("key")
     resource = request.args.get("resource")
     if not key:
-        return json.dumps([])
+        return jsonify([])
     if resource=="project" and key=="Name (IDR number)":
         project_names=get_resourcse_names_from_search_engine ("project")
         screen_names = get_resourcse_names_from_search_engine("screen")
-        return json.dumps (screen_names+project_names)
+        return jsonify (screen_names+project_names)
     else:
         search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
         url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
         resp = requests.get(url=url)
         results = resp.text
         values = json.loads(results)
-        return json.dumps(values)
+        return jsonify(values)
 
 @main.route('/submitquery/',methods=['POST', 'GET'])
 def submit_query():
     query =json.loads(request.data)
-    return determine_search_results_(query)#
-
+    return jsonify(determine_search_results_(query))#
 
 @main.route('/queryresults/',methods=['POST', 'GET'])
 def queryresults():
@@ -76,7 +75,7 @@ def queryresults():
 
     task_id = request.args.get("task_id")
     resource=request.args.get("resource")
-    return json.dumps(get_query_results(task_id, resource))
+    return jsonify(get_query_results(task_id, resource))
 
 @main.route('/getqueryresult/',methods=['POST', 'GET'])
 def get_query_results_withGUI():
@@ -96,11 +95,11 @@ def get_resourcse_using_values_only():
     return_attribute_value = request.args.get("return_attribute_value")
     resource = request.args.get("resource")
     if not value or not resource:
-         return json.dumps({"Error": "No value is provided"})
-    return json.dumps(search_values(resource,value,return_attribute_value))
+         return jsonify({"Error": "No value is provided"})
+    return jsonify(search_values(resource,value,return_attribute_value))
 
 @main.route('/serachforvaluesusingkey/',methods=['POST', 'GET'])
 def get_values_using_values_using_key():
     key = request.args.get("key")
     resource = request.args.get("resource")
-    return json.dumps(search_key(resource, key))
+    return jsonify(search_key(resource, key))

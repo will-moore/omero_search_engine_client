@@ -221,7 +221,7 @@ class QueryRunner(object, ):
         if resource!="image":
             return res
 
-        return json.dumps(process_search_results(res, "image",self.columns_def, self.mode))
+        return process_search_results(res, "image",self.columns_def, self.mode)
 
 
 
@@ -314,7 +314,6 @@ def process_search_results(results, resource, columns_def, mode):
     if not extend_url:
         extend_url = omero_client_app.config.get("RESOURCE_URL")
     names_ids={}
-
     for item in results["results"]["results"]:
         value = {}
         values.append(value)
@@ -344,6 +343,7 @@ def process_search_results(results, resource, columns_def, mode):
             "id": col,
             "name": col,
             "field": col,
+            "hide": False,
             "sortable": True,
         })
     # to be used to rest
@@ -367,12 +367,14 @@ def process_search_results(results, resource, columns_def, mode):
             if col in searchtermcols:
                 columns_def.append({
                     "field": col,
+                    "hide": False,
                     "sortable": True,
                     #"width": 150,
                 })
             else:
                 columns_def.append({
                     "field": col,
+                    "hide":False,
                     "sortable": True,
                     #"width": 150,
                 })
@@ -389,6 +391,7 @@ def process_search_results(results, resource, columns_def, mode):
             for col in cols:
                 if not val.get(col):
                     val[col]='""'
+    #print (columns_def)
     returned_results["columns"]=columns
     returned_results["columns_def"]=columns_def
     returned_results["values"]=values
