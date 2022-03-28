@@ -1171,8 +1171,7 @@ function display_value_search_results(results, resource)
           rowData: null,
           onCellDoubleClicked: onRowDoubleClicked,
           onSortChanged : onSortChangedEvent,
-
-
+          onFilterChanged : onSortChangedEvent,
         };
             const searcheGridDiv = document.querySelector('#grid_key_values');
             var myobj = document.getElementById("demo");
@@ -1303,3 +1302,8 @@ function display_help()
   var tab = new bootstrap.Tab(helptab);
   tab.show()
 }
+
+function display_hide_grid_columns()
+    {
+
+    }
