@@ -363,14 +363,18 @@ def process_search_results(results, resource, columns_def, mode):
         main_cols.append(("Id"))
 
         for col in cols:
-            #if mode=="usesearchterms" and col not in main_cols:
-            if col in searchtermcols:
+            if mode=="usesearchterms" and col not in main_cols:
+                if col in searchtermcols:
+                    hide=False
+                else:
+                    hide=True
                 columns_def.append({
                     "field": col,
-                    "hide": False,
+                    "hide": hide,
                     "sortable": True,
                     #"width": 150,
                 })
+
             else:
                 columns_def.append({
                     "field": col,
