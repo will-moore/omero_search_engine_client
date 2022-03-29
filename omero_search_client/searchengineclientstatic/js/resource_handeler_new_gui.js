@@ -572,8 +572,12 @@ container=document.activeElement.parentNode.parentNode;
    $(container.querySelector(".valueFields")) .autocomplete({
                    source:  data,
                     delay:500,
-                   minLen: 0
-                   });
+                   minLen: 0,
+                   }).autocomplete("instance")._renderItem = function(ul, item) {
+                    // without this, html in label will be escaped
+                    var el = $('<div>' + item.label + '</div>')
+                    return $("<li>").append(el).appendTo(ul);
+                  };
   }
 
   else
@@ -715,7 +719,7 @@ function setFieldValues(data=null){
 }
     if (key_value=="Any" && val.length>2)
     {
-        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge')+"&&return_attribute_value="+ encodeURIComponent(true);
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
 
 //  const request = async () => {
 //    const response = await fetch(url);
@@ -729,7 +733,14 @@ function setFieldValues(data=null){
             response.json().then(function(data) {
             $('body').removeClass('wait');
 
-            toto_function(data);
+            let results = data.results.map(result => {
+                return {
+                    label: `<b>${result.Value}</b> (${result.Attribute}) <span style="color:#bbb">${result["Number of images"]}</span>`,
+                    // value is parsed to set Attribute chooser and field Value
+                    value: `Attribute: ${result.Attribute}, Value:${result.Value}`
+                }
+            })
+            toto_function(results);
             //console.log("datatata", data);
             //return data.filter(x => x.toLowerCase().includes(val.toLowerCase()))
 
