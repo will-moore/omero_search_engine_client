@@ -39,13 +39,8 @@ def search_values(resource, value,return_attribute_value=False):
             #    returned_values.append(("Show more results"))
             #    break
         return returned_values
-
-
-
-
     col_def = []
     if len(results)>0:
-        #print (results)
         for item in results [0]:
             col={}
             col_def.append(col)
@@ -125,8 +120,9 @@ class QueryGroup(object):
             flist.append(filter)
             self.resource=self.resourses_query.keys()
 
+
     def adjust_query_main_attributes(self):
-        to_be_removed=[]
+        to_be_removed= {}
         for resource, queries in self.resourses_query.items():
             for query in queries:
                 if query.query_type=="main_attribute":
@@ -134,9 +130,16 @@ class QueryGroup(object):
                         self.main_attribute[resource]={"and_main_attributes":query}
                     else:
                         self.main_attribute[resource]["and_main_attributes"].append(query)
-                    to_be_removed.append(query)
-            for qu in to_be_removed:
-                queries.remove(qu)
+                    if resource not in to_be_removed:
+                        to_be_removed[resource]=[query]
+                    else:
+                        to_be_removed[resource]=to_be_removed[resource].append(query)
+
+        for resource, queries in to_be_removed.items():
+            for query in queries:
+                self.resourses_query[resource].remove(query)
+
+
 
 class QueryRunner(object, ):
     def __init__(self,and_query_group,  or_query_group, case_sensitive, mode, bookmark, raw_elasticsearch_query,columns_def):
@@ -186,7 +189,8 @@ class QueryRunner(object, ):
                     res=self.run_query(query, resource)
                     new_cond=get_ids(res, resource)
                     if new_cond:
-                        self.additional_image_conds+=new_cond
+                        self.additional_image_conds.append(new_cond)
+        #for add_query in self.additional_image_conds:
         self.image_query["main_attribute"]={"or_main_attributes": self.additional_image_conds}
         return  self.run_query(self.image_query, "image")
 
@@ -212,19 +216,18 @@ class QueryRunner(object, ):
                 if type(qu)!=list:
                     ss.append(qu.__dict__)
                 else:
-                    for qu_ in qu:
-                        ss.append(qu_.__dict__)
+                    for qu__ in qu:
+                        bb=[]
+                        ss.append(bb)
+                        for qu_ in qu__:
+                            bb.append(qu_.__dict__)
             main_attributes[key]=ss
         query["case_sensitive"]=self.case_sensitive
         res=seracrh_query(query, resource, self.bookmark, self.raw_elasticsearch_query, main_attributes)
-
         if resource!="image":
             return res
 
         return process_search_results(res, "image",self.columns_def, self.mode)
-
-
-
 
 def determine_search_results_(query_):
     if query_.get("query_details"):
