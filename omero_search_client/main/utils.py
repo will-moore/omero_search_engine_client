@@ -127,13 +127,13 @@ class QueryGroup(object):
             for query in queries:
                 if query.query_type=="main_attribute":
                     if not resource in self.main_attribute:
-                        self.main_attribute[resource]={"and_main_attributes":query}
+                        self.main_attribute[resource]={"and_main_attributes":[query]}
                     else:
                         self.main_attribute[resource]["and_main_attributes"].append(query)
                     if resource not in to_be_removed:
                         to_be_removed[resource]=[query]
                     else:
-                        to_be_removed[resource]=to_be_removed[resource].append(query)
+                        to_be_removed[resource].append(query)
 
         for resource, queries in to_be_removed.items():
             for query in queries:
@@ -154,6 +154,7 @@ class QueryRunner(object, ):
         self.columns_def=columns_def
 
     def get_iameg_non_image_query(self):
+        has_main=False
         res=None
         or_queries=[]
         if len (self.and_query_group.query_list)==0:
@@ -175,12 +176,13 @@ class QueryRunner(object, ):
                         if resource in or_grp.resourses_query:
                             or_queries.append(or_grp.resourses_query[resource])
                 else:
+                    has_main=True
                     query={}
                     query["and_filters"]=and_query
                     or_queries = []
                     query["or_filters"] = or_queries
                     for or_grp in self.or_query_group:
-                        if resource in or_grp:
+                        if resource in or_grp.resourses_query:
                             or_queries.append(or_grp.resourses_query[resource])
                     if self.and_query_group.main_attribute.get(resource):
                         query["main_attribute"]=self.and_query_group.main_attribute.get(resource)
@@ -190,7 +192,12 @@ class QueryRunner(object, ):
                     new_cond=get_ids(res, resource)
                     if new_cond:
                         self.additional_image_conds.append(new_cond)
+                    else:
+                        return {"Error": "Your query returns no results"}
         #for add_query in self.additional_image_conds:
+
+        if len(self.additional_image_conds)==0 and has_main:
+            return {"Error" : "Your query returns no results"}
         self.image_query["main_attribute"]={"or_main_attributes": self.additional_image_conds}
         return  self.run_query(self.image_query, "image")
 
@@ -219,8 +226,13 @@ class QueryRunner(object, ):
                     for qu__ in qu:
                         bb=[]
                         ss.append(bb)
-                        for qu_ in qu__:
-                            bb.append(qu_.__dict__)
+                        if isinstance(qu__,QueryItem):
+                            bb.append(qu__.__dict__)
+                        elif isinstance(qu__, list):
+                                for qu_ in qu__:
+                                    bb.append(qu_.__dict__)
+                        else:
+                            return {"Error": "M"}
             main_attributes[key]=ss
         query["case_sensitive"]=self.case_sensitive
         res=seracrh_query(query, resource, self.bookmark, self.raw_elasticsearch_query, main_attributes)
