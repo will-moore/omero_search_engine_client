@@ -108,11 +108,22 @@ function displayMessage(header, btn_text) {
     $("#displaymessagemodal").modal("show");
 
     moelButton.addEventListener('click',update_table_visability);
+    select_all.addEventListener('click',set_columns_hidden);
+    deselect_all.addEventListener('click',set_columns_visible);
 
     //$("#moelButton").hide();
 }
 
+function set_columns_hidden ()
+{
+set_columns_selection(false);
+}
 
+function set_columns_visible()
+{
+set_columns_selection(true);
+
+}
 function urlFormatter  (row, cell, value, columnDef, dataContext) {
     return "<a href=" + value + " target='_blank'>" + value + "</a>";
 }
@@ -1324,4 +1335,21 @@ check the columns table to set their visability
         }
     );
 
+}
+
+
+function set_columns_selection(checked)
+{
+   columnDefs.forEach(function (column) {
+             if (column['field']!="Id" && column['field']!="Name" && column['field']!="Study name")
+             {
+              column['hide'] =checked;
+
+              if (checked ==true)
+                          ag_grid.gridOptions.columnApi.setColumnsVisible([column['field']], false);
+                     else
+                          ag_grid.gridOptions.columnApi.setColumnsVisible([column['field']], true);
+                          }
+        }
+        );
 }
