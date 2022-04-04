@@ -71,11 +71,14 @@ display_hide_remove_buttons();
 }
 
 //
-function reset_query(){
+function reset_query(need_confirmation=true){
     query=get_current_query(false);
     if (query==false)
         return;
-    if (confirm("All the conditions will be discarded, process?") == true) {
+        if (need_confirmation)
+    if (confirm("All the conditions will be discarded, process?") == false) {
+            return;
+    }
        reset_global_variables();
         const eGridDiv = document.querySelector('#myGrid_2');
         removeAllChildNodes(eGridDiv);
@@ -85,7 +88,7 @@ function reset_query(){
         $("#addAND").click();
         //location.reload();
         return false;
-    }
+
 }
 
 
@@ -400,6 +403,7 @@ function get_current_query(include_addition_information,displaymessage=true)
         let ors = node.querySelectorAll(".form-row");
 
         let or_dicts = [...ors].map(orNode => {
+
             return {
                 "name": orNode.querySelector(".keyFields").value,
                 "value": orNode.querySelector(".valueFields").value,
@@ -451,6 +455,27 @@ function submitQuery(reset=true) {
 
 function send_the_request(query)
 {
+
+/*
+//Working code to fetch the results to avoid "CORs block"
+url_2="https://idr-testing.openmicroscopy.org/searchengine/submitquery/"
+
+fetch(url_2,
+{
+    method: "POST",
+    body: JSON.stringify(query)
+})
+.then(function(results){ return results.json(); })
+.then(function(data){
+      if (data["Error"] != "none") {
+                alert(data["Error"]);
+                return;
+            }
+displayResults(  data  ) })
+return;
+*/
+
+//alert(submitqueryurl);
 $.ajax({
         type: "POST",
         url: submitqueryurl,
@@ -683,7 +708,7 @@ function setFieldValues(data=null){
 }
     if (key_value=="Any" && val.length>2)
     {
-        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge')+"&&return_attribute_value="+ encodeURIComponent(true);
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
 
 //  const request = async () => {
 //    const response = await fetch(url);
@@ -1065,14 +1090,32 @@ function display_hide_remove_buttons(){
         }
 
 function onRowDoubleClicked(event) {
-/* when the user double check a row inisde the grid
-it will get he attribute and value pair and set the query builder for using them, then submit a query to get the results*/
+/* when the user double check a row inside the grid
+it will get he attribute and value pair and set the query builder for using them, then submit a query to get the results
+*/
 
   const  rowNode= event.api.getRowNode(event.node.rowIndex);
-  let resource=get_resource(rowNode.data.Attribute);
-  if (resource===undefined)
-        resource='image';
-        resources_data[resource].push(rowNode.data.Attribute);
+  let resource=rowNode.data.Resource;
+   if (resource===undefined)
+        resource=get_resource(rowNode.data.Attribute);
+    if (resource===undefined)
+            resource='image';
+    if (resources_data.hasOwnProperty(resource))
+    {
+    if (resources_data[resource].indexOf(rowNode.data.Attribute )==-1)
+            resources_data[resource].push(rowNode.data.Attribute);
+            }
+        else
+    resources_data[resource]=[rowNode.data.Attribute]
+  query=get_current_query();
+  if(query["query_details"]["or_filters"].length==0 && query["query_details"]["and_filters"].length==1)
+  {
+  if (query["query_details"]["and_filters"][0]['name']==="Any")
+  {
+            $("#search_form").empty();
+        }
+
+      }
 
   addAnd(rowNode.data.Attribute,"equals" , rowNode.data.Value);
 
@@ -1139,7 +1182,10 @@ function display_value_search_results(results, resource)
            search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
                });
               //results["total_number_of_images"], results["total_number_of_buckets"]
-           if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
+           if (resource=="all")
+                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"])
+           else
+                if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
                 $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
            else
                 $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
@@ -1164,7 +1210,7 @@ function display_value_search_results(results, resource)
         }
         query= {"value": $("#value_field").val(), "resource": "image" };
 $('body').addClass('wait');
-        let resource="image";
+        let resource="all";
         url=searchresourcesvales+ "?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
         fetch(url).then(function(response) {
           {

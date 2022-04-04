@@ -15,11 +15,63 @@ def get_resourcse_names_from_search_engine(resource, ):
     values = json.loads(results)
     return values
 
+
+def set_returned_results_for_all(results_,return_attribute_value):
+    '''
+    Used in case of searching all resources using value to find attributes, and values
+    the search engine returns dict contains the close matching attributes for the provided values for each resourse
+    Args:
+        results_: the returned results from the searchengine
+        return_attribute_value:
+
+    Returns:
+
+    '''
+    if (return_attribute_value):
+        for ress,results__ in results_.items():
+            results = results__.get("returnted_results")
+            results.sort(key=operator.itemgetter('Number of %s'%ress+'s'), reverse=True)
+            returned_values = []
+            co = 0
+            added_attrs=[]
+            for res in results:
+                co += 1
+                if res["Attribute"]  in added_attrs:
+                    continue
+                added_attrs.append(["Attribute"])
+                atr_val = "Attribute: " + res["Attribute"] + ", Value:" + res["Value"]
+                returned_values.append((atr_val))
+        return returned_values
+    col_def=[]
+    all_results=[]
+    total_number_results=0
+    no_buckets=0
+    for ress, results__ in results_.items():
+        total_number = results__.get("total_number")
+        results = results__.get("returnted_results")
+        if total_number==0:
+            continue
+        for res in results:
+            res["Resource"]=ress
+        all_results += results
+        no_buckets+=len(results)
+        total_number_results+=total_number
+        results.sort(key=operator.itemgetter('Number of %s' % ress + 's'), reverse=True)
+        if len(results)>0 and len (col_def)==0:
+            for item in results [0]:
+                col={}
+                col_def.append(col)
+                col["field"]=item
+                col["sortable"]= True
+    return {"columnDefs": col_def, "results": all_results, "total_number":total_number_results, "no_buckets":no_buckets}
+
 def search_values(resource, value,return_attribute_value=False):
     url="{base_url}api/v2/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
     resp = requests.get(url=url)
     results_ = resp.text
     all_results = json.loads(results_)
+    if resource=="all":
+        return set_returned_results_for_all(all_results,return_attribute_value)
     results = all_results.get("returnted_results")
     for re in results:
         if "Number of images" not in re:
@@ -35,9 +87,6 @@ def search_values(resource, value,return_attribute_value=False):
             co+=1
             atr_val="Attribute: "+res["Attribute"]+", Value:"+res["Value"]
             returned_values.append((atr_val))
-            #if co==30:
-            #    returned_values.append(("Show more results"))
-            #    break
         return returned_values
     col_def = []
     if len(results)>0:
