@@ -58,11 +58,21 @@ def set_returned_results_for_all(results_,return_attribute_value):
         total_number_results+=total_number
         results.sort(key=operator.itemgetter('Number of %s' % ress + 's'), reverse=True)
         if len(results)>0 and len (col_def)==0:
+            last_colm=''
             for item in results [0]:
+                if "Number of" in item:
+                    last_colm=item
+                    continue
+                print ("Item: ",item)
                 col={}
                 col_def.append(col)
                 col["field"]=item
                 col["sortable"]= True
+            if last_colm:
+                col={}
+                col_def.append(col)
+                col["field"] = last_colm
+                col["sortable"] = True
     return {"columnDefs": col_def, "results": all_results, "total_number":total_number_results, "no_buckets":no_buckets}
 
 def search_values(resource, value,return_attribute_value=False):
@@ -90,11 +100,20 @@ def search_values(resource, value,return_attribute_value=False):
         return returned_values
     col_def = []
     if len(results)>0:
+        last_colm=''
         for item in results [0]:
+            if "Number of" in item:
+                last_colm = item
+                continue
             col={}
             col_def.append(col)
             col["field"]=item
             col["sortable"]= True
+        if last_colm:
+            col = {}
+            col_def.append(col)
+            col["field"] = last_colm
+            col["sortable"] = True
     return {"columnDefs": col_def, "results": results, "total_number":total_number, "no_buckets":len(results)}
 
 def search_key(resource, key):
@@ -107,13 +126,21 @@ def search_key(resource, key):
     total_number=all_results.get("total_number")
     total_number_of_images=all_results.get("total_items")
     total_number_of_buckets=all_results.get("total_number_of_buckets")
-
     col_def = []
     if results and len(results) > 0:
+        last_colm = ''
         for item in results[0]:
+            if "Number of" in item:
+                last_colm = item
+                continue
             col = {}
             col_def.append(col)
             col["field"] = item
+            col["sortable"] = True
+        if last_colm:
+            col = {}
+            col_def.append(col)
+            col["field"] = last_colm
             col["sortable"] = True
     return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results),"total_number_of_images":total_number_of_images, "total_number_of_buckets":total_number_of_buckets}
 
