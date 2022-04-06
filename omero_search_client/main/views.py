@@ -31,7 +31,7 @@ def index ():
     Returns:
     '''
     resources=get_resources("searchterms")
-    return render_template('main_page_new_gui.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
+    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
 
 @main.route('/searchterms',methods=['POST', 'GET'])
 def get_search_items():
