@@ -49,5 +49,14 @@ def create_app(config_name="development"):
     if config_name!= "testing":
         from omero_search_client.app_data import check_copy_data_file
         check_copy_data_file(omero_client_app)
+
+    #add CORS headers
+    @omero_client_app.after_request
+    def after_request(response):
+        header = response.headers
+        header["Access-Control-Allow-Origin"] = "*"
+        header["Access-Control-Allow-Headers"]= "*"
+        return response
+
     return omero_client_app
 
