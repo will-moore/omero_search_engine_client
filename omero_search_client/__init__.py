@@ -51,3 +51,10 @@ def create_app(config_name="development"):
         check_copy_data_file(omero_client_app)
     return omero_client_app
 
+#add it to account for CORS
+@omero_client_app.after_request
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = '*'
+    header["Access-Control-Allow-Headers"]= "*"
+    return response
