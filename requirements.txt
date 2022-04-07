@@ -6,7 +6,6 @@ Flask-Script==2.0.6
 Flask-Table==0.5.0
 Flask-Testing==0.8.1
 Flask-WTF==0.14.3
-flask-cors==3.0.10
 WTForms==2.3.3
 psycopg2==2.8.6
 python-dateutil==2.8.1

@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urlparse
 from flask import request, url_for as _url_for
-from flask_cors import CORS
 
 from omero_search_client.configuration.config import omero_search_client_app_config, load_configuration_variables_from_file,configLooader
 main_folder=os.path.dirname(os.path.realpath(__file__))
@@ -47,7 +46,6 @@ def create_app(config_name="development"):
     from omero_search_client.main import main as routers_blueprint_main
     omero_client_app.register_blueprint(routers_blueprint_main, url_prefix='/')
     omero_client_app.jinja_env.globals['url_for'] = url_for
-    CORS(omero_client_app)
     if config_name!= "testing":
         from omero_search_client.app_data import check_copy_data_file
         check_copy_data_file(omero_client_app)
