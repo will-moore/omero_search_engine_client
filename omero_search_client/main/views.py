@@ -72,7 +72,7 @@ def submit_query():
 
 @main.route('/queryresults/',methods=['POST', 'GET'])
 def queryresults():
-    urls={"iamge":omero_client_app.config.get("IMAGE_URL"),
+    urls={"image":omero_client_app.config.get("IMAGE_URL"),
           "project":omero_client_app.config.get("PROJECT_ID")}
 
     task_id = request.args.get("task_id")
@@ -91,7 +91,7 @@ def get_query_results_withGUI():
     return render_template('main_page.html', resources_data=resources, form=form, task_id=task_id)#container)
 
 
-@main.route('/serachusingvaluesonly/',methods=['POST', 'GET'])
+@main.route('/searchusingvaluesonly/',methods=['POST', 'GET'])
 def get_resourcse_using_values_only():
     value = request.args.get("value")
     return_attribute_value = request.args.get("return_attribute_value")
@@ -100,7 +100,7 @@ def get_resourcse_using_values_only():
          return jsonify({"Error": "No value is provided"})
     return jsonify(search_values(resource,value,return_attribute_value))
 
-@main.route('/serachforvaluesusingkey/',methods=['POST', 'GET'])
+@main.route('/searchforvaluesusingkey/',methods=['POST', 'GET'])
 def get_values_using_values_using_key():
     key = request.args.get("key")
     resource = request.args.get("resource")
