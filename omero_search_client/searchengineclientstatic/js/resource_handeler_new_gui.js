@@ -80,7 +80,7 @@ function reset_query(){
         const eGridDiv = document.querySelector('#myGrid_2');
         removeAllChildNodes(eGridDiv);
         document.getElementById("results").style.display='none';
-        document.getElementById("reset_results_table_filter").style.display='none';
+        document.getElementById("results_grid_buttons").style.display='none';
         $("#search_form").empty();
         $("#addAND").click();
         //location.reload();
@@ -98,13 +98,18 @@ function cancell_ajaxcall() {
     }
 
 //display message to the user
-function displayMessage(header, body, btn_text) {
+function displayMessage(header, btn_text) {
     messageHeader.innerText = header;
-    messageBody.innerText = body;
     if (typeof(btn_text) !== "undefined" && btn_text !== null)
         moelButton.innerText = btn_text;
+    $("#modalprogresbar").css('visibility', 'hidden');
+
+
     $("#displaymessagemodal").modal("show");
-    $("#moelButton").hide();
+
+    moelButton.addEventListener('click',update_table_visability);
+
+    //$("#moelButton").hide();
 }
 
 
@@ -256,14 +261,13 @@ results = data["values"];
 
 var gridOptions = {
   defaultColDef: {
-    resizable: true,
+   resizable: true,
   "filter": true,
   "animateRows":true,
   },
  enableCellTextSelection: true,
   columnDefs: columnDefs,
   rowData: null,
-
 };
 
  // lookup the container we want the Grid to use
@@ -292,7 +296,7 @@ var gridOptions = {
 
     var resultsDiv = document.getElementById('results');
 //    document.getElementById('exportResults').style.display = "block";
-    document.getElementById('reset_results_table_filter').style.display = "block";
+    document.getElementById('results_grid_buttons').style.display = "block";
     resultsDiv.style.display = "block";
     $('#no_images').text(message);
     var grid;
@@ -419,7 +423,7 @@ function submitQuery(reset=true) {
             reset_global_variables();
               $("#myGrid_2").empty();
               document.getElementById("results").style.display='none';
-               document.getElementById("reset_results_table_filter").style.display='none';
+               document.getElementById("results_grid_buttons").style.display='none';
      }
    if (query_details === undefined || size==0)
      {
@@ -468,16 +472,9 @@ function set_query_fields(container)
                 key_value = this.value;
                 set_key_values(key_value,container);
             }
-
-        //valueFields_.removeEventListener("focus", setAutoCompleteValues, true);
-        //valueFields_.removeEventListener("focus", setAutoCompleteValues, false);
-   // valueFields_.removeEventListener("focus", setAutoCompleteValues);
     valueFields_.addEventListener("focus", e => {
     setAutoCompleteValues(null);
         });
-
-
-       //valueFields_.removeEventListener("change", setAutoCompleteValues);
         valueFields_.addEventListener("change", e => {
                         value=valueFields_.value;
 
@@ -489,11 +486,6 @@ function set_query_fields(container)
         key_value=container.querySelector(".keyFields");
         valueFields_.blur();
         valueFields_.value=vals[1].trim();
-        //if($("+valueFields_+" option:contains('"+attr+')").length ==0)
-
-       // if($(key_value).options[attr].length ==0)
-        //if($("#id option:contains('option_name')").length ==0)
-            //{
 
  if (get_resource(attr)==undefined)
  {
@@ -579,14 +571,13 @@ container=document.activeElement.parentNode.parentNode;
                     return $("<li>").append(el).appendTo(ul);
                   };
   }
-
-  else
-  {
-        $(container.querySelector(".valueFields")) .autocomplete({
-                   source:  setFieldValues(data),
-                    delay:500,
-                   minLen: 0
-});
+    else
+      {
+            $(container.querySelector(".valueFields")) .autocomplete({
+                       source:  setFieldValues(data),
+                        delay:500,
+                       minLen: 0
+    });
 
 }
 //after selecting the item, and menu is hiding it will sned the value input out of focus,
@@ -597,43 +588,12 @@ $(container.querySelector(".valueFields")).autocomplete({
   }
 });
 
-
-/*
-$(container.querySelector(".valueFields")) .autocomplete({
-    select: function( event, ui ) {
-        if (ui.item.value.indexOf("Value:")>-1 && ui.item.value.indexOf("Attribute:")>-1)
-        {
-
-    vals=ui.item.value.split(", Value:");
-    attr=vals[0].split("Attribute: ")[1];
-
-    let value_fields = document.activeElement;//document.getElementById('valueFields'+id);
-    container=document.activeElement.parentNode.parentNode;
-    key_value=container.querySelector(".keyFields");
-    value_fields.blur();
-    value_fields.value=vals[1].trim();
-    key_value.value=attr.trim();
-    //value_fields.blur()
-    //key_value.focus();
-      }
-    var getKeys = function(event)
-      {
-          }
-
-    }
-
-});
-*/
-
-
 }
 /*
 set autocpmlete values for key using a function to filter the available values
 It solves the issue of having many available values (sometimes tens of thousnads),
 it was freezing the interface */
 function setAutoCompleteValues(data=null){
-        //document.activeElement.removeEventListener("keyup", toto_function);
-        //document.activeElement.addEventListener("keyup", e =>{toto_function(data)});//, {once: true}) ;
         document.activeElement.addEventListener("keyup", e => {
 
    //exclude arrow keys from keyup event
@@ -1120,26 +1080,12 @@ it will get he attribute and value pair and set the query builder for using them
   addAnd(rowNode.data.Attribute,"equals" , rowNode.data.Value);
 
  display_hide_remove_buttons();
-
-
-  //query["resource"]=resource;
-  //query_details={};
-  //query["query_details"]=query_details;
-  //check_attribute(rowNode.data.Attribute);
-  //query_details["and_filters"]= [{"name":rowNode.data.Attribute,"value":rowNode.data.Value,"operator":"equals","resource":resource}];
-  //query_details["or_filters"]=[];
-  //set_the_query(query_details);
   query = get_current_query();
   var querybuilderTab = document.querySelector('#tabs  #querybuilder_nav a');
   var tab = new bootstrap.Tab(querybuilderTab);
   tab.show();
    $("#queryJson").val(JSON.stringify(query, undefined, 4));
   document.getElementById("submit_").click();
-  //reset_global_variables();
-  //$("#myGrid_2").empty();
-  //document.getElementById("results").style.display='none';
-  //document.getElementById("reset_results_table_filter").style.display='none';
-  //submitQuery();
 }
 
 function removeAllChildNodes(parentNode) {
@@ -1184,28 +1130,25 @@ function display_value_search_results(results, resource)
           onSortChanged : onSortChangedEvent,
           onFilterChanged : onSortChangedEvent,
         };
-            const searcheGridDiv = document.querySelector('#grid_key_values');
-            var myobj = document.getElementById("demo");
-            searcheGridDiv.innerHTML ='';
-            let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
-            search_ag_grid.gridOptions.api.setRowData(results["results"]);
-            search_ag_grid.gridOptions.api.sizeColumnsToFit();
-            document.getElementById("help_message").style.display='none';
+           const searcheGridDiv = document.querySelector('#grid_key_values');
+           var myobj = document.getElementById("demo");
+           searcheGridDiv.innerHTML ='';
+           let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
+           search_ag_grid.gridOptions.api.setRowData(results["results"]);
+           search_ag_grid.gridOptions.api.sizeColumnsToFit();
+           document.getElementById("help_message").style.display='none';
            document.getElementById('exportsearchResults').style.display = "block";
-
-            $("#exportsearchResults").on("click",  function (event) {
-
-            search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
+           $("#exportsearchResults").on("click",  function (event) {
+           search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
                });
-
               //results["total_number_of_images"], results["total_number_of_buckets"]
-             if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
+           if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
                 $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
-            else
+           else
                 $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
-   }
+        }
     else
-    alert("No result is found");
+        alert("No result is found");
     $('body').removeClass('wait');
     var attributebrwoserTab = document.querySelector('#tabs  #attributebrwoser_nav a');
     var tab = new bootstrap.Tab(attributebrwoserTab);
@@ -1285,7 +1228,6 @@ for (i in keyFields)
 __keys_options=keyFields[i];
 key=__keys_options.value;
 
- //et __keys_options=container.querySelector(".keyFields");
     optionHtml = '';
     for (const [key, value] of Object.entries(resources_data)) {
             if (value==null)
@@ -1315,6 +1257,85 @@ function display_help()
 }
 
 function display_hide_grid_columns()
-    {
+{
+  //get the rows data
+    rows_data=[];
+    columnDefs.forEach(function (column) {
+    if (column['field']!="Id" && column['field']!="Name" && column['field']!="Study name")
+    if (column['hide']==true)
+               rows_data.push({'Name':column['field'],'Hidden':false });
+     else
+               rows_data.push({'Name':column['field'],'Hidden':true });
 
+        }
+    );
+    //table header
+    var header=["Column Name","Visible"]
+
+    //create the table on the fly using the row data
+    insert_rows_values_table("table_display_hide", header, rows_data);
+
+    //diplay the modal which contains the table
+    displayMessage("Display/Hide columns", "update");
+}
+
+function insert_rows_values_table(table_id, header, rows)
+{
+/* insert rows for the display/hide columns
+*/
+    var table = document.getElementById(table_id);
+    table.innerHTML="";
+    var thead = document.createElement('thead');
+    table.appendChild(thead);
+    for(var i=0;i<header.length;i++){
+        thead.appendChild(document.createElement("th")).
+        appendChild(document.createTextNode(header[i]));
     }
+        rows.forEach(function (row_)
+        {
+            var row = table.insertRow();
+            var cell = row.insertCell();
+            cell.innerHTML =row_["Name"];
+            var chk = document.createElement('input')
+            chk.setAttribute('type', 'checkbox');
+            chk.checked =row_["Hidden"];
+            chk.setAttribute('id', row_["Name"]);
+            var cell2 = row.insertCell();
+            cell2.appendChild(chk);
+        });
+        $('#'+table_id).addClass("table table-striped header-fixed")
+}
+
+function update_table_visability()
+{
+/*
+check the columns table to set their visability
+*/
+    table=document.getElementById("table_display_hide");
+    dict_hide={}
+    for (i = 0; i < table.rows.length; i++) {
+            // get the row cell collection.
+            var rowCells = table.rows.item(i).cells;
+            //Get attribute name
+            name=rowCells.item(0).innerHTML;
+            //get hidden or not
+            chk=rowCells.item(1).childNodes[0];
+
+            if (chk.checked==false)
+                dict_hide[name]=true;
+             else
+                dict_hide[name]=false;
+
+
+            ag_grid.gridOptions.columnApi.setColumnsVisible([name], chk.checked);
+
+
+        }
+            columnDefs.forEach(function (column) {
+             if (column['field']!="Id" && column['field']!="Name" && column['field']!="Study name")
+            column['hide'] =dict_hide[column['field']];
+
+        }
+    );
+
+}

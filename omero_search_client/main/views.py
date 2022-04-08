@@ -13,7 +13,6 @@ operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains
                                         #         ("lte", "<=")]
 
 
-
 @main.route('/builder',methods=['POST', 'GET'])
 def use_builder_mode():
     #resources=get_resources("all")

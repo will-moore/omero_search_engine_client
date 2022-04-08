@@ -151,8 +151,9 @@
       <label id="query_id"></label>
       <br>
    </div>
-   <th><button id="reset_results_table_filter"  onclick="resetResultsTabelFilters()" type="button"  style="display: none" >Remove Filter/s</button></th>
-    <th><button id="display_dide_columns"  onclick="#" type="button"  style="display: none" >Display/Hide Columns</button></th>
+   <div class="row" id="results_grid_buttons" style="display: none">
+       <button id="reset_results_table_filter"  onclick="resetResultsTabelFilters()" type="button" >Remove Filter/s</button>
+    <button id="display_hide_columns"  onclick="display_hide_grid_columns();" type="button" >Display/Hide Columns</button></div>
 
 
    <div id="myGrid_2"  class="ag-theme-alpine"></div>
@@ -223,8 +224,6 @@ Under construction, please visit later!
     <p>
        <mark> The search results are limited to 9999, paging will be added later to allow pulling all the results .</mark>
 </p>
-
-
 
             </div>
         </div>
