@@ -15,7 +15,6 @@ def get_resourcse_names_from_search_engine(resource, ):
     values = json.loads(results)
     return values
 
-
 def set_returned_results_for_all(results_,return_attribute_value):
     '''
     Used in case of searching all resources using value to find attributes, and values
@@ -572,7 +571,7 @@ def get_resources(mode):
     if mode == "searchterms":
         restricted_search_terms=get_restircted_search_terms()
         restircted_resources={}
-    url = "{base_url}api/v1/resources/all/getannotationkeys/".format(
+    url = "{base_url}api/v2/resources/all/getannotationkeys/".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"))
     resources={}
     try:

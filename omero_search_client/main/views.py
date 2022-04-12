@@ -17,7 +17,6 @@ def use_builder_mode():
     #resources=get_resources("all")
     return render_template('query_builder.html')#, resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="advanced")#container)
 
-
 @main.route('/advanced',methods=['POST', 'GET'])
 def use_advanced_mode():
     resources=get_resources("all")
@@ -58,7 +57,7 @@ def get_resourcse_key():
         screen_names = get_resourcse_names_from_search_engine("screen")
         return jsonify (screen_names+project_names)
     else:
-        search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
+        search_engine_url="{base_url}api/v2/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
         url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
         resp = requests.get(url=url)
         results = resp.text
