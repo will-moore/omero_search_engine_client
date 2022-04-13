@@ -8,7 +8,7 @@ mapping_names={"project":{"Name (IDR number)":"name"},"screen":{"Name (IDR numbe
 
 
 def get_resourcse_names_from_search_engine(resource, ):
-    search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
+    search_engine_url="{base_url}api/v2/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
     url = search_engine_url + "/getresourcenames/"
     resp = requests.get(url=url)
     results = resp.text
@@ -76,6 +76,8 @@ def set_returned_results_for_all(results_,return_attribute_value):
 
 def search_values(resource, value,return_attribute_value=False):
     url="{base_url}api/v2/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
+
+    print (url)
     resp = requests.get(url=url)
     results_ = resp.text
     all_results = json.loads(results_)
@@ -86,9 +88,7 @@ def search_values(resource, value,return_attribute_value=False):
         if "Number of images" not in re:
             print ("Error: ", re)
     results.sort(key=operator.itemgetter('Number of images'), reverse=True)
-
     total_number = all_results.get("total_number")
-
     if return_attribute_value:
         returned_values=[]
         co=0

@@ -1181,6 +1181,7 @@ function display_value_search_results(results, resource)
            search_ag_grid.gridOptions.api.sizeColumnsToFit();
            document.getElementById("help_message").style.display='none';
            document.getElementById('exportsearchResults').style.display = "block";
+           $('#exportsearchResults').unbind('click');
            $("#exportsearchResults").on("click",  function (event) {
            search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
                });
