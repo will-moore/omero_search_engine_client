@@ -1238,13 +1238,15 @@ $('body').addClass('wait');
 
     if ($(this).prop('checked'))
     {
-        mode= "searchterms"
-        open=true;
+     mode="advanced";
+        open=false  ;
+
     }
     else
     {
-        mode="advanced";
-        open=false  ;
+    mode= "searchterms"
+        open=true;
+
     }
 
     url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
