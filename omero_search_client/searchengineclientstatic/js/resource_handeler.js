@@ -847,6 +847,8 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
 }
 $(document).ready(function() {
 
+set_help_file();
+
 set_tree_nodes();
 
 create_tree();
@@ -1403,3 +1405,32 @@ function set_columns_selection(checked)
         }
         );
 }
+
+function set_help_file()
+{
+/*
+creae the elemets inside thehelp div from the help file contents.
+It displays the first line in each paragraph in bold.
+*/
+
+for (i in help_contents)
+{
+    let sub_lines=help_contents[i].split(".");
+       text=''
+    for (j in sub_lines)
+    {
+
+    if (j==0)
+       text="<b>"+sub_lines[j]+"</b>";
+    else {
+           text=text+". "+sub_lines[j];
+   }
+    }
+        var p = document.createElement('p');
+        p.innerHTML =text;
+        p.classList.add("text-justify");
+        document.getElementById('help').appendChild(p);
+    }
+}
+
+

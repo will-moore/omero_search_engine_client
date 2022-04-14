@@ -4,6 +4,7 @@ from flask import render_template, request, jsonify
 import requests
 import json
 from urllib.parse import quote
+from omero_search_client.app_data import get_help_file_contenets
 from omero_search_client import omero_client_app
 from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key, get_restircted_search_terms
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
@@ -29,8 +30,9 @@ def index ():
     may be it is needed to the main template to be more user friendly
     Returns:
     '''
+    help_contents=get_help_file_contenets()
     resources=get_resources("searchterms")
-    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="usesearchterms")#container)
+    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", help_contents=help_contents,mode="usesearchterms")#container)
 
 @main.route('/searchterms',methods=['POST', 'GET'])
 def get_search_items():
