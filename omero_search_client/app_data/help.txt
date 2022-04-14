@@ -1,1 +1,11 @@
+"Query Builder" tab contains a search form that can be used to build a complex query. Queries which are built using "Query Builder" return all the results by applying paging.
 
+The default attribute value is "any" which means the user can type the attribute value they would like to use in the value field. The autocomplete function for this input field will suggest values for both the attribute and value to allow the user to select one of them.
+
+It is worth mentioning that the search results are always images. The results contain the study name/s. If the user needs to restrict their search to a particular study, they can add "and" clause to the current search clauses, then select the "Name (IDR number)" from the attribute field and then write the study name.
+
+Double click on the desired attribute node in the tree on the left-hand side inside the "Attribute Browser" tab to browse the available values. The results will be in a table that contains rows (buckets) which each contain the attribute, value and the number of items. To explore the values inside the bucket, double click the relvant row. It will add the attribute and value to the current calsue/s (and clause) in the "Query Builder" tab and submit the query.
+
+It is possible to use the value search field to search for a value whose attribute is not known. The search results are limited to 9999, paging will be added later to allow pulling all the results .
+
+Ther is a switch "Common attributes mode" which is on by default, which means it will display only the most commonly used attributes. If it is needed to show all the available attributes inside the IDR; then the user needs to turn this switch off with a single mouse click.
