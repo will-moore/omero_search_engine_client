@@ -31,6 +31,7 @@ var is_new_query=true;
 
 
 
+
 //save query json string to the local user storage, so he cal load it again
 function save_query()
  {
@@ -515,26 +516,7 @@ function set_query_fields(container)
     setAutoCompleteValues(null);
         });
         valueFields_.addEventListener("change", e => {
-                        value=valueFields_.value;
 
-         if (value.indexOf("Value:")>-1 && value.indexOf("Attribute:")>-1)
-        {
-        vals=value.split(", Value:");
-        attr=vals[0].split("Attribute: ")[1].trim();
-        container=valueFields_.parentNode.parentNode;
-        key_value=container.querySelector(".keyFields");
-        valueFields_.blur();
-        valueFields_.value=vals[1].trim();
-
- if (get_resource(attr)==undefined)
- {
-            $(key_value).append(new Option(attr, attr));
-            resources_data['image'].push(attr);
-  }
-
-
-        key_value.value=attr;
-    }
         query = get_current_query()
         $("#queryJson").val(JSON.stringify(query, undefined, 4));
     });
@@ -608,7 +590,11 @@ function toto_function(data)
             $(container.querySelector(".valueFields")) .autocomplete({
                        source:  setFieldValues(data),
                         delay:500,
-                       minLen: 0
+                       minLen: 0,
+                        select: function(event, ui) {
+
+                    ui.item.value=adjust_autocomplete_values(ui.item.value);
+                    }
     });
 
 }
@@ -621,6 +607,31 @@ $(container.querySelector(".valueFields")).autocomplete({
 });
 
 }
+
+
+function adjust_autocomplete_values(value)
+{
+   container=document.activeElement.parentNode.parentNode;
+    let keys_options_ = container.querySelector('.keyFields');
+    if (keys_options_.value=="Any")
+    {
+        vals=value.split(", Value:");
+        attr=vals[0].split("Attribute: ")[1].trim();
+        key_value=container.querySelector(".keyFields");
+         if (get_resource(attr)==undefined)
+         {
+                    $(key_value).append(new Option(attr, attr));
+                    resources_data['image'].push(attr);
+         }
+            key_value.value=attr;
+
+        //  valueFields_.blur();
+         return vals[1].trim();
+    }
+    return value;
+}
+
+
 /*
 set autocpmlete values for key using a function to filter the available values
 It solves the issue of having many available values (sometimes tens of thousnads),
@@ -642,6 +653,7 @@ function setAutoCompleteValues(data=null){
 function set_operator_options(key_value, container)
 {
      condition = container.querySelector(".condition");
+
      condition.value=condition.options[0].text;
 
     for (i =0; i< condition.length; i++  )
@@ -651,10 +663,10 @@ function set_operator_options(key_value, container)
                  if (condition.options[i].text!= "equals" && condition.options[i].text!="not equals")
                     condition.options[i].style.display = "none";
               }
-         else
+        else
             {
                 condition.options[i].style.display = "block";
-          }
+           }
         }
     }
 
@@ -673,6 +685,7 @@ function set_key_values(key_value, container) {
     if (key_value=="Any")
     {
             cached_key_values[key_value]=[];
+            set_operator_options(key_value, container);
             return;
       }
 
@@ -709,7 +722,7 @@ function setFieldValues(data=null){
          console.log("data has value====>>>>>>> 11");
         return data;//.filter(x => x.toLowerCase().includes(val.toLowerCase()))
 }
-    if (key_value=="Any" && val.length>2)
+    if (key_value=="Any" && val.length>2 )
     {
         url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
 
@@ -718,6 +731,7 @@ function setFieldValues(data=null){
 //    const json = await response.json();
 //    console.log("JSON IS:",json);
 //    return json;
+
  $('body').addClass('wait');
     fetch(url).then(function(response) {
           {
@@ -726,6 +740,7 @@ function setFieldValues(data=null){
             $('body').removeClass('wait');
 
             toto_function(data);
+            auto_fetch_is_running=false;
             //console.log("datatata", data);
             //return data.filter(x => x.toLowerCase().includes(val.toLowerCase()))
 
@@ -885,7 +900,12 @@ $(function(){
 
     // clone empty form row before any changes
     // used for building form
+        $("#search_form .and_clause").bind("keydown", function(e) {
+   if (e.keyCode === 13) return false;
+ });
+
     $andClause = $("#search_form .and_clause").clone();
+
 
     // Hide the X button if there's only 1 in the form
     function hideRemoveIfOnlyOneLeft() {
@@ -916,7 +936,7 @@ $(function(){
 
     // X buttons
     $("#search_form").on("click", ".remove", function (event) {
-        let $row = $(this).closest(".form-row");
+         let $row = $(this).closest(".form-row");
         let $clause = $row.parent();
         $row.remove();
         // If no rows left, remove clause...
@@ -930,6 +950,7 @@ $(function(){
             $clause.remove();
         }
         updateForm();
+
     });
 
     // AND button
@@ -980,7 +1001,12 @@ function addAnd(attribute, operator, value) {
 
     }
 
+ //  $newRow.bind("keydown", function(e) {
+  // if (e.keyCode === 13) return false;
+ //});
+
     return $newRow;
+
 }
 
 function addOr($and, attribute, operator, value) {
@@ -1003,6 +1029,9 @@ function addOr($and, attribute, operator, value) {
     else
      $(".valueFields", $newRow).val('');
     set_query_fields($newRow[0]);
+    //$newRow.bind("keydown", function(e) {
+   //if (e.keyCode === 13) return false;
+ //});
 
 }
 function load_query() {
