@@ -26,6 +26,9 @@ def set_returned_results_for_all(results_,return_attribute_value):
     Returns:
 
     '''
+    if "notice" in results_:
+        if results_["notice"].get("Error"):
+            return {"Error": results_["notice"].get("Error")}
     if (return_attribute_value):
         for ress,results__ in results_.items():
             results = results__.get("returnted_results")
@@ -62,7 +65,6 @@ def set_returned_results_for_all(results_,return_attribute_value):
                 if "Number of" in item:
                     last_colm=item
                     continue
-                print ("Item: ",item)
                 col={}
                 col_def.append(col)
                 col["field"]=item

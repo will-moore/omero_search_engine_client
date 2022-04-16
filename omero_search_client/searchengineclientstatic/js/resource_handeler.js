@@ -28,6 +28,7 @@ var or_template = document.getElementById('ortemplate');
 var or_parent=document.getElementById('conanewor');
 var tree_nodes=[];
 var is_new_query=true;
+var auto_fetch_is_running=false;
 
 
 
@@ -722,10 +723,10 @@ function setFieldValues(data=null){
          console.log("data has value====>>>>>>> 11");
         return data;//.filter(x => x.toLowerCase().includes(val.toLowerCase()))
 }
-    if (key_value=="Any" && val.length>2 )
+    if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
     {
         url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
-
+       auto_fetch_is_running=true;
 //  const request = async () => {
 //    const response = await fetch(url);
 //    const json = await response.json();
@@ -1250,6 +1251,13 @@ $('body').addClass('wait');
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
+            if (data["Error"]!==undefined)
+            {
+            $('body').removeClass('wait');
+            alert (data["Error"]);
+            return;
+            }
+
                 display_value_search_results(data, resource);
                     });
                 }
