@@ -6,9 +6,8 @@ import operator
 
 mapping_names={"project":{"Name (IDR number)":"name"},"screen":{"Name (IDR number)":"name"}}
 
-
 def get_resourcse_names_from_search_engine(resource, ):
-    search_engine_url="{base_url}api/v2/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
+    search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
     url = search_engine_url + "/getresourcenames/"
     resp = requests.get(url=url)
     results = resp.text
@@ -77,7 +76,7 @@ def set_returned_results_for_all(results_,return_attribute_value):
     return {"columnDefs": col_def, "results": all_results, "total_number":total_number_results, "no_buckets":no_buckets}
 
 def search_values(resource, value,return_attribute_value=False):
-    url="{base_url}api/v2/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
+    url="{base_url}api/v1/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
 
     print (url)
     resp = requests.get(url=url)
@@ -118,7 +117,7 @@ def search_values(resource, value,return_attribute_value=False):
     return {"columnDefs": col_def, "results": results, "total_number":total_number, "no_buckets":len(results)}
 
 def search_key(resource, key):
-    url = "{base_url}api/v2/resources/{resource}/searchvaluesusingkey/?key={key}".format(
+    url = "{base_url}api/v1/resources/{resource}/searchvaluesusingkey/?key={key}".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, key=key)
     resp = requests.get(url=url)
     results_ = resp.text
@@ -360,10 +359,10 @@ def seracrh_query(query,resource,bookmark,raw_elasticsearch_query, main_attribut
         if bookmark:
             q_data["bookmark"] =bookmark
             q_data["raw_elasticsearch_query"] = raw_elasticsearch_query
-            resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation_page/".format(
+            resource_ext = "{base_url}api/v1/resources/{res_table}/searchannotation_page/".format(
                 base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=resource)
         else:
-            resource_ext = "{base_url}api/v2/resources/{res_table}/searchannotation/".format(
+            resource_ext = "{base_url}api/v1/resources/{res_table}/searchannotation/".format(
                 base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table=resource)
         aa = json.dumps(q_data)
         resp = requests.get(resource_ext, data=aa)
@@ -573,7 +572,7 @@ def get_resources(mode):
     if mode == "searchterms":
         restricted_search_terms=get_restircted_search_terms()
         restircted_resources={}
-    url = "{base_url}api/v2/resources/all/getannotationkeys/".format(
+    url = "{base_url}api/v1/resources/all/getannotationkeys/".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"))
     resources={}
     try:
