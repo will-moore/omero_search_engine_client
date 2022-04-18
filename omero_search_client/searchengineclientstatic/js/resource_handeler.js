@@ -15,12 +15,21 @@ var pages_data={};
 var ag_grid;
 var recieved_data=0;
 var columnDefs=[];
-var current_values=[];
+var current_values={};
+var cached_key_values={};
 var extend_url;
 var names_ids;
 var main_attributes= ["Name (IDR number)"];
 var query_details;
 var raw_elasticsearch_query;
+var no_cloned =0;
+var original_external_int_div = document.getElementById('template'); //Div to Clone
+var or_template = document.getElementById('ortemplate');
+var or_parent=document.getElementById('conanewor');
+var tree_nodes=[];
+var is_new_query=true;
+var auto_fetch_is_running=false;
+
 
 
 
@@ -60,71 +69,30 @@ if (filename) {
     $("#confirm_message").modal("hide");
     document.getElementById("queryfilename").value="";
 }
+display_hide_remove_buttons();
 }
 
 //
-function new_query(){
+function reset_query(need_confirmation=true){
     query=get_current_query(false);
     if (query==false)
         return;
-    if (confirm("All the conditions will be discarded, process?") == true) {
-        //remove_all_conditiona("or");
-        //remove_all_conditiona("and");
-        location.reload();
-        return false;
+        if (need_confirmation)
+    if (confirm("All the conditions will be discarded, process?") == false) {
+            return;
     }
-}
-function load_query(){
-    $('#load_file').click();
+       reset_global_variables();
+        const eGridDiv = document.querySelector('#myGrid_2');
+        removeAllChildNodes(eGridDiv);
+        document.getElementById("results").style.display='none';
+        document.getElementById("results_grid_buttons").style.display='none';
+        $("#search_form").empty();
+        $("#addAND").click();
+        //location.reload();
+        return false;
+
 }
 
-//Load query from file which is located in the user machine
-function load_query_from_file(file)
-{
-    //remove anycondition if any
-    remove_all_conditiona("or");
-    remove_all_conditiona("and");
-    let reader = new FileReader();
-    reader.addEventListener('load', function(e) {
-    let text = e.target.result;
-    data_=JSON.parse(text);
-    data=data_["query_details"]
-    var orFilter = data["or_filters"];
-    var andFilter = data["and_filters"];
-    case_sensitive= data["case_sensitive"];
-    resource = data_["resource"]
-    for (i in orFilter)
-            {
-            addConditionRow(orFilter[i]["name"],orFilter[i]["value"], orFilter[i]["operator"], orFilter[i]["resource"], 'or');
-            }
-    for (i in andFilter)
-        {
-         addConditionRow(andFilter[i]["name"],andFilter[i]["value"], andFilter[i]["operator"], andFilter[i]["resource"], 'and');
-
-            }
-
-            document.getElementById('case_sensitive').checked=case_sensitive;
-        });
-		reader.readAsText(file);
-}
-function changeMainAttributesFunction (){
-    var checkbox = document.getElementById("add_main_attibutes");
-    mainvalueFields=document.getElementById("mainvalue");
-    maincondtion=document.getElementById("maincondition");
-    mainkeyFields=document.getElementById("mainkey");
-     if (checkbox.checked)
-     {
-        mainvalueFields.style.display = "block";
-        maincondtion.style.display = "block";
-        mainkeyFields.style.display = "block";
-     }
-     else
-     {
-        mainvalueFields.style.display = "none";
-        maincondtion.style.display = "none";
-        mainkeyFields.style.display = "none";
-     }
-}
 
 function cancell_ajaxcall() {
     ajaxCall.onreadystatechange = null;
@@ -135,23 +103,33 @@ function cancell_ajaxcall() {
     }
 
 //display message to the user
-function displayMessage(header, body, btn_text) {
+function displayMessage(header, btn_text) {
     messageHeader.innerText = header;
-    messageBody.innerText = body;
     if (typeof(btn_text) !== "undefined" && btn_text !== null)
         moelButton.innerText = btn_text;
+    $("#modalprogresbar").css('visibility', 'hidden');
+
+
     $("#displaymessagemodal").modal("show");
-    $("#moelButton").hide();
+
+    moelButton.addEventListener('click',update_table_visability);
+    select_all.addEventListener('click',set_columns_hidden);
+    deselect_all.addEventListener('click',set_columns_visible);
+
+    //$("#moelButton").hide();
 }
 
-function cancelFunction() {
-    cancel_check = true;
-    cancell_ajaxcall();
-    $("#moelButton").hide();
+function set_columns_hidden ()
+{
+set_columns_selection(false);
 }
 
-function urlFormatter
-(row, cell, value, columnDef, dataContext) {
+function set_columns_visible()
+{
+set_columns_selection(true);
+
+}
+function urlFormatter  (row, cell, value, columnDef, dataContext) {
     return "<a href=" + value + " target='_blank'>" + value + "</a>";
 }
 
@@ -168,29 +146,25 @@ catch(err) {
 
 function loadMoreResultsFunction()
 {
-///#loadMoreResults
-submitQuery();
+    document.getElementById('loadMoreResults').disabled=true;
+    submitQuery(false);
 }
 
-function wait(ms){
-   var start = new Date().getTime();
-   var end = start;
-   while(end < start + ms) {
-     end = new Date().getTime();
-  }
-}
 
-function loadRemainingResultsFunction() {
-while (recieved_data<size) {
-  wait (5000);
-           submitQuery();
-
-}
-}
-
+function reset_global_variables(data)
+    {
+        bookmark=null;
+        raw_elasticsearch_query=null;
+        page=0;
+        pages_data={};
+        recieved_results=[];
+        size=0;
+        query_details=null;
+        recieved_data=0;
+    }
 
 function set_global_variables(data)
-{
+    {
     bookmark=data["bookmark"];
     raw_elasticsearch_query=data["raw_elasticsearch_query"];
     page=page+1;
@@ -199,10 +173,14 @@ function set_global_variables(data)
     size=data["size"];
     query_details=data["query_details"];
     recieved_data=recieved_data+data["values"].length;
-    if (recieved_data>=size){
     var resultsbutton = document.getElementById('loadMoreResults');
+    if (recieved_data>=size){
+
     resultsbutton.disabled = true;
     }
+    else
+    resultsbutton.disabled= false;
+
 }
 function sizeToFit() {
   ag_grid.gridOptions.api.sizeColumnsToFit();
@@ -232,39 +210,36 @@ function exportToCSV() {
 }
 
 
+
 function autoSizeAll(skipHeader) {
   var allColumnIds = [];
   gridOptions.columnApi.getAllColumns().forEach(function (column) {
     allColumnIds.push(column.colId);
   });
   gridOptions.columnApi.autoSizeColumns(allColumnIds, skipHeader);
-}
+    }
 
 function url_render(param){
-    //Object.keys(param).forEach(e => console.log(`key=${e}  value=${param[e]}`));
     if (resource =="screen")
         return '<a href='+extend_url +' target="_blank" >'+param.value+'</a>'
     else
         return '<a href='+extend_url +param.value+' target="_blank" >'+param.value+'</a>'
-
-}
+    }
 
 function onGridSizeChanged(params) {
         // get the current grids width
         var gridWidth = document.getElementById('grid-wrapper').offsetWidth;
-
         // keep track of which columns to hide/show
         var columnsToShow = [];
         var columnsToHide = [];
-
         // iterate over all columns (visible or not) and work out
         // now many columns can fit (based on their minWidth)
         var totalColsWidth = 0;
         var allColumns = params.columnApi.getAllColumns();
         for (var i = 0; i < allColumns.length; i++) {
-            let column = allColumns[i];
-            totalColsWidth += column.getMinWidth();
-            if (totalColsWidth > gridWidth) {
+        let column = allColumns[i];
+        totalColsWidth += column.getMinWidth();
+        if (totalColsWidth > gridWidth) {
                 columnsToHide.push(column.colId);
             } else {
                 columnsToShow.push(column.colId);
@@ -280,78 +255,48 @@ function onGridSizeChanged(params) {
 }
 
 function displayResults(data, new_data=true) {
+
+if (is_new_query==true)
+{
+    is_new_query=false;
+    reset_global_variables();
+    $("#myGrid_2").empty();
+}
    if (new_data)
-   set_global_variables(data);
-
-
-
+        set_global_variables(data);
 columnDefs =data["columns_def"]
 extend_url=data["extend_url"];
 names_ids=data["names_ids"];
 for (i in data["columns_def"])
-{
-if(data["columns_def"][i]["field"]==="Id")// && resource==="image")
-     data["columns_def"][i]['cellRenderer']=url_render;
+    {
+    if(data["columns_def"][i]["field"]==="Id")// && resource==="image")
+         data["columns_def"][i]['cellRenderer']=url_render;
      }
 
 results = data["values"];
 
 var gridOptions = {
   defaultColDef: {
-    resizable: true,
+   resizable: true,
   "filter": true,
   "animateRows":true,
   },
  enableCellTextSelection: true,
   columnDefs: columnDefs,
   rowData: null,
-  //onColumnResized: onGridSizeChanged,
-   //function (params) {
-    //console.log(params);
-    //onGridSizeChanged();
-
-
-  //},
 };
-
 
  // lookup the container we want the Grid to use
   const eGridDiv = document.querySelector('#myGrid_2');
-
   // create the grid passing in the div to use together with the columns & data we want to use
   if (page==1)
-  ag_grid=new agGrid.Grid(eGridDiv, gridOptions);
- ag_grid.gridOptions.api.setRowData(recieved_results);
+    ag_grid=new agGrid.Grid(eGridDiv, gridOptions);
+  ag_grid.gridOptions.api.setRowData(recieved_results);
+  var notice = data["notice"];
 
-    var notice = data["notice"];
+  server_query_time = data["server_query_time"];
+  let no_image = results.length;
 
-    server_query_time = data["server_query_time"];
-    //results = data["values"];
-    let no_image = results.length;
-    if (set_query_form == true) {
-        var filters = data["filters"];
-        var orFilter = filters["or_filters"];
-        var andFilter = filters["and_filters"];
-        var notFilter = filters["not_filters"];
-        resource = data["resource"]
-        for (i in orFilter)
-            for (const [key, value] of Object.entries(orFilter[i])) {
-                addConditionRow(key, value, "or");
-            }
-        for (i in andFilter)
-            for (const [key, value] of Object.entries(andFilter[i])) {
-
-                addConditionRow(key, value, "and");
-            }
-        for (i in notFilter)
-
-            for (const [key, value] of Object.entries(notFilter[i])) {
-
-                addConditionRow(key, value, "not");
-            }
-        message = "No of "+data["resource"]+" , "+ recieved_data +"/"+size+", Search engine query time: " + server_query_time + " seconds.";
-
-    } else {
         var querytime = (queryendtime - querystarttime) / 1000;
         if (no_image!=size)
          {
@@ -363,35 +308,18 @@ var gridOptions = {
             message = "No of "+data["resource"] +", "+ recieved_data+ ", Search engine query time: " + server_query_time + " seconds.";
              document.getElementById('loadMoreResults').style.display = "none";
             }
-    }
+
 
     var resultsDiv = document.getElementById('results');
-
-    var conditions_con = document.getElementById('conditions');
-
-    var resources_con = document.getElementById('resources');
-    var help = document.getElementById('help');
-    var submit_button = document.getElementById('submit_');
-    var load_query_button=document.getElementById('load_query');
-    conditions_con.disabled = true;
-    document.getElementById('exportResults').style.display = "block";
-    document.getElementById('reset_results_table_filter').style.display = "block";
-    resources_con.style.display = "none";
-    help.style.display = "none";
-    submit_button.style.display = "none";
-    load_query_button.style.display = "none";
-    var query_cr = document.getElementById('conditions');
-help
+//    document.getElementById('exportResults').style.display = "block";
+    document.getElementById('results_grid_buttons').style.display = "block";
     resultsDiv.style.display = "block";
-
     $('#no_images').text(message);
-
     var grid;
     var columns = data["columns"];
      for (var i = 0; i < columns.length; i++) {
         columns[i].formatter=valueFormatter;
     }
-
     var options = {
         enableCellNavigation: true,
         enableColumnReorder: false,
@@ -399,11 +327,6 @@ help
         forceFitColumns: true
     };
     $('#displaymessagemodal').modal('hide');
-    var nodes = document.getElementById("conditions").getElementsByTagName('*');
-
-    for (var i = 0; i < nodes.length; i++) {
-        nodes[i].disabled = true;
-    }
 
     window.location.hash = '#results';
     document.getElementById('load_results_buttons').style.display = "block";
@@ -416,8 +339,7 @@ help
     var pagebutton = document.createElement("BUTTON");
     pagebutton.innerHTML = page;
     th.appendChild(pagebutton);
-
-      th.appendChild(pagebutton);
+    th.appendChild(pagebutton);
     pagebutton.addEventListener("click", function() {
         alert(pagebutton.innerText);
         displayResults(data, false);
@@ -425,35 +347,17 @@ help
     }
 }
 
-function get_query_data(group_table_) {
-    query_items = [];
-    let group_table = document.getElementById(group_table_);
-    for (var r = 1; r < group_table.rows.length; r++) {
-        query_dict = {}
-        query_items[r - 1] = query_dict;
-        name_ = group_table.rows[r].cells[0].innerHTML;
-        operator_ = group_table.rows[r].cells[1].innerHTML;
-        value_ = group_table.rows[r].cells[2].innerHTML;
-        resource_=group_table.rows[r].cells[3].innerHTML;
-        //query_dict[name_] = value_
-        query_dict["name"]=name_
-        query_dict["value"]=value_
-        query_dict["operator"]=operator_
-        query_dict["resource"]=resource_
-    }
-    return query_items;
-}
-
 var filterParams = {
-  suppressAndOrCondition: true,
-  comparator: function (filterLocalDateAtMidnight, cellValue) {
+    suppressAndOrCondition: true,
+    comparator: function (filterLocalDateAtMidnight, cellValue) {
     var dateAsString = cellValue;
-    if (dateAsString == null) return -1;
+    if (dateAsString == null)
+        return -1;
     var dateParts = dateAsString.split('/');
     var cellDate = new Date(
-      Number(dateParts[2]),
-      Number(dateParts[1]) - 1,
-      Number(dateParts[0])
+    Number(dateParts[2]),
+    Number(dateParts[1]) - 1,
+    Number(dateParts[0])
     );
 
     if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
@@ -467,30 +371,13 @@ var filterParams = {
     if (cellDate > filterLocalDateAtMidnight) {
       return 1;
     }
-  },
-  browserDatePicker: true,
+    },
+    browserDatePicker: true,
 };
-
-function get_all_records_query()
-{
-query_details = {}
-all_query = {
-        "match_all" : {}
-         }
-        resource = document.getElementById('resourcseFields').value;
-        var query_ = {
-            "resource": resource,
-            "query_details": query_details,
-            "raw_elasticsearch_query": all_query
-        };
-         query_["mode"]=mode;
-          return query_;
-         }
-
 
 function get_returned_query_from_server()
         {
-        resource = document.getElementById('resourcseFields').value;
+        resource = "image";//document.getElementById('resourcseFields').value;
         var query_ = {
             "resource": resource,
             "query_details": query_details,
@@ -500,80 +387,100 @@ function get_returned_query_from_server()
           query_["columns_def"]=columnDefs;
           return query_;
     }
-function get_current_query(include_addition_information,displaymessage=true)
-{
-   resource = document.getElementById('resourcseFields').value;
-    let quries={}
 
-    querystarttime = new Date().getTime();
+function get_current_query(include_addition_information,displaymessage=true)
+    {
+    and_conditions=[];
+    or_conditions=[];
+    //get and condition1
+
+    queryandnodes = document.querySelectorAll('#search_form .and_clause');
+    console.log(queryandnodes.length);
+    for (let i=0; i<queryandnodes.length; i++) {
+
+        query_dict={};
+
+        let node = queryandnodes[i];
+        // handle each OR...
+        let ors = node.querySelectorAll(".form-row");
+
+        let or_dicts = [...ors].map(orNode => {
+
+            return {
+                "name": orNode.querySelector(".keyFields").value,
+                "value": orNode.querySelector(".valueFields").value,
+                "operator": orNode.querySelector(".condition").value,
+                "resource": get_resource( orNode.querySelector(".keyFields").value),
+            }
+        });
+        if (or_dicts.length > 1) {
+            or_conditions.push(or_dicts);
+        } else {
+            and_conditions.push(or_dicts[0]);
+        }
+    }
+
     query_details = {}
-    var query = {
-        "resource": resource,
+     var query = {
+        "resource": "image",
         "query_details": query_details
     };
-    if (size>0 && include_addition_information ==true)
-        {
-            query["bookmark"]=bookmark;
-            query["columns_def"]=columnDefs;
-        }
-    var andQuery = get_query_data("and_group");
-    var orQuery = get_query_data("or_group");
 
-    if (andQuery.length == 0 && orQuery.length == 0 ) {
-    if (displaymessage==true)
-        alert("There is no query, at least one condition should be selected");
-        return false;
-    }
-    query_details["and_filters"] = andQuery;
-    query_details["or_filters"] = orQuery;
+    query_details["and_filters"] = and_conditions;
+    query_details["or_filters"] = or_conditions;
     query_details["case_sensitive"]=document.getElementById('case_sensitive').checked;
     query["mode"]=mode;
     return query;
+
 }
 
-function submitQuery() {
-/*
-    resource = document.getElementById('resourcseFields').value;
-    let quries={}
-
-    querystarttime = new Date().getTime();
-    query_details = {}
-    var query = {
-        "resource": resource,
-        "query_details": query_details
-    };
-    if (size>0)
-        {
-            query["bookmark"]=bookmark;
-            query["columns_def"]=columnDefs;
-        }
-    var andQuery = get_query_data("and_group");
-    var orQuery = get_query_data("or_group");
-
-    if (andQuery.length == 0 && orQuery.length == 0 ) {
-        alert("There is no query to submit, at least one condition should be selected");
-        return;
-    }
-    query_details["and_filters"] = andQuery;
-    query_details["or_filters"] = orQuery;
-    */
-
-    if (query_details === undefined || size==0          )
+function submitQuery(reset=true) {
+   if (reset==true)
+   {
+            reset_global_variables();
+              $("#myGrid_2").empty();
+              document.getElementById("results").style.display='none';
+               document.getElementById("results_grid_buttons").style.display='none';
+     }
+   if (query_details === undefined || size==0)
      {
-
-    query=get_current_query(true);
-    if (query==false)
-        return;
+        query=get_current_query(true);
+            if (query==false)
+                return;
         }
    else
         query=get_returned_query_from_server()
 
-    send_the_request(query);
+   send_the_request(query);
 
 }
 
 function send_the_request(query)
 {
+/*
+//example of search query
+searchQuery={'query': {'query_details': {'and_filtrs': [{'resource': 'image', 'name': 'Strain', 'value': 'pdx1', 'operator': 'equals', 'query_type': 'keyvalue'}], 'or_filters': [], 'case_sensitive': false}, 'main_attributes': {'or_main_attributes': []}}}
+//Working code to fetch the results to avoid "CORs block"
+url_2="https://idr-testing.openmicroscopy.org/searchengine/submitquery/"
+ url_2 = "http://127.0.0.1:5577/api/v2/resources/image/searchannotation/";
+ //url_2 = "https://idr-testing.openmicroscopy.org/searchengineapi/api/v2/resources/image/searchannotation/";
+fetch(url_2,
+{
+    method: "POST",
+    body: JSON.stringify(searchQuery),
+
+})
+.then(function(results){ return results.json(); })
+.then(function(data){
+      if (data["Error"] != "none") {
+            alert("Error: "+data["Error"]);
+            return;
+           }
+displayResults(  data  ) })
+return;
+*/
+
+//alert(submitqueryurl);
 $.ajax({
         type: "POST",
         url: submitqueryurl,
@@ -594,55 +501,46 @@ $.ajax({
     });
 }
 
-function addAndConditionFunction()
-{
-AddConditionFunction("and");
+
+function set_query_fields(container)
+    {
+            let selected_resource_ = container.querySelector('.resourcseFields');
+            let keys_options_ = container.querySelector('.keyFields');
+            let keyFields_= container.querySelector('.keyFields');
+            let valueFields_= container.querySelector('.valueFields');
+
+            keys_options_.onchange = function() {
+                key_value = this.value;
+                set_key_values(key_value,container);
+            }
+    valueFields_.addEventListener("focus", e => {
+    setAutoCompleteValues(null);
+        });
+        valueFields_.addEventListener("change", e => {
+
+        query = get_current_query()
+        $("#queryJson").val(JSON.stringify(query, undefined, 4));
+    });
+
+
+      optionHtml = '';
+      let condtion__ = container.querySelector('.condition');
+       optionOpHtml = '';
+
+       for (i in operator_choices)
+           {
+             optionOpHtml += '<option value ="' + operator_choices[i][0] + '">' + operator_choices[i][1]+ '</option>';
+           }
+
+       condtion__.innerHTML = optionOpHtml;
+
+       set_resources("image",container);
 }
 
-function addOrConditionFunction()
-{
-AddConditionFunction("or");
-
-}
-
-function AddConditionFunction(group) {
-    let value_fields = document.getElementById('valueFields');
-    let condtion = document.getElementById('condtion').value;
-
-    let key = keys_options.value;
-    let value = value_fields.value;
-    let resource = resourcseFields.value;
-
-
-
-    if (!value || value.length === 0) {
-        alert("Please select a value");
-        return;
-    }
-
-    if (!key || key.length === 0) {
-        alert("Please select an attribute");
-        return;
-    }
-    addConditionRow(key, value, condtion, resource, group);
-}
-
-function remove_all_conditiona(group)
-{
-    let tableRef = document.getElementById(group + "_group");
-    var rowCount = tableRef.rows.length;
-    for (var i = 1; i < rowCount; i++)
-        {
-            tableRef.deleteRow(1);
-        }
-}
 
 function addConditionRow(key, value, condtion, resource, group) {
-
     let tableRef = document.getElementById(group + "_group");
-
     let newRow = tableRef.insertRow(-1);
-
     // Insert cells in the row
     let keyCell = newRow.insertCell(0);
     let operatorCell = newRow.insertCell(1);
@@ -656,7 +554,6 @@ function addConditionRow(key, value, condtion, resource, group) {
 
     let operatorText = document.createTextNode(condtion);
     operatorCell.appendChild(operatorText)
-
 
     let valueText = document.createTextNode(value);
     valueCell.appendChild(valueText);
@@ -675,151 +572,310 @@ function addConditionRow(key, value, condtion, resource, group) {
     });
 }
 
+function toto_function(data)
+{
+
+    container=document.activeElement.parentNode.parentNode;
+
+      if (data !=null)
+      {
+       $(container.querySelector(".valueFields")) .autocomplete({
+                       source:  data,
+                        delay:500,
+                       minLen: 0
+                       });
+      }
+
+      else
+      {
+            $(container.querySelector(".valueFields")) .autocomplete({
+                       source:  setFieldValues(data),
+                        delay:500,
+                       minLen: 0,
+                        select: function(event, ui) {
+
+                    ui.item.value=adjust_autocomplete_values(ui.item.value);
+                    }
+    });
+
+}
+//after selecting the item, and menu is hiding it will sned the value input out of focus,
+//so it will update the fields with the correct values
+$(container.querySelector(".valueFields")).autocomplete({
+  close: function( event, ui ) {
+  container.querySelector(".valueFields").blur();
+  }
+});
+
+}
+
+
+function adjust_autocomplete_values(value)
+{
+   container=document.activeElement.parentNode.parentNode;
+    let keys_options_ = container.querySelector('.keyFields');
+    if (keys_options_.value=="Any")
+    {
+        vals=value.split(", Value:");
+        attr=vals[0].split("Attribute: ")[1].trim();
+        key_value=container.querySelector(".keyFields");
+         if (get_resource(attr)==undefined)
+         {
+                    $(key_value).append(new Option(attr, attr));
+                    resources_data['image'].push(attr);
+         }
+            key_value.value=attr;
+
+        //  valueFields_.blur();
+         return vals[1].trim();
+    }
+    return value;
+}
+
+
 /*
 set autocpmlete values for key using a function to filter the available values
 It solves the issue of having many available values (sometimes tens of thousnads),
 it was freezing the interface */
-function setAutoCompleteValues(event){
+function setAutoCompleteValues(data=null){
+        document.activeElement.addEventListener("keyup", e => {
 
-
-    $( "#valueFields" ).autocomplete({
-                    source:  setFieldValues(),
-                    minLength:0
-                })//.bind('focus', function(){ $(this).autocomplete("search"); } );
+   //exclude arrow keys from keyup event
+    var code = (e.keyCode || e.which);
+    if(code == 37 || code == 38 || code == 39 || code == 40) {
+        return;
+    }
+        toto_function(data)}) ;
 }
 
-//As main attributes supports equals andnot equals only
+
+//As main attributes supports equals and not equals only
 //This function restrict the use to these two operators
-function set_operator_options(key_value)
+function set_operator_options(key_value, container)
 {
-condtion = document.getElementById("condtion");
-condtion.value=condtion.options[0].text;
-for (i =0; i< condtion.length; i++  )
-{
+     condition = container.querySelector(".condition");
 
-if (main_attributes.includes(key_value))
+     condition.value=condition.options[0].text;
+
+    for (i =0; i< condition.length; i++  )
     {
-         if (condtion.options[i].text!= "equals" && condtion.options[i].text!="not equals")
-            condtion.options[i].style.display = "none";
+        if (main_attributes.includes(key_value))
+            {
+                 if (condition.options[i].text!= "equals" && condition.options[i].text!="not equals")
+                    condition.options[i].style.display = "none";
+              }
+        else
+            {
+                condition.options[i].style.display = "block";
+           }
+        }
+    }
 
+function get_resource(attribute)
+{
+     for (resource in resources_data) {
+                    if (resources_data[resource].includes(attribute))
+                    {
+                    return resource;
+                    }
+                }
+}
+
+
+function set_key_values(key_value, container) {
+    if (key_value=="Any")
+    {
+            cached_key_values[key_value]=[];
+            set_operator_options(key_value, container);
+            return;
       }
- else
-    {
-        condtion.options[i].style.display = "block";
-    }
 
+
+
+    container.querySelector(".valueFields").value='';
+    resource=get_resource(key_value);
+    set_operator_options(key_value, container);
+    if (cached_key_values[key_value]===undefined)
+    {
+        //let selected_resource_ = document.getElementById('resourcseFields'+id);
+        //resource = selected_resource_.value;
+        url=getresourcesvalesforkey+ "?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
+        fetch(url).then(function(response) {
+          {
+            response.json().then(function(data) {
+                data.sort();
+                cached_key_values[key_value]=data;
+
+                    });
+                }
+        });
     }
 }
 
-function set_key_values(key_value) {
+function setFieldValues(data=null){
+    let value_fields = document.activeElement;//document.getElementById('valueFields'+id);
+    container=document.activeElement.parentNode.parentNode;
+    key_value=container.querySelector(".keyFields").value;
+    current_value=cached_key_values[key_value];
+    let val=value_fields.value;
+      if (data != null)
+    {
+         console.log("data has value====>>>>>>> 11");
+        return data;//.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+}
+    if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
+    {
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
+       auto_fetch_is_running=true;
+//  const request = async () => {
+//    const response = await fetch(url);
+//    const json = await response.json();
+//    console.log("JSON IS:",json);
+//    return json;
 
-    $( "#valueFields" ).val('');
-
-    set_operator_options(key_value);
-    resource = selected_resource.value;
-    url=getresourcesvalesforkey+ "/?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
+ $('body').addClass('wait');
     fetch(url).then(function(response) {
-      {
-        response.json().then(function(data) {
-            data.sort();
-            current_values=data;
+          {
+          console.log("VALUE: ", val);
+            response.json().then(function(data) {
+            $('body').removeClass('wait');
 
+            toto_function(data);
+            auto_fetch_is_running=false;
+            //console.log("datatata", data);
+            //return data.filter(x => x.toLowerCase().includes(val.toLowerCase()))
 
-                });
-            }
-    });
-}
-
- function setFieldValues(){
-    let value_fields = document.getElementById('valueFields');
-    val=value_fields.value;
-
-    //for performance, when the length ofthe current values length is bigger than 1000, when the value is one letter, it will only return all the items which start with this letter
+                    });
+                }
+        });
+    }
+    //for performance, when the length of the current values length is bigger than 1000, when the value is one letter, it will only return all the items which start with this letter
     //otherwise, it will return all the items which contains the value (even ther are  at the middle or at the end of the items)
-    if (current_values.length>1000)
+    if (current_value==undefined)
+    return [];
+    if (current_value.length>1000)
     {
+    console.log("1: val: "+val);
+
       if (!val || val.length <2  )
         return [];
-    if (val.length ===2)
-            return  current_values.filter(x => x.toLowerCase().startsWith(val.toLowerCase()))
     else
-         return current_values.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+        if (val.length ===2)
+            return  current_value.filter(x => x.toLowerCase().startsWith(val.toLowerCase()))
+    else
+         return current_value.filter(x => x.toLowerCase().includes(val.toLowerCase()))
    }
     else
-        return current_values.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+    {
+         return current_value.filter(x => x.toLowerCase().includes(val.toLowerCase()))
+        }
+
 
 }
 
-function set_resources(resource) {
+function set_resources(resource, container) {
+    let __keys_options=container.querySelector(".keyFields");
+    optionHtml ='<option value ="Any">Any</option>';
     for (const [key, value] of Object.entries(resources_data)) {
-        if (key == resource) {
-            optionHtml = ''
+       // if (key == resource) {
             if (value==null)
               {
-              keys_options.innerHTML = optionHtml;
+              __keys_options.innerHTML = optionHtml;
             break;
               }
              //if (key=="image")
              //      //#value.unshift("Project name");
              //      value.push("Project name");
              value.sort();
-
             for (i in value) {
                 optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
             }
-            keys_options.innerHTML = optionHtml;
-            break;
-        }
     }
-    key_value = keys_options.value;
-    set_key_values(key_value);
+        __keys_options.innerHTML = optionHtml;
+        key_value = __keys_options.value;
+        set_key_values(key_value, container);
 }
 
-let selected_resource = document.getElementById('resourcseFields');
-let keys_options = document.getElementById('keyFields');
-let keyFields= document.getElementById('keyFields');
+function set_tree_nodes (mode=true)
+{
 
+tree_nodes=[];
+tree_nodes.push({ "id" : "Resource", "parent" : "#", "text" : "Resource", "state": {"opened"    : true }});
+for (resource in resources_data) {
+                tree_nodes.push({ "id" : resource, "parent" : "Resource", "text" : resource, "state": {"opened"    : mode }});
 
-selected_resource.onchange = function() {
-    resource = selected_resource.value;
+                for (i in resources_data[resource].sort() )
+                {
+                if (resources_data[resource][i].trim().length>22)
+                text= resources_data[resource][i].substr(0, 22) +  "...";
+                else
+                text= resources_data[resource][i];
+                        tree_nodes.push(
+                        {
+                        "id" : resources_data[resource][i],
+                         "parent" : resource,
+                         "text" : text,//resources_data[resource][i]
+                         "title":text
+                         }
+                      );
+
+                        }
+
+                }
+                }
+
+function create_tree(){
+
+    $('#jstree_resource_div').jstree({ 'core' : {
+        'data' :  tree_nodes
+    } });
+}
+
+function set_tree_events_handller () {
+$('#jstree_resource_div').on("changed.jstree", function (e, data) {
+  console.log(data.selected);
+});
+$('#jstree_resource_div').on('hover_node.jstree',function(e,data){
+    var node = $(event.target).closest("li");
+    node.prop("title",node[0].id);
+});
 /*
-     if (resource=="image")
-        document.getElementById("checkMainAttribute").style.display = "block";
-    else
-    {
-        document.getElementById("checkMainAttribute").style.display = "none";
-        var checkbox = document.getElementById("add_main_attibutes").checked=false;
-        mainvalueFields.style.display = "none";
-        maincondtion.style.display = "none";
-        mainkeyFields.style.display = "none";
-        }
+Query the search engine using the resourse attribute, when the user double click the attribute node
 */
-    set_resources(resource);
-}
+$('#jstree_resource_div').bind("dblclick.jstree", function (event) {
+   var node = $(event.target).closest("li");
+    var type = node.attr('rel');
+    var key = node[0].id;
+    $('body').addClass('wait');
 
-keys_options.onchange = function() {
-    key_value = keys_options.value;
-    set_key_values(key_value);
-}
+    let resource=get_resource(key);
+    url=searchresourcesvalesforkey+ "?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    fetch(url).then(function(response) {
+      {
+        response.json().then(function(data) {
+            display_value_search_results(data, resource);
+                });
+            }
+    });
 
+
+});
+}
 $(document).ready(function() {
 
-    if (query_id != "None") {
-        set_query_form = true;
-        task_id = query_id;
-        header = "Retrieve results";
-        body = "Please wait while retrieving the results for \n\rQuery no: " + task_id + ", this may take some time";
-        displayMessage(header, body);
-        setTimeout(function() {
-            get_results();
-        }, 600);
+set_help_file();
 
-    } else {
+set_tree_nodes();
+
+create_tree();
+
+
+    let _keys_options = document.getElementById('keyFields');
     optionHtml = ''
     for (key in resources_data) {
                 optionHtml += '<option value ="' + key + '">' + key+ '</option>'
             }
-       resourcseFields.innerHTML = optionHtml;
+       //resourcseFields.innerHTML = optionHtml;
        optionOpHtml = ''
        for (i in operator_choices)
        {
@@ -828,21 +884,592 @@ $(document).ready(function() {
        condtion.innerHTML = optionOpHtml;
         var resources_con = document.getElementById('resources');
         resources_con.style.display = "block";
-        resource = selected_resource.value = 'image';
-        //document.getElementById("checkMainAttribute").style.display = "block";
-        set_resources('image');
-    }
+
+        set_query_fields(_keys_options.parentNode.parentNode);
+
 });
 //Used to load query from local storage
-document.getElementById('load_file').onchange = function () {
-let file = document.querySelector("#load_file").files[0];
-  load_query_from_file(file);
+// document.getElementById('load_file').onchange = function () {
+// let file = document.querySelector("#load_file").files[0];
+//   load_query_from_file(file);
+// }
+
+
+let $andClause;
+
+$(function(){
+
+    // clone empty form row before any changes
+    // used for building form
+        $("#search_form .and_clause").bind("keydown", function(e) {
+   if (e.keyCode === 13) return false;
+ });
+
+    $andClause = $("#search_form .and_clause").clone();
+
+
+    // Hide the X button if there's only 1 in the form
+    function hideRemoveIfOnlyOneLeft() {
+        let $btns = $("button.remove");
+        if ($btns.length == 1) {
+            $btns.css('visibility', 'hidden');
+        } else {
+            $btns.css('visibility', 'visible');
+        }
+    }
+
+    // update JSON query
+    function updateForm() {
+        hideRemoveIfOnlyOneLeft();
+
+        query = get_current_query()
+        is_new_query=true;
+        $("#queryJson").val(JSON.stringify(query, undefined, 4));
+    }
+
+    // OR buttons
+    $("#search_form").on("click", ".addOR", function (event) {
+        event.preventDefault();
+        let $clause = $(this).parent();
+        addOr($clause);
+        updateForm();
+    });
+
+    // X buttons
+    $("#search_form").on("click", ".remove", function (event) {
+         let $row = $(this).closest(".form-row");
+        let $clause = $row.parent();
+        $row.remove();
+        // If no rows left, remove clause...
+        if ($(".form-row", $clause).length === 0) {
+            let $and = $clause.prev();
+            if ($and.length == 0) {
+                // in case we're removing the first row
+                $and = $clause.next();
+            }
+            $and.remove();
+            $clause.remove();
+        }
+        updateForm();
+
+    });
+
+    // AND button
+    $("#addAND").on("click", function(){
+        addAnd();
+        updateForm();
+    });
+
+    // handle any input/select changes to update textarea
+    $("#search_form").on("change", "select", updateForm);
+    $("#search_form").on("keyup", "input", updateForm);
+
+
+    // initial update of JSON textarea
+    updateForm()
+    // update form in case case_sensitive changed
+    $("#case_sensitive").on("click", function (event) {
+
+    updateForm();
+
+});
+
+});
+
+function addAnd(attribute, operator, value) {
+    is_new_query=true;
+    let $form = $("#search_form");
+    if ($form.children().length > 0) {
+        $form.append("<div>AND</div>");
+    }
+    let $newRow = $andClause.clone();
+
+    $form.append($newRow);
+
+    set_query_fields($newRow.children()[0]);
+
+    //set key values and auto complete
+
+
+    if (attribute) {
+        $(".keyFields", $newRow).val(attribute);
+    }
+    if (operator) {
+        $(".condition", $newRow).val(operator);
+    }
+    if (value) {
+        $(".valueFields", $newRow).val(value);
+
+    }
+
+ //  $newRow.bind("keydown", function(e) {
+  // if (e.keyCode === 13) return false;
+ //});
+
+    return $newRow;
+
 }
 
-//this.agGrid.columnApi.setColumnsVisible(["COL_1", "COL_2"], false);
-//this.agGrid.columnApi.setColumnsVisible(["COL_1", "COL_2"], true);
-//const group = this.columnApi.getColumnGroup("MY_GROUP");
-//group.children.forEach(child => this.columnApi.setColumnsVisible(child, false));
-//
-//wehere  col_i is the column id
+function addOr($and, attribute, operator, value) {
+    is_new_query=true;
+    let $row = $(".form-row", $and).last();
+    let $newRow = $row.clone();
+
+    $row.after($newRow);
+    //set key values and auto complete
+      if (attribute) {
+        $(".keyFields", $newRow).val(attribute);
+    }
+    if (operator) {
+        $(".condition", $newRow).val(operator);
+    }
+    if (value) {
+        $(".valueFields", $newRow).val(value);
+    }
+    // I have added this line to reset the value as it is copied with its value, this should be invistigated  later
+    else
+     $(".valueFields", $newRow).val('');
+    set_query_fields($newRow[0]);
+    //$newRow.bind("keydown", function(e) {
+   //if (e.keyCode === 13) return false;
+ //});
+
+}
+function load_query() {
+    // load JSON from textarea and build form...
+    let text = $("#queryJson").val();
+    let jsonData = {};
+    try {
+        jsonData = JSON.parse(text);
+    } catch (error) {
+        alert("Failed to parse JSON");
+        return;
+    }
+    let query_details = jsonData.query_details;
+    if (!query_details) {
+        alert("No 'query_details' in JSON");
+        return;
+    }
+    set_the_query(query_details);
+    display_hide_remove_buttons();
+
+    }
+
+function set_the_query(query_details)
+{
+    let and_filters = query_details.and_filters;
+    let or_filters = query_details.or_filters;
+    if (!(and_filters || or_filters)) {
+        alert("No 'and_filters' or 'or_filters' in 'query_details'");
+        return;
+    }
+
+    // Start by clearing form...
+    $("#search_form").empty();
+
+    // handle ANDs...
+    and_filters.forEach(filter => {
+        let { name, operator, value } = filter;
+        addAnd(name, operator, value);
+    });
+
+    // handle ORs...
+    or_filters.forEach(or_filter => {
+        let $and;
+        or_filter.forEach(filter => {
+            let { name, operator, value } = filter;
+            if (!$and) {
+                $and = addAnd(name, operator, value);
+            } else {
+                addOr($and, name, operator, value);
+            }
+        });
+    });
+}
+
+function check_value(_keys_options, attribute)
+ {
+
+  _keys_options.value = attribute;
+ if (_keys_options.selectedIndex===-1)
+ {
+
+     let values=resources_data["image"];
+     values.push(attribute);
+     $(_keys_options).append(new Option(attribute, attribute));
+
+
+ }
+}
+
+function check_attribute(attribute)
+{
+//check if the attribute is in the default list, if not it will add it.
+var elms = document.querySelectorAll("[id='keyFields']");
+for(var i = 0; i < elms.length; i++)
+{
+    check_value(elms[i], attribute);
+}
+        }
+
+
+function display_hide_remove_buttons(){
+   let btns=document.querySelectorAll("#remove_row");
+   btns.forEach(function (btn) {
+    if (btns.length == 1) {
+            btn.style.visibility = "hidden";
+        } else {
+            btn.style.visibility = "visible";
+        }
+        });
+        }
+
+function onRowDoubleClicked(event) {
+/* when the user double check a row inside the grid
+it will get he attribute and value pair and set the query builder for using them, then submit a query to get the results
+*/
+
+  const  rowNode= event.api.getRowNode(event.node.rowIndex);
+  let resource=rowNode.data.Resource;
+   if (resource===undefined)
+        resource=get_resource(rowNode.data.Attribute);
+    if (resource===undefined)
+            resource='image';
+    if (resources_data.hasOwnProperty(resource))
+    {
+    if (resources_data[resource].indexOf(rowNode.data.Attribute )==-1)
+            resources_data[resource].push(rowNode.data.Attribute);
+            }
+        else
+    resources_data[resource]=[rowNode.data.Attribute]
+  query=get_current_query();
+  if(query["query_details"]["or_filters"].length==0 && query["query_details"]["and_filters"].length==1)
+  {
+  if (query["query_details"]["and_filters"][0]['name']==="Any")
+  {
+            $("#search_form").empty();
+        }
+
+      }
+
+  addAnd(rowNode.data.Attribute,"equals" , rowNode.data.Value);
+
+ display_hide_remove_buttons();
+  query = get_current_query();
+  var querybuilderTab = document.querySelector('#tabs  #querybuilder_nav a');
+  var tab = new bootstrap.Tab(querybuilderTab);
+  tab.show();
+   $("#queryJson").val(JSON.stringify(query, undefined, 4));
+  document.getElementById("submit_").click();
+}
+
+function removeAllChildNodes(parentNode) {
+    while (parentNode.firstChild) {
+        parentNode.removeChild(parentNode.firstChild);
+    }
+}
+
+function onSortChangedEvent(event)
+{
+/*
+update row index after sorting
+*/
+  event.api.forEachNode((rowNode,index)=>{ rowNode.rowIndex = index; });
+}
+
+function display_value_search_results(results, resource)
+   {
+   /*
+   Dipsly general search results using any value
+   */
+   if (results["Error"] != undefined )
+   {
+        alert (results["Error"]);
+       $('body').removeClass('wait');
+        return;
+   }
+           if (results["columnDefs"].length>0)
+           {
+           var searchGridOptions = {
+              defaultColDef: {
+              resizable: true,
+              "filter": true,
+              "animateRows":true,
+          },
+            enableCellTextSelection: true,
+            columnDefs: results["columnDefs"],
+            rowData: null,
+            rowSelection: 'single',
+          rowData: null,
+          onCellDoubleClicked: onRowDoubleClicked,
+          onSortChanged : onSortChangedEvent,
+          onFilterChanged : onSortChangedEvent,
+        };
+           const searcheGridDiv = document.querySelector('#grid_key_values');
+           var myobj = document.getElementById("demo");
+           searcheGridDiv.innerHTML ='';
+           let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
+           search_ag_grid.gridOptions.api.setRowData(results["results"]);
+           search_ag_grid.gridOptions.api.sizeColumnsToFit();
+           document.getElementById("help_message").style.display='none';
+           document.getElementById('exportsearchResults').style.display = "block";
+           $('#exportsearchResults').unbind('click');
+           $("#exportsearchResults").on("click",  function (event) {
+           search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
+               });
+              //results["total_number_of_images"], results["total_number_of_buckets"]
+           if (resource=="all")
+                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"])
+           else
+                if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
+                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
+           else
+                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
+        }
+    else
+        alert("No result is found");
+    $('body').removeClass('wait');
+    var attributebrwoserTab = document.querySelector('#tabs  #attributebrwoser_nav a');
+    var tab = new bootstrap.Tab(attributebrwoserTab);
+    tab.show();
+   }
+
+  $("#value_field_search_only").on("click",  function (event) {
+  /*
+  Search  using values provided by the user*/
+        event.preventDefault();
+        value=$("#value_field").val();
+        if (value==null)
+        {
+        alert("No value is provided ..");
+        return;
+        }
+        query= {"value": $("#value_field").val(), "resource": "image" };
+$('body').addClass('wait');
+        let resource="all";
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
+        fetch(url).then(function(response) {
+          {
+            response.json().then(function(data) {
+            if (data["Error"]!==undefined)
+            {
+            $('body').removeClass('wait');
+            alert (data["Error"]);
+            return;
+            }
+
+                display_value_search_results(data, resource);
+                    });
+                }
+        });
+    });
+
+    set_tree_events_handller();
+
+/**
+**/
+  $(function() {
+
+    $('#commonattr').change(function() {
+
+
+    if ($(this).prop('checked'))
+    {
+     mode="advanced";
+        open=false  ;
+
+    }
+    else
+    {
+    mode= "searchterms"
+        open=true;
+
+    }
+
+    url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
+    fetch(url).then(function(response) {
+      {
+        response.json().then(function(data) {
+          resources_data=data;
+          //$("#jstree_resource_div").jstree("init");
+          set_tree_nodes(open);
+          $('#jstree_resource_div').jstree("destroy").empty();
+
+        create_tree();
+        set_tree_events_handller ();
+        update_key_fields();
+                });
+            }
+    });
+
+
+    })
+  })
+
+
+function update_key_fields(){
+
+const keyFields = document.querySelectorAll('#keyFields');
+
+for (i in keyFields)
+{
+__keys_options=keyFields[i];
+key=__keys_options.value;
+
+    optionHtml = '';
+    for (const [key, value] of Object.entries(resources_data)) {
+            if (value==null)
+              {
+                __keys_options.innerHTML = optionHtml;
+                break;
+              }
+             value.sort();
+            for (i in value) {
+                optionHtml += '<option value ="' + value[i] + '">' + value[i] + '</option>'
+            }
+    }
+        __keys_options.innerHTML = optionHtml;
+        __keys_options.value=key;
+        }
+}
+
+function searchforvalue()
+{
+}
+
+function display_help()
+{
+ var helptab = document.querySelector('#tabs  #help_nav a');
+  var tab = new bootstrap.Tab(helptab);
+  tab.show()
+}
+
+function display_hide_grid_columns()
+{
+  //get the rows data
+    rows_data=[];
+    columnDefs.forEach(function (column) {
+    if (column['field']!="Id" && column['field']!="Name" && column['field']!="Study name")
+    if (column['hide']==true)
+               rows_data.push({'Name':column['field'],'Hidden':false });
+     else
+               rows_data.push({'Name':column['field'],'Hidden':true });
+
+        }
+    );
+    //table header
+    var header=["Column Name","Visible"]
+
+    //create the table on the fly using the row data
+    insert_rows_values_table("table_display_hide", header, rows_data);
+
+    //diplay the modal which contains the table
+    displayMessage("Display/Hide columns", "update");
+}
+
+function insert_rows_values_table(table_id, header, rows)
+{
+/* insert rows for the display/hide columns
+*/
+    var table = document.getElementById(table_id);
+    table.innerHTML="";
+    var thead = document.createElement('thead');
+    table.appendChild(thead);
+    for(var i=0;i<header.length;i++){
+        thead.appendChild(document.createElement("th")).
+        appendChild(document.createTextNode(header[i]));
+    }
+        rows.forEach(function (row_)
+        {
+            var row = table.insertRow();
+            var cell = row.insertCell();
+            cell.innerHTML =row_["Name"];
+            var chk = document.createElement('input')
+            chk.setAttribute('type', 'checkbox');
+            chk.checked =row_["Hidden"];
+            chk.setAttribute('id', row_["Name"]);
+            var cell2 = row.insertCell();
+            cell2.appendChild(chk);
+        });
+        $('#'+table_id).addClass("table table-striped header-fixed")
+}
+
+function update_table_visability()
+{
+/*
+check the columns table to set their visability
+*/
+    table=document.getElementById("table_display_hide");
+    dict_hide={}
+    for (i = 0; i < table.rows.length; i++) {
+            // get the row cell collection.
+            var rowCells = table.rows.item(i).cells;
+            //Get attribute name
+            name=rowCells.item(0).innerHTML;
+            //get hidden or not
+            chk=rowCells.item(1).childNodes[0];
+
+            if (chk.checked==false)
+                dict_hide[name]=true;
+             else
+                dict_hide[name]=false;
+
+
+            ag_grid.gridOptions.columnApi.setColumnsVisible([name], chk.checked);
+
+
+        }
+            columnDefs.forEach(function (column) {
+             if (column['field']!="Id" && column['field']!="Name" && column['field']!="Study name")
+            column['hide'] =dict_hide[column['field']];
+
+        }
+    );
+
+}
+
+
+function set_columns_selection(checked)
+{
+   columnDefs.forEach(function (column) {
+             if (column['field']!="Id" && column['field']!="Name" && column['field']!="Study name")
+             {
+              column['hide'] =checked;
+
+              if (checked ==true)
+                          ag_grid.gridOptions.columnApi.setColumnsVisible([column['field']], false);
+                     else
+                          ag_grid.gridOptions.columnApi.setColumnsVisible([column['field']], true);
+                          }
+        }
+        );
+}
+
+function set_help_file()
+{
+/*
+creae the elemets inside thehelp div from the help file contents.
+It displays the first line in each paragraph in bold.
+*/
+
+for (i in help_contents)
+{
+    let sub_lines=help_contents[i].split(".");
+       text=''
+    for (j in sub_lines)
+    {
+
+    if (j==0)
+       text="<b>"+sub_lines[j]+"</b>";
+    else {
+           text=text+". "+sub_lines[j];
+   }
+    }
+        var p = document.createElement('p');
+        p.innerHTML =text;
+        p.classList.add("text-justify");
+        document.getElementById('help').appendChild(p);
+    }
+}
+
 
