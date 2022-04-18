@@ -595,8 +595,13 @@ function toto_function(data)
                         select: function(event, ui) {
 
                     ui.item.value=adjust_autocomplete_values(ui.item.value);
-                    }
-    });
+                   }
+                   /*Will modification from pull request 4*/
+             }).autocomplete("instance")._renderItem = function(ul, item) {
+                // without this, html in label will be escaped
+                var el = $('<div>' + item.label + '</div>')
+                return $("<li>").append(el).appendTo(ul);
+              };
 
 }
 //after selecting the item, and menu is hiding it will sned the value input out of focus,
@@ -725,7 +730,8 @@ function setFieldValues(data=null){
 }
     if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
     {
-        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
+        //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
+        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
        auto_fetch_is_running=true;
 //  const request = async () => {
 //    const response = await fetch(url);
@@ -739,8 +745,16 @@ function setFieldValues(data=null){
           console.log("VALUE: ", val);
             response.json().then(function(data) {
             $('body').removeClass('wait');
+            /*Will modification from pull request 4*/
+           let results = data.results.map(result => {
+                return {
+                    label: `<b>${result.Value}</b> (${result.Attribute}) <span style="color:#bbb">${result["Number of images"]}</span>`,
+                    // value is parsed to set Attribute chooser and field Value
+                    value: `Attribute: ${result.Attribute}, Value:${result.Value}`
+                }
+            })
 
-            toto_function(data);
+            toto_function(results);
             auto_fetch_is_running=false;
             //console.log("datatata", data);
             //return data.filter(x => x.toLowerCase().includes(val.toLowerCase()))
