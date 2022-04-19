@@ -32,7 +32,8 @@ def index ():
     '''
     help_contents=get_help_file_contenets()
     resources=get_resources("searchterms")
-    return render_template('main_page.html', resources_data=resources, search_engine_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_API"),  operator_choices=operator_choices,task_id="None", help_contents=help_contents,mode="usesearchterms")#container)
+    search_engine_url = omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL") + "/api/v1/resources"
+    return render_template('main_page.html', resources_data=resources, search_engine_url=search_engine_url,  operator_choices=operator_choices,task_id="None", help_contents=help_contents,mode="usesearchterms")#container)
 
 @main.route('/searchterms',methods=['POST', 'GET'])
 def get_search_items():
