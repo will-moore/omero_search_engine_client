@@ -731,7 +731,9 @@ function setFieldValues(data=null){
     if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
     {
         //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
-        url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
+        //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
+        url=search_engine_url+"/"+encodeURIComponent(image)+"/searchvalues/?value="+encodeURIComponent(val);
+
        auto_fetch_is_running=true;
 //  const request = async () => {
 //    const response = await fetch(url);
@@ -746,7 +748,7 @@ function setFieldValues(data=null){
             response.json().then(function(data) {
             $('body').removeClass('wait');
             /*Will modification from pull request 4*/
-           let results = data.results.map(result => {
+           let results = data.returnted_results.map(result => {
                 return {
                     label: `<b>${result.Value}</b> (${result.Attribute}) <span style="color:#bbb">${result["Number of images"]}</span>`,
                     // value is parsed to set Attribute chooser and field Value
