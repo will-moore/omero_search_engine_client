@@ -732,7 +732,7 @@ function setFieldValues(data=null){
     {
         //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
         //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
-        url=search_engine_url+"/"+encodeURIComponent(image)+"/searchvalues/?value="+encodeURIComponent(val);
+        url=search_engine_url+"/"+encodeURIComponent("image")+"/searchvalues/?value="+encodeURIComponent(val);
 
        auto_fetch_is_running=true;
 //  const request = async () => {
