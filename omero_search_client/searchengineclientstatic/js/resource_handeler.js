@@ -732,7 +732,7 @@ function setFieldValues(data=null){
     {
         //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
         //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
-        url=search_engine_url+"/"+encodeURIComponent(image)+"/searchvalues/?value="+encodeURIComponent(val);
+        url=search_engine_url+"/"+encodeURIComponent("image")+"/searchvalues/?value="+encodeURIComponent(val);
 
        auto_fetch_is_running=true;
 //  const request = async () => {
@@ -748,7 +748,7 @@ function setFieldValues(data=null){
             response.json().then(function(data) {
             $('body').removeClass('wait');
             /*Will modification from pull request 4*/
-           let results = data.returnted_results.map(result => {
+           let results = data.data.map(result => {
                 return {
                     label: `<b>${result.Value}</b> (${result.Attribute}) <span style="color:#bbb">${result["Number of images"]}</span>`,
                     // value is parsed to set Attribute chooser and field Value
@@ -1380,7 +1380,7 @@ function display_hide_grid_columns()
     insert_rows_values_table("table_display_hide", header, rows_data);
 
     //diplay the modal which contains the table
-    displayMessage("Display/Hide columns", "update");
+    displayMessage("Display/Hide columns", "Update");
 }
 
 function insert_rows_values_table(table_id, header, rows)
