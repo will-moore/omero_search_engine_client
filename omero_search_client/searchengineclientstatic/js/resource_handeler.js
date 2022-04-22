@@ -918,7 +918,7 @@ $(function(){
     // clone empty form row before any changes
     // used for building form
         $("#search_form .and_clause").bind("keydown", function(e) {
-   if (e.keyCode === 13) return false;
+         if (e.keyCode === 13) return false;
  });
 
     $andClause = $("#search_form .and_clause").clone();
@@ -1018,9 +1018,9 @@ function addAnd(attribute, operator, value) {
 
     }
 
- //  $newRow.bind("keydown", function(e) {
-  // if (e.keyCode === 13) return false;
- //});
+   $newRow.bind("keydown", function(e) {
+   if (e.keyCode === 13) return false;
+ });
 
     return $newRow;
 
@@ -1046,9 +1046,9 @@ function addOr($and, attribute, operator, value) {
     else
      $(".valueFields", $newRow).val('');
     set_query_fields($newRow[0]);
-    //$newRow.bind("keydown", function(e) {
-   //if (e.keyCode === 13) return false;
- //});
+    $newRow.bind("keydown", function(e) {
+   if (e.keyCode === 13) return false;
+ });
 
 }
 function load_query() {
