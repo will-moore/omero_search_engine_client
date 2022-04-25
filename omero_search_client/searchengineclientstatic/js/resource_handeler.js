@@ -700,9 +700,7 @@ function set_key_values(key_value, container) {
     set_operator_options(key_value, container);
     if (cached_key_values[key_value]===undefined)
     {
-        //let selected_resource_ = document.getElementById('resourcseFields'+id);
-        //resource = selected_resource_.value;
-        url=getresourcesvalesforkey+ "?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
+        let url = search_engine_url + "/" + encodeURIComponent(resource) + "/getannotationvalueskey/?key=" + encodeURIComponent(key_value);
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
