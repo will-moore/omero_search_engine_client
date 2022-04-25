@@ -148,7 +148,7 @@ def determine_search_results_(query_):
     resource_ext = "{base_url}api/v1/resources/submitquery/?return_columns={return_columns}".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"),return_columns=True)
     aa = json.dumps(query_)
-    res = requests.get(resource_ext, data=aa)
+    res = requests.post(resource_ext, data=aa)
     mode = query_.get("mode")
     columns_def = query_.get("columns_def")
     res = res.text
