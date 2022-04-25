@@ -170,16 +170,15 @@ function set_global_variables(data)
     page=page+1;
     pages_data[page]=data;
     recieved_results=recieved_results.concat(data["values"]);
-    size=data["size"];
+    size = data.size;
     query_details=data["query_details"];
-    recieved_data=recieved_data+data["values"].length;
+    recieved_data = recieved_data + size;
     var resultsbutton = document.getElementById('loadMoreResults');
-    if (recieved_data>=size){
-
-    resultsbutton.disabled = true;
+    if (recieved_data>=size) {
+        resultsbutton.disabled = true;
+    } else {
+        resultsbutton.disabled = false;
     }
-    else
-    resultsbutton.disabled= false;
 
 }
 function sizeToFit() {
@@ -295,9 +294,8 @@ var gridOptions = {
   var notice = data["notice"];
 
   server_query_time = data["server_query_time"];
-  let no_image = results.length;
+  let no_image = data.size;
 
-        var querytime = (queryendtime - querystarttime) / 1000;
         if (no_image!=size)
          {
             message = "No of "+data["resource"]+ ", "+ recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
@@ -483,7 +481,7 @@ return;
 //alert(submitqueryurl);
 $.ajax({
         type: "POST",
-        url: submitqueryurl,
+        url: search_engine_url + "/submitquery/?return_columns=True",
         contentType: "application/json;charset=UTF-8",
         dataType: 'json',
         data: JSON.stringify(query),
