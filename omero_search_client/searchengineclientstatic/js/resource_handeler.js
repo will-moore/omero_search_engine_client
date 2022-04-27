@@ -879,11 +879,17 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
 }
 $(document).ready(function() {
 
+if (resources_data.error != undefined){
+        alert(resources_data.error);
+        return;
+        }
+
 set_help_file();
 
 set_tree_nodes();
 
 create_tree();
+
 
 
     let _keys_options = document.getElementById('keyFields');

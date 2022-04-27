@@ -64,7 +64,11 @@ def get_resourcse_key():
         url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
         resp = requests.get(url=url)
         results = resp.text
-        values = json.loads(results)
+        try:
+            values = json.loads(results)
+        except Exception as e:
+            omero_client_app.logger.info("Request text: %s, Error: %s" % (results, e))
+            return jsonify ({"error": "Something went wrong, please try again later"})
         return jsonify(values)
 
 @main.route('/submitquery/',methods=['POST', 'GET'])

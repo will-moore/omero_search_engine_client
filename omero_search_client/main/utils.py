@@ -11,7 +11,12 @@ def get_resourcse_names_from_search_engine(resource, ):
     url = search_engine_url + "/getresourcenames/"
     resp = requests.get(url=url)
     results = resp.text
-    values = json.loads(results)
+    try:
+        values = json.loads(results)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s" % (results, e))
+        return {"error":"Something went wrong, please try again later"}
+
     return values
 
 def set_returned_results_for_all(results_,return_attribute_value):
@@ -81,7 +86,11 @@ def search_values(resource, value,return_attribute_value=False):
     print (url)
     resp = requests.get(url=url)
     results_ = resp.text
-    all_results = json.loads(results_)
+    try:
+        all_results = json.loads(results_)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s"%(results_,e))
+        return {"error": "Something went wrong, please try again later"}
     if resource=="all":
         return set_returned_results_for_all(all_results,return_attribute_value)
     results = all_results.get("data")
@@ -121,7 +130,11 @@ def search_key(resource, key):
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, key=key)
     resp = requests.get(url=url)
     results_ = resp.text
-    all_results = json.loads(results_)
+    try:
+        all_results = json.loads(results_)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s" % (results_, e))
+        return {"error":"Something went wrong, please try again later"}
     results=all_results.get("data")
     total_number=all_results.get("total_number")
     total_number_of_images=all_results.get("total_items")
@@ -152,7 +165,11 @@ def determine_search_results_(query_):
     mode = query_.get("mode")
     columns_def = query_.get("columns_def")
     res = res.text
-    ress = json.loads(res)
+    try:
+        ress = json.loads(res)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s" % (res, e))
+        ress= {"Error": "Something went wrong, please try again later"}
     if ress.get("columns_def"):
         hide_column_not_in_searchterms(ress.get("columns_def"), mode)
     return ress
@@ -181,7 +198,13 @@ def get_query_results(task_id, resource=None):
             base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), task_id=task_id)
         resp = requests.get(url_)
         res = resp.text
-        results = json.loads(res)
+        try:
+            results = json.loads(res)
+        except Exception as e:
+            omero_client_app.logger.info("Request text: %s, Error: %s"%(results,e))
+            return {"error ":"Something went wrong, please try again later"}
+
+
         omero_client_app.logger.info("keys is: "+ str( results.keys()))
         status = results.get("Status")
         omero_client_app.logger.info (status)
@@ -265,6 +288,8 @@ def get_resources(mode):
             resources["project"].append("Name (IDR number)")
     except Exception as e:
         omero_client_app.logger.info ("Error: "+ str(e))
+        resources["error"]="Something went wrong, please try again later"
+        return (resources)
 
     if mode=="searchterms":
         return restircted_resources
