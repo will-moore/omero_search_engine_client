@@ -71,13 +71,18 @@ def set_returned_results_for_all(results_,return_attribute_value):
                     continue
                 col={}
                 col_def.append(col)
-                col["field"]=item
+                if item == "Key":
+                    col["field"] = "Attribute"
+                else:
+                    col["field"]=item
                 col["sortable"]= True
             if last_colm:
                 col={}
                 col_def.append(col)
                 col["field"] = last_colm
                 col["sortable"] = True
+        for res in results:
+            res["Attribute"] = res["Key"]
     return {"columnDefs": col_def, "results": all_results, "total_number":total_number_results, "no_buckets":no_buckets}
 
 def search_values(resource, value,return_attribute_value=False):
@@ -116,13 +121,18 @@ def search_values(resource, value,return_attribute_value=False):
                 continue
             col={}
             col_def.append(col)
-            col["field"]=item
+            if item=="Key":
+                col["field"] = "Attribute"
+            else:
+                col["field"]=item
             col["sortable"]= True
         if last_colm:
             col = {}
             col_def.append(col)
             col["field"] = last_colm
             col["sortable"] = True
+        for res in results:
+            res["Attribute"]=res["Key"]
     return {"columnDefs": col_def, "results": results, "total_number":total_number, "no_buckets":len(results)}
 
 def search_key(resource, key):
@@ -149,7 +159,7 @@ def search_key(resource, key):
             col = {}
             col_def.append(col)
             print(item)
-            if item=="key":
+            if item=="Key":
                 col["field"] = "Attribute"
             else:
                 col["field"] = item
@@ -160,7 +170,7 @@ def search_key(resource, key):
             col["field"] = last_colm
             col["sortable"] = True
     for res in results:
-        res["Attribute"]=res["key"]
+        res["Attribute"]=res["Key"]
 
     return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results),"total_number_of_images":total_number_of_images, "total_number_of_buckets":total_number_of_buckets}
 

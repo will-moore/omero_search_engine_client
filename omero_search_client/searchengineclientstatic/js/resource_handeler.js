@@ -750,9 +750,9 @@ function setFieldValues(data=null){
             /*Will modification from pull request 4*/
            let results = data.data.map(result => {
                 return {
-                    label: `<b>${result.Value}</b> (${result.key}) <span style="color:#bbb">${result["Number of images"]}</span>`,
+                    label: `<b>${result.Value}</b> (${result.Key}) <span style="color:#bbb">${result["Number of images"]}</span>`,
                     // value is parsed to set Attribute chooser and field Value
-                    value: `Attribute: ${result.key}, Value:${result.Value}`
+                    value: `Attribute: ${result.Key}, Value:${result.Value}`
                 }
             })
 
