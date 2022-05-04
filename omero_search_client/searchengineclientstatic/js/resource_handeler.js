@@ -1195,62 +1195,84 @@ update row index after sorting
   event.api.forEachNode((rowNode,index)=>{ rowNode.rowIndex = index; });
 }
 
-function display_value_search_results(results, resource)
-   {
-   /*
+function display_value_search_results(results, resource) {
+  /*
    Dipsly general search results using any value
    */
-   if (results["Error"] != undefined )
-   {
-        alert (results["Error"]);
-       $('body').removeClass('wait');
-        return;
-   }
-           if (results["columnDefs"].length>0)
-           {
-           var searchGridOptions = {
-              defaultColDef: {
-              resizable: true,
-              "filter": true,
-              "animateRows":true,
-          },
-            enableCellTextSelection: true,
-            columnDefs: results["columnDefs"],
-            rowData: null,
-            rowSelection: 'single',
-          rowData: null,
-          onCellDoubleClicked: onRowDoubleClicked,
-          onSortChanged : onSortChangedEvent,
-          onFilterChanged : onSortChangedEvent,
-        };
-           const searcheGridDiv = document.querySelector('#grid_key_values');
-           var myobj = document.getElementById("demo");
-           searcheGridDiv.innerHTML ='';
-           let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
-           search_ag_grid.gridOptions.api.setRowData(results["results"]);
-           search_ag_grid.gridOptions.api.sizeColumnsToFit();
-           document.getElementById("help_message").style.display='none';
-           document.getElementById('exportsearchResults').style.display = "block";
-           $('#exportsearchResults').unbind('click');
-           $("#exportsearchResults").on("click",  function (event) {
-           search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
-               });
-              //results["total_number_of_images"], results["total_number_of_buckets"]
-           if (resource=="all")
-                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"])
-           else
-                if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
-                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
-           else
-                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
-        }
+  if (results["Error"] != undefined) {
+    alert(results["Error"]);
+    $("body").removeClass("wait");
+    return;
+  }
+  if (results["columnDefs"].length > 0) {
+    var searchGridOptions = {
+      defaultColDef: {
+        resizable: true,
+        filter: true,
+        animateRows: true,
+      },
+      enableCellTextSelection: true,
+      columnDefs: results["columnDefs"],
+      rowData: null,
+      rowSelection: "single",
+      rowData: null,
+      onCellDoubleClicked: onRowDoubleClicked,
+      onSortChanged: onSortChangedEvent,
+      onFilterChanged: onSortChangedEvent,
+    };
+    const searcheGridDiv = document.querySelector("#grid_key_values");
+    var myobj = document.getElementById("demo");
+    searcheGridDiv.innerHTML = "";
+    let search_ag_grid = new agGrid.Grid(searcheGridDiv, searchGridOptions);
+    search_ag_grid.gridOptions.api.setRowData(results["results"]);
+    search_ag_grid.gridOptions.api.sizeColumnsToFit();
+    document.getElementById("help_message").style.display = "none";
+    document.getElementById("exportsearchResults").style.display = "block";
+    $("#exportsearchResults").unbind("click");
+    $("#exportsearchResults").on("click", function (event) {
+      search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
+    });
+    //results["total_number_of_images"], results["total_number_of_buckets"]
+    if (resource == "all")
+      $("#total_number_in_buckets").text(
+        "Number of buckets: " + results["no_buckets"]
+      );
+    else if (
+      results["total_number_of_buckets"] === results["no_buckets"] ||
+      results["total_number"] === results["total_number_of_images"] ||
+      results["total_number_of_images"] === undefined
+    )
+      $("#total_number_in_buckets").text(
+        "Number of buckets: " +
+          results["no_buckets"] +
+          ", Total number of " +
+          resource +
+          "s: " +
+          results["total_number"]
+      );
     else
-        alert("No result is found");
-    $('body').removeClass('wait');
-    var attributebrwoserTab = document.querySelector('#tabs  #attributebrwoser_nav a');
-    var tab = new bootstrap.Tab(attributebrwoserTab);
-    tab.show();
-   }
+      $("#total_number_in_buckets").text(
+        "Number of buckets: " +
+          results["no_buckets"] +
+          " / " +
+          results["total_number_of_buckets"] +
+          ", Number of " +
+          resource +
+          "s: " +
+          results["total_number"] +
+          " / " +
+          results["total_number_of_images"]
+      );
+  } else {
+    alert("No results found");
+  }
+  $("body").removeClass("wait");
+  var attributebrwoserTab = document.querySelector(
+    "#tabs  #attributebrwoser_nav a"
+  );
+  var tab = new bootstrap.Tab(attributebrwoserTab);
+  tab.show();
+}
 
   $("#value_field_search_only").on("click",  function (event) {
   /*
