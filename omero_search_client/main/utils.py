@@ -11,7 +11,12 @@ def get_resourcse_names_from_search_engine(resource, ):
     url = search_engine_url + "/getresourcenames/"
     resp = requests.get(url=url)
     results = resp.text
-    values = json.loads(results)
+    try:
+        values = json.loads(results)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s" % (results, e))
+        return {"error":"Something went wrong, please try again later"}
+
     return values
 
 def set_returned_results_for_all(results_,return_attribute_value):
@@ -81,7 +86,11 @@ def search_values(resource, value,return_attribute_value=False):
     print (url)
     resp = requests.get(url=url)
     results_ = resp.text
-    all_results = json.loads(results_)
+    try:
+        all_results = json.loads(results_)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s"%(results_,e))
+        return {"error": "Something went wrong, please try again later"}
     if resource=="all":
         return set_returned_results_for_all(all_results,return_attribute_value)
     results = all_results.get("data")
@@ -121,7 +130,11 @@ def search_key(resource, key):
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, key=key)
     resp = requests.get(url=url)
     results_ = resp.text
-    all_results = json.loads(results_)
+    try:
+        all_results = json.loads(results_)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s" % (results_, e))
+        return {"error":"Something went wrong, please try again later"}
     results=all_results.get("data")
     total_number=all_results.get("total_number")
     total_number_of_images=all_results.get("total_items")
@@ -144,155 +157,32 @@ def search_key(resource, key):
             col["sortable"] = True
     return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results),"total_number_of_images":total_number_of_images, "total_number_of_buckets":total_number_of_buckets}
 
-
 def determine_search_results_(query_):
-    resource_ext = "{base_url}api/v1/resources/{res_table}/submitquery/".format(
-        base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), res_table="image")
+    resource_ext = "{base_url}api/v1/resources/submitquery/?return_columns={return_columns}".format(
+        base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"),return_columns=True)
     aa = json.dumps(query_)
-    res = requests.get(resource_ext, data=aa)
+    res = requests.post(resource_ext, data=aa)
     mode = query_.get("mode")
     columns_def = query_.get("columns_def")
     res = res.text
-    ress = json.loads(res)
-    return process_search_results(ress, "image", columns_def, mode)
+    try:
+        ress = json.loads(res)
+    except Exception as e:
+        omero_client_app.logger.info("Request text: %s, Error: %s" % (res, e))
+        ress= {"Error": "Something went wrong, please try again later"}
+    if ress.get("columns_def"):
+        hide_column_not_in_searchterms(ress.get("columns_def"), mode)
+    return ress
 
-
-
-
-
-
-def get_ids(results, resource):
-    ids=[]
-    if results.get("results") and results.get("results").get("results"):
-        for item in results["results"]["results"]:
-            qur_item={}
-            #ids.append(qur_item)
-            qur_item["name"]="{resource}_id".format(resource=resource)
-            qur_item["value"]=item["id"]
-            qur_item["operator"]="equals"
-            qur_item["resource"] = resource
-            qur_item_=QueryItem(qur_item)
-            ids.append(qur_item_)
-        return ids
-    return None
-
-
-def process_search_results(results, resource, columns_def, mode):
-    returned_results={}
-
-    if not results.get("results") or len(results["results"])==0:
-        returned_results["Error"] = "Your query returns no results"
-        return returned_results
-    cols=[]
-    values=[]
-    urls = {"image": omero_client_app.config.get("IMAGE_URL"),
-            "project": omero_client_app.config.get("PROJECT_URL"),
-            "screen": omero_client_app.config.get("SCREEN_URL")}
-    extend_url=urls.get(resource)
-    if not extend_url:
-        extend_url = omero_client_app.config.get("RESOURCE_URL")
-    names_ids={}
-    for item in results["results"]["results"]:
-        value = {}
-        values.append(value)
-        value["Id"] = item["id"]
-        names_ids[value["Id"]]=item.get("name")
-
-        value["Name"]=item.get("name")
-        value["Project name"] = item.get("project_name")
-        if item.get("screen_name"):
-            to_add=True
-            value["Study name"] = item.get("screen_name")
-        elif  item.get("project_name"):
-            to_add=True
-            value["Study name"] =  item.get("project_name")
-
-        for k in item["key_values"]:
-            if k['name'] not in cols:
-                cols.append(k['name'])
-            if value.get(k["name"]):
-                value[k["name"]]=value[k["name"]]+"; "+ k["value"]
-            else:
-                value[k["name"]]=k["value"]
-
-    columns=[]
-    for col in cols:
-        columns.append({
-            "id": col,
-            "name": col,
-            "field": col,
-            "hide": False,
-            "sortable": True,
-        })
-    # to be used to rest
-    searchtermcols = get_restircted_search_terms().get(resource)
-    if not searchtermcols or len(searchtermcols)==0:
-        mode="advanced"
-    main_cols=[]
-    if not columns_def:
-        columns_def = []
-        cols.sort()
-        if resource == "image":
-            cols.insert(0, "Study name")
-            main_cols.append(("Study name"))
-        cols.insert(0, "Name")
-        main_cols.append(("Name"))
-        cols.insert(0, "Id")
-        main_cols.append(("Id"))
-
-        for col in cols:
-            if mode=="usesearchterms" and col not in main_cols:
-                if col in searchtermcols:
-                    hide=False
-                else:
-                    hide=True
-                columns_def.append({
-                    "field": col,
-                    "hide": hide,
-                    "sortable": True,
-                    #"width": 150,
-                })
-
-            else:
-                columns_def.append({
-                    "field": col,
-                    "hide":False,
-                    "sortable": True,
-                    #"width": 150,
-                })
-    else:
-        for col_def in columns_def:
-            if col_def["field"] not in cols:
-                if mode=="usesearchterms":
-                    if col in searchtermcols:
-                        cols.append(col_def["field"])
-                else:
-                    cols.append(col_def["field"])
-    for val in values:
-        if len(val)!=len(cols):
-            for col in cols:
-                if not val.get(col):
-                    val[col]='""'
-    #print (columns_def)
-    returned_results["columns"]=columns
-    returned_results["columns_def"]=columns_def
-    returned_results["values"]=values
-    returned_results["server_query_time"]=results["server_query_time"]
-    returned_results["query_details"]=results["query_details"]
-    returned_results["bookmark"]=results["results"]["bookmark"]
-    returned_results["page"] = results["results"]["page"]
-    returned_results["size"] = results["results"]["size"]
-    returned_results["total_pages"] = results["results"]["total_pages"]
-    returned_results["extend_url"]=extend_url
-    returned_results["names_ids"]=names_ids
-    returned_results["raw_elasticsearch_query"] = results["raw_elasticsearch_query"]
-    if len(values)<=results["results"]["size"]:
-        returned_results["contains_all_results"]=True
-    else:
-        returned_results["contains_all_results"] = False
-    returned_results["Error"]=results["Error"]
-    returned_results["resource"]=results["resource"]+"s"
-    return returned_results
+def hide_column_not_in_searchterms(columns_def, mode):
+    main_cols=["Id", "Name", "Study name"]
+    searchtermcols = get_restircted_search_terms().get("image")
+    for column in columns_def:
+        if column["field"] in searchtermcols or column["field"]  in main_cols:
+            hide = False
+        else:
+            hide = True
+        column["hide"]=hide
 
 def get_query_results(task_id, resource=None):
     mod_results = []
@@ -308,7 +198,13 @@ def get_query_results(task_id, resource=None):
             base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), task_id=task_id)
         resp = requests.get(url_)
         res = resp.text
-        results = json.loads(res)
+        try:
+            results = json.loads(res)
+        except Exception as e:
+            omero_client_app.logger.info("Request text: %s, Error: %s"%(results,e))
+            return {"error ":"Something went wrong, please try again later"}
+
+
         omero_client_app.logger.info("keys is: "+ str( results.keys()))
         status = results.get("Status")
         omero_client_app.logger.info (status)
@@ -392,6 +288,8 @@ def get_resources(mode):
             resources["project"].append("Name (IDR number)")
     except Exception as e:
         omero_client_app.logger.info ("Error: "+ str(e))
+        resources["error"]="Something went wrong, please try again later"
+        return (resources)
 
     if mode=="searchterms":
         return restircted_resources
