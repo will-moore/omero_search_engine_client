@@ -1204,7 +1204,8 @@ function display_value_search_results(results, resource) {
     $("body").removeClass("wait");
     return;
   }
-  if (results["columnDefs"].length > 0) {
+  if (results["data"].length > 0) {
+    let colNames = Object.keys(results["data"][0]);
     var searchGridOptions = {
       defaultColDef: {
         resizable: true,
@@ -1212,7 +1213,8 @@ function display_value_search_results(results, resource) {
         animateRows: true,
       },
       enableCellTextSelection: true,
-      columnDefs: results["columnDefs"],
+      // "columnDefs":[{"field":"Attribute","sortable":true}...]
+      columnDefs: colNames.map(name => {return {field: name, sortable: true}}),
       rowData: null,
       rowSelection: "single",
       rowData: null,
@@ -1221,10 +1223,9 @@ function display_value_search_results(results, resource) {
       onFilterChanged: onSortChangedEvent,
     };
     const searcheGridDiv = document.querySelector("#grid_key_values");
-    var myobj = document.getElementById("demo");
     searcheGridDiv.innerHTML = "";
     let search_ag_grid = new agGrid.Grid(searcheGridDiv, searchGridOptions);
-    search_ag_grid.gridOptions.api.setRowData(results["results"]);
+    search_ag_grid.gridOptions.api.setRowData(results.data);
     search_ag_grid.gridOptions.api.sizeColumnsToFit();
     document.getElementById("help_message").style.display = "none";
     document.getElementById("exportsearchResults").style.display = "block";
@@ -1235,22 +1236,22 @@ function display_value_search_results(results, resource) {
     //results["total_number_of_images"], results["total_number_of_buckets"]
     if (resource == "all")
       $("#total_number_in_buckets").text(
-        "Number of buckets: " + results["no_buckets"]
+        "Number of buckets: " + results.total_number_of_buckets
       );
     else if (
-      results["total_number_of_buckets"] === results["no_buckets"] ||
-      results["total_number"] === results["total_number_of_images"] ||
-      results["total_number_of_images"] === undefined
-    )
+      results.total_items === results.total_number
+    ) {
       $("#total_number_in_buckets").text(
         "Number of buckets: " +
-          results["no_buckets"] +
+          results["total_number_of_buckets"] +
           ", Total number of " +
           resource +
           "s: " +
           results["total_number"]
       );
-    else
+    } else {
+      // FIXME: Don't know when this is needed or if JSON results has
+      // everything we need to display this??
       $("#total_number_in_buckets").text(
         "Number of buckets: " +
           results["no_buckets"] +
@@ -1263,6 +1264,7 @@ function display_value_search_results(results, resource) {
           " / " +
           results["total_number_of_images"]
       );
+    }
   } else {
     alert("No results found");
   }
