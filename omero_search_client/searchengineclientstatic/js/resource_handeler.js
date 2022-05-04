@@ -861,7 +861,7 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
     $('body').addClass('wait');
 
     let resource=get_resource(key);
-    url=searchresourcesvalesforkey+ "?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    url = search_engine_url + `/${encodeURIComponent(resource)}/searchvaluesusingkey/?key=${encodeURIComponent(key)}`
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
