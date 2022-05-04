@@ -1298,7 +1298,14 @@ $('body').addClass('wait');
 
     }
 
-    url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
+    let url;
+    if (mode == "advanced") {
+        url = search_engine_url + "/all/getannotationkeys/";
+    } else {
+        // for "searchterms" mode, there is no equivalent endpoint under omero_search_engine backend
+        url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
+    }
+
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
