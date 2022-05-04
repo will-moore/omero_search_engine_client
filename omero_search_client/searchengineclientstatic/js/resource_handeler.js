@@ -726,8 +726,6 @@ function setFieldValues(data=null){
 }
     if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
     {
-        //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
-        //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
         url=search_engine_url+"/"+encodeURIComponent("image")+"/searchvalues/?value="+encodeURIComponent(val);
 
        auto_fetch_is_running=true;
@@ -1276,35 +1274,45 @@ function display_value_search_results(results, resource) {
   tab.show();
 }
 
-  $("#value_field_search_only").on("click",  function (event) {
+$("#value_field_search_only").on("click", function (event) {
   /*
   Search  using values provided by the user*/
-        event.preventDefault();
-        value=$("#value_field").val();
-        if (value==null)
-        {
-        alert("No value is provided ..");
-        return;
+  event.preventDefault();
+  value = $("#value_field").val();
+  if (value == null) {
+    alert("No value is provided ..");
+    return;
+  }
+  query = { value: $("#value_field").val(), resource: "image" };
+  $("body").addClass("wait");
+  let resource = "all";
+  let url =
+    search_engine_url +
+    `/${encodeURIComponent(resource)}/searchvalues/?value=${encodeURIComponent(
+      value
+    )}`;
+  fetch(url).then(function (response) {
+    {
+      response.json().then(function (data) {
+        if (data["Error"] !== undefined) {
+          $("body").removeClass("wait");
+          alert(data["Error"]);
+          return;
         }
-        query= {"value": $("#value_field").val(), "resource": "image" };
-$('body').addClass('wait');
-        let resource="all";
-        url=searchresourcesvales+ "?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
-        fetch(url).then(function(response) {
-          {
-            response.json().then(function(data) {
-            if (data["Error"]!==undefined)
-            {
-            $('body').removeClass('wait');
-            alert (data["Error"]);
-            return;
-            }
-
-                display_value_search_results(data, resource);
-                    });
-                }
+        let results = [];
+        ["image", "project", "screen", "plate", "well"].forEach((dtype) => {
+          if (data[dtype] && data[dtype].data.length > 0) {
+            const res = data[dtype].data.map((r) => {
+              return { ...r, Resource: dtype };
+            });
+            results = results.concat(res);
+          }
         });
-    });
+        display_value_search_results({ data: results }, resource);
+      });
+    }
+  });
+});
 
     set_tree_events_handller();
 
