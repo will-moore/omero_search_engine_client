@@ -6,7 +6,7 @@ import json
 from urllib.parse import quote
 from omero_search_client.app_data import get_help_file_contenets
 from omero_search_client import omero_client_app
-from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key, get_restircted_search_terms
+from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains")]
                                         #("gt", ">"),("gte", ">="), ("lt", "<"),
@@ -40,10 +40,6 @@ def index ():
         help_contents=help_contents,
         mode="usesearchterms"
     )
-
-@main.route('/searchterms',methods=['POST', 'GET'])
-def get_search_items():
-    return jsonify(get_restircted_search_terms())
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
