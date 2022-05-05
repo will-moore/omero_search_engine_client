@@ -170,16 +170,15 @@ function set_global_variables(data)
     page=page+1;
     pages_data[page]=data;
     recieved_results=recieved_results.concat(data["values"]);
-    size=data["size"];
+    size = data.size;
     query_details=data["query_details"];
-    recieved_data=recieved_data+data["values"].length;
+    recieved_data = recieved_data + size;
     var resultsbutton = document.getElementById('loadMoreResults');
-    if (recieved_data>=size){
-
-    resultsbutton.disabled = true;
+    if (recieved_data>=size) {
+        resultsbutton.disabled = true;
+    } else {
+        resultsbutton.disabled = false;
     }
-    else
-    resultsbutton.disabled= false;
 
 }
 function sizeToFit() {
@@ -295,9 +294,8 @@ var gridOptions = {
   var notice = data["notice"];
 
   server_query_time = data["server_query_time"];
-  let no_image = results.length;
+  let no_image = data.size;
 
-        var querytime = (queryendtime - querystarttime) / 1000;
         if (no_image!=size)
          {
             message = "No of "+data["resource"]+ ", "+ recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
@@ -483,7 +481,7 @@ return;
 //alert(submitqueryurl);
 $.ajax({
         type: "POST",
-        url: submitqueryurl,
+        url: search_engine_url + "/submitquery/?return_columns=True",
         contentType: "application/json;charset=UTF-8",
         dataType: 'json',
         data: JSON.stringify(query),
@@ -702,9 +700,7 @@ function set_key_values(key_value, container) {
     set_operator_options(key_value, container);
     if (cached_key_values[key_value]===undefined)
     {
-        //let selected_resource_ = document.getElementById('resourcseFields'+id);
-        //resource = selected_resource_.value;
-        url=getresourcesvalesforkey+ "?key=" + encodeURIComponent(key_value)+"&&resource="+ encodeURIComponent(resource);
+        let url = search_engine_url + "/" + encodeURIComponent(resource) + "/getannotationvalueskey/?key=" + encodeURIComponent(key_value);
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
@@ -730,8 +726,6 @@ function setFieldValues(data=null){
 }
     if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
     {
-        //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('image')+"&&return_attribute_value="+ encodeURIComponent(true);
-        //url=searchresourcesvales+ "?value=" + encodeURIComponent(val)+"&&resource="+ encodeURIComponent('iamge');
         url=search_engine_url+"/"+encodeURIComponent("image")+"/searchvalues/?value="+encodeURIComponent(val);
 
        auto_fetch_is_running=true;
@@ -865,7 +859,7 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
     $('body').addClass('wait');
 
     let resource=get_resource(key);
-    url=searchresourcesvalesforkey+ "?key=" + encodeURIComponent(key)+"&&resource="+ encodeURIComponent(resource);
+    url = search_engine_url + `/${encodeURIComponent(resource)}/searchvaluesusingkey/?key=${encodeURIComponent(key)}`
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
@@ -877,18 +871,41 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
 
 });
 }
-$(document).ready(function() {
+$(async function() {
 
-if (resources_data.error != undefined){
-        alert(resources_data.error);
-        return;
+    $('#commonattr').change(async function() {
+
+        if ($(this).prop('checked')) {
+            mode="advanced";
+            open=false;
+        } else {
+            mode= "searchterms";
+            open=true;
         }
 
-set_help_file();
+        resources_data = await load_resources(mode);
 
-set_tree_nodes();
+        set_tree_nodes(open);
+        $('#jstree_resource_div').jstree("destroy").empty();
 
-create_tree();
+        create_tree();
+        set_tree_events_handller ();
+        update_key_fields();
+    });
+
+    // load resources_data immediately...
+    resources_data = await load_resources("searchterms");
+
+    if (resources_data.error != undefined){
+        alert(resources_data.error);
+        return;
+    }
+
+    set_help_file();
+
+    set_tree_nodes();
+
+    create_tree();
 
 
 
@@ -1199,134 +1216,129 @@ update row index after sorting
   event.api.forEachNode((rowNode,index)=>{ rowNode.rowIndex = index; });
 }
 
-function display_value_search_results(results, resource)
-   {
-   /*
+function display_value_search_results(results, resource) {
+  /*
    Dipsly general search results using any value
    */
-   if (results["Error"] != undefined )
-   {
-        alert (results["Error"]);
-       $('body').removeClass('wait');
-        return;
-   }
-           if (results["columnDefs"].length>0)
-           {
-           var searchGridOptions = {
-              defaultColDef: {
-              resizable: true,
-              "filter": true,
-              "animateRows":true,
-          },
-            enableCellTextSelection: true,
-            columnDefs: results["columnDefs"],
-            rowData: null,
-            rowSelection: 'single',
-          rowData: null,
-          onCellDoubleClicked: onRowDoubleClicked,
-          onSortChanged : onSortChangedEvent,
-          onFilterChanged : onSortChangedEvent,
-        };
-           const searcheGridDiv = document.querySelector('#grid_key_values');
-           var myobj = document.getElementById("demo");
-           searcheGridDiv.innerHTML ='';
-           let search_ag_grid=new agGrid.Grid(searcheGridDiv, searchGridOptions);
-           search_ag_grid.gridOptions.api.setRowData(results["results"]);
-           search_ag_grid.gridOptions.api.sizeColumnsToFit();
-           document.getElementById("help_message").style.display='none';
-           document.getElementById('exportsearchResults').style.display = "block";
-           $('#exportsearchResults').unbind('click');
-           $("#exportsearchResults").on("click",  function (event) {
-           search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
-               });
-              //results["total_number_of_images"], results["total_number_of_buckets"]
-           if (resource=="all")
-                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"])
-           else
-                if(results["total_number_of_buckets"]===results["no_buckets"] || results["total_number"]===results["total_number_of_images"] || results["total_number_of_images"] === undefined)
-                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+", Total number of "+resource+"s: "+results["total_number"]);
-           else
-                $('#total_number_in_buckets').text("Number of buckets: "+results["no_buckets"]+ " / "+results["total_number_of_buckets"]+", Number of "+resource+"s: "+results["total_number"]+" / "+results["total_number_of_images"]);
-        }
-    else
-        alert("No result is found");
-    $('body').removeClass('wait');
-    var attributebrwoserTab = document.querySelector('#tabs  #attributebrwoser_nav a');
-    var tab = new bootstrap.Tab(attributebrwoserTab);
-    tab.show();
-   }
+  if (results["Error"] != undefined) {
+    alert(results["Error"]);
+    $("body").removeClass("wait");
+    return;
+  }
+  if (results["data"].length > 0) {
+    let colNames = Object.keys(results["data"][0]);
+    var searchGridOptions = {
+      defaultColDef: {
+        resizable: true,
+        filter: true,
+        animateRows: true,
+      },
+      enableCellTextSelection: true,
+      // "columnDefs":[{"field":"Attribute","sortable":true}...]
+      columnDefs: colNames.map(name => {
+          if (name.toLowerCase() == "key") {
+              name = "Attribute";
+          }
+          return {field: name, sortable: true}
+      }),
+      rowData: null,
+      rowSelection: "single",
+      rowData: null,
+      onCellDoubleClicked: onRowDoubleClicked,
+      onSortChanged: onSortChangedEvent,
+      onFilterChanged: onSortChangedEvent,
+    };
+    const searcheGridDiv = document.querySelector("#grid_key_values");
+    searcheGridDiv.innerHTML = "";
+    let search_ag_grid = new agGrid.Grid(searcheGridDiv, searchGridOptions);
+    search_ag_grid.gridOptions.api.setRowData(results.data);
+    search_ag_grid.gridOptions.api.sizeColumnsToFit();
+    document.getElementById("help_message").style.display = "none";
+    document.getElementById("exportsearchResults").style.display = "block";
+    $("#exportsearchResults").unbind("click");
+    $("#exportsearchResults").on("click", function (event) {
+      search_ag_grid.gridOptions.api.exportDataAsCsv(getParams());
+    });
+    //results["total_number_of_images"], results["total_number_of_buckets"]
+    if (resource == "all")
+      $("#total_number_in_buckets").text(
+        "Number of buckets: " + results.total_number_of_buckets
+      );
+    else {
+      $("#total_number_in_buckets").text(
+        "Number of buckets: " +
+          results["total_number_of_buckets"] +
+          ", Total number of " +
+          resource +
+          "s: " +
+          results["total_number"]
+      );
+    }
+  } else {
+    alert("No results found");
+  }
+  $("body").removeClass("wait");
+  var attributebrwoserTab = document.querySelector(
+    "#tabs  #attributebrwoser_nav a"
+  );
+  var tab = new bootstrap.Tab(attributebrwoserTab);
+  tab.show();
+}
 
-  $("#value_field_search_only").on("click",  function (event) {
+$("#value_field_search_only").on("click", function (event) {
   /*
   Search  using values provided by the user*/
-        event.preventDefault();
-        value=$("#value_field").val();
-        if (value==null)
-        {
-        alert("No value is provided ..");
-        return;
+  event.preventDefault();
+  value = $("#value_field").val();
+  if (value == null) {
+    alert("No value is provided ..");
+    return;
+  }
+  query = { value: $("#value_field").val(), resource: "image" };
+  $("body").addClass("wait");
+  let resource = "all";
+  let url =
+    search_engine_url +
+    `/${encodeURIComponent(resource)}/searchvalues/?value=${encodeURIComponent(
+      value
+    )}`;
+  fetch(url).then(function (response) {
+    {
+      response.json().then(function (data) {
+        if (data["Error"] !== undefined) {
+          $("body").removeClass("wait");
+          alert(data["Error"]);
+          return;
         }
-        query= {"value": $("#value_field").val(), "resource": "image" };
-$('body').addClass('wait');
-        let resource="all";
-        url=searchresourcesvales+ "?value=" + encodeURIComponent(value)+"&&resource="+ encodeURIComponent(resource);
-        fetch(url).then(function(response) {
-          {
-            response.json().then(function(data) {
-            if (data["Error"]!==undefined)
-            {
-            $('body').removeClass('wait');
-            alert (data["Error"]);
-            return;
-            }
-
-                display_value_search_results(data, resource);
-                    });
-                }
+        let results = [];
+        ["image", "project", "screen", "plate", "well"].forEach((dtype) => {
+          if (data[dtype] && data[dtype].data.length > 0) {
+            const res = data[dtype].data.map((r) => {
+              return { ...r, Resource: dtype };
+            });
+            results = results.concat(res);
+          }
         });
-    });
+        display_value_search_results({ data: results }, resource);
+      });
+    }
+  });
+});
 
     set_tree_events_handller();
 
-/**
-**/
-  $(function() {
 
-    $('#commonattr').change(function() {
-
-
-    if ($(this).prop('checked'))
-    {
-     mode="advanced";
-        open=false  ;
-
+async function load_resources(mode) {
+    let url;
+    if (mode == "advanced") {
+        url = search_engine_url + "/all/getannotationkeys/";
+    } else {
+        // for "searchterms" mode, there is no equivalent endpoint under omero_search_engine backend
+        url=getresourceskeysusingmode + "?mode=" + encodeURIComponent(mode);
     }
-    else
-    {
-    mode= "searchterms"
-        open=true;
+    return await fetch(url).then(response => response.json());
+}
 
-    }
-
-    url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
-    fetch(url).then(function(response) {
-      {
-        response.json().then(function(data) {
-          resources_data=data;
-          //$("#jstree_resource_div").jstree("init");
-          set_tree_nodes(open);
-          $('#jstree_resource_div').jstree("destroy").empty();
-
-        create_tree();
-        set_tree_events_handller ();
-        update_key_fields();
-                });
-            }
-    });
-
-
-    })
-  })
 
 
 function update_key_fields(){
