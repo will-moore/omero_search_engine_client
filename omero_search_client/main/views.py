@@ -6,7 +6,7 @@ import json
 from urllib.parse import quote
 from omero_search_client.app_data import get_help_file_contenets
 from omero_search_client import omero_client_app
-from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key, get_restircted_search_terms
+from .utils import get_query_results, get_resources, get_resourcse_names_from_search_engine, determine_search_results_,search_values, search_key
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains")]
                                         #("gt", ">"),("gte", ">="), ("lt", "<"),
@@ -31,13 +31,15 @@ def index ():
     Returns:
     '''
     help_contents=get_help_file_contenets()
-    resources=get_resources("searchterms")
     search_engine_url = omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL") + "/api/v1/resources"
-    return render_template('main_page.html', resources_data=resources, search_engine_url=search_engine_url,  operator_choices=operator_choices,task_id="None", help_contents=help_contents,mode="usesearchterms")#container)
-
-@main.route('/searchterms',methods=['POST', 'GET'])
-def get_search_items():
-    return jsonify(get_restircted_search_terms())
+    return render_template(
+        'main_page.html',
+        search_engine_url=search_engine_url,
+        operator_choices=operator_choices,
+        task_id="None",
+        help_contents=help_contents,
+        mode="usesearchterms"
+    )
 
 @main.route('/<resource>/getresourcenames/',methods=['POST', 'GET'])
 def get_resourcse_names(resource):
