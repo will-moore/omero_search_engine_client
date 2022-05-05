@@ -1235,7 +1235,12 @@ function display_value_search_results(results, resource) {
       },
       enableCellTextSelection: true,
       // "columnDefs":[{"field":"Attribute","sortable":true}...]
-      columnDefs: colNames.map(name => {return {field: name, sortable: true}}),
+      columnDefs: colNames.map(name => {
+          if (name.toLowerCase() == "key") {
+              name = "Attribute";
+          }
+          return {field: name, sortable: true}
+      }),
       rowData: null,
       rowSelection: "single",
       rowData: null,
