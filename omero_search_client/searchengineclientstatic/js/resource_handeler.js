@@ -1264,9 +1264,7 @@ function display_value_search_results(results, resource) {
       $("#total_number_in_buckets").text(
         "Number of buckets: " + results.total_number_of_buckets
       );
-    else if (
-      results.total_items === results.total_number
-    ) {
+    else {
       $("#total_number_in_buckets").text(
         "Number of buckets: " +
           results["total_number_of_buckets"] +
@@ -1274,21 +1272,6 @@ function display_value_search_results(results, resource) {
           resource +
           "s: " +
           results["total_number"]
-      );
-    } else {
-      // FIXME: Don't know when this is needed or if JSON results has
-      // everything we need to display this??
-      $("#total_number_in_buckets").text(
-        "Number of buckets: " +
-          results["no_buckets"] +
-          " / " +
-          results["total_number_of_buckets"] +
-          ", Number of " +
-          resource +
-          "s: " +
-          results["total_number"] +
-          " / " +
-          results["total_number_of_images"]
       );
     }
   } else {
