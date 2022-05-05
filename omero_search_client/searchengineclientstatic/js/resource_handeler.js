@@ -871,18 +871,41 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
 
 });
 }
-$(document).ready(function() {
+$(async function() {
 
-if (resources_data.error != undefined){
-        alert(resources_data.error);
-        return;
+    $('#commonattr').change(async function() {
+
+        if ($(this).prop('checked')) {
+            mode="advanced";
+            open=false;
+        } else {
+            mode= "searchterms";
+            open=true;
         }
 
-set_help_file();
+        resources_data = await load_resources(mode);
 
-set_tree_nodes();
+        set_tree_nodes(open);
+        $('#jstree_resource_div').jstree("destroy").empty();
 
-create_tree();
+        create_tree();
+        set_tree_events_handller ();
+        update_key_fields();
+    });
+
+    // load resources_data immediately...
+    resources_data = await load_resources("searchterms");
+
+    if (resources_data.error != undefined){
+        alert(resources_data.error);
+        return;
+    }
+
+    set_help_file();
+
+    set_tree_nodes();
+
+    create_tree();
 
 
 
@@ -1316,52 +1339,18 @@ $("#value_field_search_only").on("click", function (event) {
 
     set_tree_events_handller();
 
-/**
-**/
-  $(function() {
 
-    $('#commonattr').change(function() {
-
-
-    if ($(this).prop('checked'))
-    {
-     mode="advanced";
-        open=false  ;
-
-    }
-    else
-    {
-    mode= "searchterms"
-        open=true;
-
-    }
-
+async function load_resources(mode) {
     let url;
     if (mode == "advanced") {
         url = search_engine_url + "/all/getannotationkeys/";
     } else {
         // for "searchterms" mode, there is no equivalent endpoint under omero_search_engine backend
-        url=getresourceskeysusingmode+ "/?mode=" + encodeURIComponent(mode);
+        url=getresourceskeysusingmode + "?mode=" + encodeURIComponent(mode);
     }
+    return await fetch(url).then(response => response.json());
+}
 
-    fetch(url).then(function(response) {
-      {
-        response.json().then(function(data) {
-          resources_data=data;
-          //$("#jstree_resource_div").jstree("init");
-          set_tree_nodes(open);
-          $('#jstree_resource_div').jstree("destroy").empty();
-
-        create_tree();
-        set_tree_events_handller ();
-        update_key_fields();
-                });
-            }
-    });
-
-
-    })
-  })
 
 
 function update_key_fields(){

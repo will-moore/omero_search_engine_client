@@ -180,7 +180,7 @@
 </div>
 <script src={{url_for('static',filename='js/resource_handeler.js')}}></script>
 <script>
-   var resources_data = {{ resources_data|tojson }};
+   var resources_data;
    var operator_choices= {{ operator_choices|tojson }};
    var help_contents ={{ help_contents|tojson }}
 
