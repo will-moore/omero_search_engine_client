@@ -8,7 +8,7 @@ mapping_names={"project":{"Name (IDR number)":"name"},"screen":{"Name (IDR numbe
 
 def get_resourcse_names_from_search_engine(resource, ):
     search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
-    url = search_engine_url + "/getresourcenames/"
+    url = search_engine_url + "/names/"
     resp = requests.get(url=url)
     results = resp.text
     try:
@@ -71,19 +71,24 @@ def set_returned_results_for_all(results_,return_attribute_value):
                     continue
                 col={}
                 col_def.append(col)
-                col["field"]=item
+                if item == "Key":
+                    col["field"] = "Attribute"
+                else:
+                    col["field"]=item
                 col["sortable"]= True
             if last_colm:
                 col={}
                 col_def.append(col)
                 col["field"] = last_colm
                 col["sortable"] = True
+        for res in results:
+            res["Attribute"] = res["Key"]
     return {"columnDefs": col_def, "results": all_results, "total_number":total_number_results, "no_buckets":no_buckets}
 
 def search_values(resource, value,return_attribute_value=False):
     url="{base_url}api/v1/resources/{resource}/searchvalues/?value={value}".format( base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource, value=value)
 
-    print (url)
+
     resp = requests.get(url=url)
     results_ = resp.text
     try:
@@ -116,13 +121,18 @@ def search_values(resource, value,return_attribute_value=False):
                 continue
             col={}
             col_def.append(col)
-            col["field"]=item
+            if item=="Key":
+                col["field"] = "Attribute"
+            else:
+                col["field"]=item
             col["sortable"]= True
         if last_colm:
             col = {}
             col_def.append(col)
             col["field"] = last_colm
             col["sortable"] = True
+        for res in results:
+            res["Attribute"]=res["Key"]
     return {"columnDefs": col_def, "results": results, "total_number":total_number, "no_buckets":len(results)}
 
 def search_key(resource, key):
@@ -148,13 +158,19 @@ def search_key(resource, key):
                 continue
             col = {}
             col_def.append(col)
-            col["field"] = item
+            if item=="Key":
+                col["field"] = "Attribute"
+            else:
+                col["field"] = item
             col["sortable"] = True
         if last_colm:
             col = {}
             col_def.append(col)
             col["field"] = last_colm
             col["sortable"] = True
+    for res in results:
+        res["Attribute"]=res["Key"]
+
     return {"columnDefs": col_def, "results": results, "total_number": total_number,  "no_buckets":len(results),"total_number_of_images":total_number_of_images, "total_number_of_buckets":total_number_of_buckets}
 
 def determine_search_results_(query_):
@@ -255,7 +271,7 @@ def get_resources(mode):
     if mode == "searchterms":
         restricted_search_terms=get_restircted_search_terms()
         restircted_resources={}
-    url = "{base_url}api/v1/resources/all/getannotationkeys/".format(
+    url = "{base_url}api/v1/resources/all/keys/".format(
         base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"))
     resources={}
     try:
