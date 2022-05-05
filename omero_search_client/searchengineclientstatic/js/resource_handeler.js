@@ -172,7 +172,7 @@ function set_global_variables(data)
     recieved_results=recieved_results.concat(data["values"]);
     size = data.size;
     query_details=data["query_details"];
-    recieved_data = recieved_data + size;
+    recieved_data = recieved_data + data["values"].length;
     var resultsbutton = document.getElementById('loadMoreResults');
     if (recieved_data>=size) {
         resultsbutton.disabled = true;
@@ -294,8 +294,7 @@ var gridOptions = {
   var notice = data["notice"];
 
   server_query_time = data["server_query_time"];
-  let no_image = data.size;
-
+  let no_image = results.length;
         if (no_image!=size)
          {
             message = "No of "+data["resource"]+ ", "+ recieved_data +"/"+size + ", Search engine query time: " + server_query_time + " seconds.";
@@ -1227,6 +1226,8 @@ function display_value_search_results(results, resource) {
   }
   if (results["data"].length > 0) {
     let colNames = Object.keys(results["data"][0]);
+     for (i in results["data"])
+         results["data"][i]["Attribute"]=results["data"][i]["Key"]
     var searchGridOptions = {
       defaultColDef: {
         resizable: true,
@@ -1241,6 +1242,7 @@ function display_value_search_results(results, resource) {
           }
           return {field: name, sortable: true}
       }),
+
       rowData: null,
       rowSelection: "single",
       rowData: null,
@@ -1331,9 +1333,10 @@ $("#value_field_search_only").on("click", function (event) {
 async function load_resources(mode) {
     let url;
     if (mode == "advanced") {
-        url = search_engine_url + "/all/getannotationkeys/";
+        url = search_engine_url + "/all/keys/";
     } else {
         // for "searchterms" mode, there is no equivalent endpoint under omero_search_engine backend
+
         url=getresourceskeysusingmode + "?mode=" + encodeURIComponent(mode);
     }
     return await fetch(url).then(response => response.json());

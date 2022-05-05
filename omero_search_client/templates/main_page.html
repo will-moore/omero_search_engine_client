@@ -188,7 +188,7 @@
    var mode= {{ mode|tojson }}
    var  search_engine_url = {{ search_engine_url|tojson }};
    // needed for 'searchterms'
-   var  getresourceskeysusingmode ="{{  url_for('main.get_resourcses_keys') }}";
+   var getresourceskeysusingmode=search_engine_url+"/all/keys"
 
    $(document).ajaxStart(function ()
    {
