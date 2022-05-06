@@ -158,6 +158,7 @@ def search_key(resource, key):
                 continue
             col = {}
             col_def.append(col)
+
             if item=="Key":
                 col["field"] = "Attribute"
             else:
@@ -277,8 +278,10 @@ def get_resources(mode):
     try:
         resp = requests.get(url=url)
         results = resp.text
+        print (results)
         resources = json.loads(results)
         to_be_deleted = []
+
 
         for k, val in resources.items():
             if val and len(val)>0 :

@@ -1336,8 +1336,10 @@ async function load_resources(mode) {
         url = search_engine_url + "/all/keys/";
     } else {
         // for "searchterms" mode, there is no equivalent endpoint under omero_search_engine backend
+        url_=search_engine_url+"/all/keys/"
+        url=url_ + "?mode=" + encodeURIComponent(mode);
+        console.log(url);
 
-        url=getresourceskeysusingmode + "?mode=" + encodeURIComponent(mode);
     }
     return await fetch(url).then(response => response.json());
 }
