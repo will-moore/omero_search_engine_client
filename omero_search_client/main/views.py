@@ -17,4 +17,6 @@ def index ():
         task_id="None",
         help_contents=help_contents,
         mode="usesearchterms"
+
     )
+
