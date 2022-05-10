@@ -12,11 +12,6 @@ operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains
                                         #("gt", ">"),("gte", ">="), ("lt", "<"),
                                         #         ("lte", "<=")]
 
-@main.route('/advanced',methods=['POST', 'GET'])
-def use_advanced_mode():
-    resources=get_resources("all")
-    return render_template('main_page.html', resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="advanced")#container)
-
 @main.route('/',methods=['POST', 'GET'])
 def index ():
     '''
