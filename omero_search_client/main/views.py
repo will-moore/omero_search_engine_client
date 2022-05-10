@@ -30,27 +30,6 @@ def index ():
         mode="usesearchterms"
     )
 
-@main.route('/get_values/',methods=['POST', 'GET'])
-def get_resourcse_key():
-    key = request.args.get("key")
-    resource = request.args.get("resource")
-    if not key:
-        return jsonify([])
-    if resource=="project" and key=="Name (IDR number)":
-        project_names=get_resourcse_names_from_search_engine ("project")
-        screen_names = get_resourcse_names_from_search_engine("screen")
-        return jsonify (screen_names+project_names)
-    else:
-        search_engine_url="{base_url}api/v1/resources/{resource}".format(base_url=omero_client_app.config.get("OMERO_SEARCH_ENGINE_BASE_URL"), resource=resource)
-        url = search_engine_url + "/getannotationvalueskey/?key={key}".format(key=quote(key))
-        resp = requests.get(url=url)
-        results = resp.text
-        try:
-            values = json.loads(results)
-        except Exception as e:
-            omero_client_app.logger.info("Request text: %s, Error: %s" % (results, e))
-            return jsonify ({"error": "Something went wrong, please try again later"})
-        return jsonify(values)
 
 @main.route('/submitquery/',methods=['POST', 'GET'])
 def submit_query():
