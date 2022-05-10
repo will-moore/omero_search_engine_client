@@ -30,12 +30,6 @@ def index ():
         mode="usesearchterms"
     )
 
-@main.route('/get_resources_keys/',methods=['POST', 'GET'])
-def get_resourcses_keys():
-    mode= request.args.get("mode")
-    resources = get_resources(mode)
-    return jsonify(resources)
-
 @main.route('/get_values/',methods=['POST', 'GET'])
 def get_resourcse_key():
     key = request.args.get("key")
