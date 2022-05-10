@@ -30,12 +30,6 @@ def index ():
         mode="usesearchterms"
     )
 
-
-@main.route('/submitquery/',methods=['POST', 'GET'])
-def submit_query():
-    query =json.loads(request.data)
-    return jsonify(determine_search_results_(query))#
-
 @main.route('/queryresults/',methods=['POST', 'GET'])
 def queryresults():
     urls={"image":omero_client_app.config.get("IMAGE_URL"),
