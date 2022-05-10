@@ -12,12 +12,6 @@ operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains
                                         #("gt", ">"),("gte", ">="), ("lt", "<"),
                                         #         ("lte", "<=")]
 
-
-@main.route('/builder',methods=['POST', 'GET'])
-def use_builder_mode():
-    #resources=get_resources("all")
-    return render_template('query_builder.html')#, resources_data=resources,  operator_choices=operator_choices,task_id="None", mode="advanced")#container)
-
 @main.route('/advanced',methods=['POST', 'GET'])
 def use_advanced_mode():
     resources=get_resources("all")
