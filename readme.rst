@@ -27,7 +27,7 @@ The following command will configure the url for the search engine:
 
 If the search engine is run locally, its url should be something like: "http://127.0.0.1:5577/"
 
-After restarting `omero-web`, go to [omero-web-server]/searchengine/
+After restarting `omero-web`, go to [omero-web-server]/search_engine/
 
 It is possible to deploy the app and the searchengine using Docker images. For more information, please use the following link:
 https://github.com/ome/omero_search_engine/blob/main/docs/configuration/configuration_installtion.rst

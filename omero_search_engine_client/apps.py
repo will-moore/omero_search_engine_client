@@ -25,4 +25,4 @@ from django.apps import AppConfig
 
 class SearchEngineAppConfig(AppConfig):
     name = "omero_search_engine_client"
-    label = "searchengine"
+    label = "search_engine"
