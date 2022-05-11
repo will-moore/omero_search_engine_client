@@ -1,8 +1,8 @@
-from . import views
 from django.conf.urls import url
 
-urlpatterns = [
+from . import views
 
-    # index 'home page' of the app
-    url(r'^$', views.index, name='omero_search_engine_client'),
+urlpatterns = [
+    # index 'home page' of the omero_search_ening_client app
+    url(r'^$', views.index, name='omero_search_ening_client'),
 ]

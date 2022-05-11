@@ -1511,4 +1511,3 @@ for (i in help_contents)
     }
 }
 
-
