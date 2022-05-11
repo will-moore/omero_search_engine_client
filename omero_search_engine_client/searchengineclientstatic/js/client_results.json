@@ -1,0 +1,378 @@
+{
+  "Error": "none",
+  "bookmark": [12596201],
+  "columns": [
+    {
+      "field": "Cell Line",
+      "hide": false,
+      "id": "Cell Line",
+      "name": "Cell Line",
+      "sortable": true
+    },
+    {
+      "field": "Cell Line Comment",
+      "hide": false,
+      "id": "Cell Line Comment",
+      "name": "Cell Line Comment",
+      "sortable": true
+    },
+    {
+      "field": "Gene Identifier",
+      "hide": false,
+      "id": "Gene Identifier",
+      "name": "Gene Identifier",
+      "sortable": true
+    },
+    {
+      "field": "HGNC Gene Symbol",
+      "hide": false,
+      "id": "HGNC Gene Symbol",
+      "name": "HGNC Gene Symbol",
+      "sortable": true
+    },
+    {
+      "field": "Number of cells",
+      "hide": false,
+      "id": "Number of cells",
+      "name": "Number of cells",
+      "sortable": true
+    },
+    {
+      "field": "Organism",
+      "hide": false,
+      "id": "Organism",
+      "name": "Organism",
+      "sortable": true
+    },
+    {
+      "field": "siRNA Identifier",
+      "hide": false,
+      "id": "siRNA Identifier",
+      "name": "siRNA Identifier",
+      "sortable": true
+    },
+    {
+      "field": "siRNA Pool Identifier",
+      "hide": false,
+      "id": "siRNA Pool Identifier",
+      "name": "siRNA Pool Identifier",
+      "sortable": true
+    },
+    {
+      "field": "Gene Identifier URL",
+      "hide": false,
+      "id": "Gene Identifier URL",
+      "name": "Gene Identifier URL",
+      "sortable": true
+    },
+    {
+      "field": "Has Phenotype",
+      "hide": false,
+      "id": "Has Phenotype",
+      "name": "Has Phenotype",
+      "sortable": true
+    },
+    {
+      "field": "Sense Sequence",
+      "hide": false,
+      "id": "Sense Sequence",
+      "name": "Sense Sequence",
+      "sortable": true
+    },
+    {
+      "field": "Antisense Sequence",
+      "hide": false,
+      "id": "Antisense Sequence",
+      "name": "Antisense Sequence",
+      "sortable": true
+    },
+    {
+      "field": "Channels",
+      "hide": false,
+      "id": "Channels",
+      "name": "Channels",
+      "sortable": true
+    },
+    {
+      "field": "Gene Symbol",
+      "hide": false,
+      "id": "Gene Symbol",
+      "name": "Gene Symbol",
+      "sortable": true
+    },
+    {
+      "field": "Transcript Identifier",
+      "hide": false,
+      "id": "Transcript Identifier",
+      "name": "Transcript Identifier",
+      "sortable": true
+    }
+  ],
+  "columns_def": [
+    { "field": "Id", "hide": false, "sortable": true },
+    { "field": "Name", "hide": false, "sortable": true },
+    { "field": "Study name", "hide": false, "sortable": true },
+    { "field": "Antisense Sequence", "hide": true, "sortable": true },
+    { "field": "Cell Line", "hide": false, "sortable": true },
+    { "field": "Cell Line Comment", "hide": true, "sortable": true },
+    { "field": "Channels", "hide": true, "sortable": true },
+    { "field": "Gene Identifier", "hide": true, "sortable": true },
+    { "field": "Gene Identifier URL", "hide": true, "sortable": true },
+    { "field": "Gene Symbol", "hide": false, "sortable": true },
+    { "field": "HGNC Gene Symbol", "hide": true, "sortable": true },
+    { "field": "Has Phenotype", "hide": true, "sortable": true },
+    { "field": "Number of cells", "hide": true, "sortable": true },
+    { "field": "Organism", "hide": false, "sortable": true },
+    { "field": "Sense Sequence", "hide": true, "sortable": true },
+    { "field": "Transcript Identifier", "hide": true, "sortable": true },
+    { "field": "siRNA Identifier", "hide": false, "sortable": true },
+    { "field": "siRNA Pool Identifier", "hide": false, "sortable": true }
+  ],
+  "contains_all_results": true,
+  "extend_url": "https://idr.openmicroscopy.org/webclient/img_detail/",
+  "names_ids": {
+    "12596193": "014 [Well H13, Field 1]",
+    "12596194": "014 [Well H13, Field 2]",
+    "12596195": "014 [Well H13, Field 3]",
+    "12596196": "014 [Well H13, Field 4]",
+    "12596197": "014 [Well H13, Field 5]",
+    "12596198": "014 [Well H13, Field 6]",
+    "12596199": "014 [Well H13, Field 7]",
+    "12596200": "014 [Well H13, Field 8]",
+    "12596201": "014 [Well H13, Field 9]"
+  },
+  "page": 1,
+  "query_details": {
+    "and_filters": [
+      {
+        "name": "HGNC Gene Symbol",
+        "operator": "equals",
+        "query_type": "keyvalue",
+        "resource": "image",
+        "value": "gfpt1"
+      }
+    ],
+    "case_sensitive": false,
+    "or_filters": []
+  },
+  "raw_elasticsearch_query": {
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "nested": {
+              "path": "key_values",
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "match": { "key_values.name.keyword": "HGNC Gene Symbol" }
+                    },
+                    {
+                      "match": { "key_values.value.keyvaluenormalize": "gfpt1" }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "resource": "images",
+  "server_query_time": "0.02",
+  "size": 9,
+  "total_pages": 1,
+  "values": [
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596193,
+      "Name": "014 [Well H13, Field 1]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596194,
+      "Name": "014 [Well H13, Field 2]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596195,
+      "Name": "014 [Well H13, Field 3]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596196,
+      "Name": "014 [Well H13, Field 4]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596197,
+      "Name": "014 [Well H13, Field 5]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596198,
+      "Name": "014 [Well H13, Field 6]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596199,
+      "Name": "014 [Well H13, Field 7]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596200,
+      "Name": "014 [Well H13, Field 8]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    },
+    {
+      "Antisense Sequence": "AACUGUAAAGGGAUCACGCtg; AUAGGAAUGUGAUCAGUAGaa; UAUGUUCACUCCGUACACCaa",
+      "Cell Line": "HeLa",
+      "Cell Line Comment": "HeLa Kyoto",
+      "Channels": "DNA;Nascent RNA;PCNA;Succinimidyl ester",
+      "Gene Identifier": "2673",
+      "Gene Identifier URL": "https://www.ncbi.nlm.nih.gov/gene/2673",
+      "Gene Symbol": "GFPT1",
+      "HGNC Gene Symbol": "GFPT1",
+      "Has Phenotype": "FALSE",
+      "Id": 12596201,
+      "Name": "014 [Well H13, Field 9]",
+      "Number of cells": "2366",
+      "Organism": "Homo sapiens",
+      "Project name": null,
+      "Sense Sequence": "CUACUGAUCACAUUCCUAUtt; GCGUGAUCCCUUUACAGUUtt; GGUGUACGGAGUGAACAUAtt",
+      "Study name": "idr0093-mueller-perturbation/screenA",
+      "Transcript Identifier": "NM_002056",
+      "siRNA Identifier": "\"\"",
+      "siRNA Pool Identifier": "s5708; s5709; s5710; s5708; s5709; s5710"
+    }
+  ]
+}
