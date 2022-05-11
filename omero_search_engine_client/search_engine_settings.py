@@ -28,7 +28,7 @@ import json
 SEARCH_ENGINE_SETTINGS = {
     "omero.web.searchengine.url":
         ["SEARCH_ENGINE_URL",
-         None,
+         "https://idr-testing.openmicroscopy.org/searchengineapi/api/v1",
          str_slash,
          "Base URL for elastic search API endpoints"],
 }
