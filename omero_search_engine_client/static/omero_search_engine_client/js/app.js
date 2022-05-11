@@ -480,7 +480,7 @@ return;
 //alert(submitqueryurl);
 $.ajax({
         type: "POST",
-        url: search_engine_url + "/submitquery/?return_columns=True",
+        url: SEARCH_ENGINE_URL + "resources/submitquery/?return_columns=True",
         contentType: "application/json;charset=UTF-8",
         dataType: 'json',
         data: JSON.stringify(query),
@@ -699,7 +699,7 @@ function set_key_values(key_value, container) {
     set_operator_options(key_value, container);
     if (cached_key_values[key_value]===undefined)
     {
-        let url = search_engine_url + "/" + encodeURIComponent(resource) + "/getannotationvalueskey/?key=" + encodeURIComponent(key_value);
+        let url = SEARCH_ENGINE_URL + "resources/" + encodeURIComponent(resource) + "/getannotationvalueskey/?key=" + encodeURIComponent(key_value);
         fetch(url).then(function(response) {
           {
             response.json().then(function(data) {
@@ -725,7 +725,7 @@ function setFieldValues(data=null){
 }
     if (key_value=="Any" && val.length>2 && auto_fetch_is_running==false)
     {
-        url=search_engine_url+"/"+encodeURIComponent("image")+"/searchvalues/?value="+encodeURIComponent(val);
+        url=SEARCH_ENGINE_URL + "resources/"+encodeURIComponent("image")+"/searchvalues/?value="+encodeURIComponent(val);
 
        auto_fetch_is_running=true;
 //  const request = async () => {
@@ -858,7 +858,7 @@ $('#jstree_resource_div').bind("dblclick.jstree", function (event) {
     $('body').addClass('wait');
 
     let resource=get_resource(key);
-    url = search_engine_url + `/${encodeURIComponent(resource)}/searchvaluesusingkey/?key=${encodeURIComponent(key)}`
+    url = SEARCH_ENGINE_URL + `resources/${encodeURIComponent(resource)}/searchvaluesusingkey/?key=${encodeURIComponent(key)}`
     fetch(url).then(function(response) {
       {
         response.json().then(function(data) {
@@ -1300,8 +1300,8 @@ $("#value_field_search_only").on("click", function (event) {
   $("body").addClass("wait");
   let resource = "all";
   let url =
-    search_engine_url +
-    `/${encodeURIComponent(resource)}/searchvalues/?value=${encodeURIComponent(
+    SEARCH_ENGINE_URL +
+    `resources/${encodeURIComponent(resource)}/searchvalues/?value=${encodeURIComponent(
       value
     )}`;
   fetch(url).then(function (response) {
@@ -1333,10 +1333,9 @@ $("#value_field_search_only").on("click", function (event) {
 async function load_resources(mode) {
     let url;
     if (mode == "advanced") {
-        url = search_engine_url + "/all/keys/";
+        url = SEARCH_ENGINE_URL + "resources/all/keys/";
     } else {
-        // for "searchterms" mode, there is no equivalent endpoint under omero_search_engine backend
-        url_=search_engine_url+"/all/keys/"
+        url_ = SEARCH_ENGINE_URL + "resources/all/keys/"
         url=url_ + "?mode=" + encodeURIComponent(mode);
         console.log(url);
 

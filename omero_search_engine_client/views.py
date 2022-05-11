@@ -1,20 +1,25 @@
 
+from django.http import HttpResponse
 from django.shortcuts import render
-
 import json
-# from . import main
+
 from .app_data import get_help_file_contenets
-# from omero_search_client import omero_client_app
+from . import search_engine_settings as settings
+
 operator_choices=[("equals", "equals"), ("not_equals", "not equals"), ("contains", "contains")
         , ("not_contains", "not contains")]
+
 
 def index(request, **kwargs):
     """
     Home page shows a list of groups OR a set of 'categories' from
     user-configured queries.
     """
+    search_url = settings.SEARCH_ENGINE_URL
+    if search_url is None:
+        return HttpResponse("Need to set omero.web.searchengine.url")
     context = {
-        "search_engine_url": "https://idr-testing.openmicroscopy.org/searchengineapi/api/v1/resources",
+        "search_engine_url": settings.SEARCH_ENGINE_URL,
         "operator_choices": json.dumps(operator_choices),
         "task_id": "None",
         "help_contents": get_help_file_contenets(),
