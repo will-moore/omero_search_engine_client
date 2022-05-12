@@ -20,7 +20,7 @@ def index(request, **kwargs):
         return HttpResponse("Need to set omero.web.searchengine.url")
     context = {
         "search_engine_url": settings.SEARCH_ENGINE_URL,
-        "operator_choices": json.dumps(operator_choices),
+        "operator_choices": operator_choices,
         "task_id": "None",
         "help_contents": get_help_file_contenets(),
         "mode": "usesearchterms"

@@ -499,24 +499,12 @@ function set_query_fields(container) {
   });
 
   optionHtml = "";
-  let condtion__ = container.querySelector(".condition");
   optionOpHtml = "";
-
-  for (i in operator_choices) {
-    optionOpHtml +=
-      '<option value ="' +
-      operator_choices[i][0] +
-      '">' +
-      operator_choices[i][1] +
-      "</option>";
-  }
-
-  condtion__.innerHTML = optionOpHtml;
 
   set_resources("image", container);
 }
 
-function addConditionRow(key, value, condtion, resource, group) {
+function addConditionRow(key, value, condition, resource, group) {
   let tableRef = document.getElementById(group + "_group");
   let newRow = tableRef.insertRow(-1);
   // Insert cells in the row
@@ -530,7 +518,7 @@ function addConditionRow(key, value, condtion, resource, group) {
   let keyText = document.createTextNode(key);
   keyCell.appendChild(keyText);
 
-  let operatorText = document.createTextNode(condtion);
+  let operatorText = document.createTextNode(condition);
   operatorCell.appendChild(operatorText);
 
   let valueText = document.createTextNode(value);
@@ -872,22 +860,12 @@ $(async function () {
 
   create_tree();
 
-  let _keys_options = document.getElementById("keyFields");
+  let _keys_options = document.querySelector("#search_form .keyFields");
   optionHtml = "";
   for (key in resources_data) {
     optionHtml += '<option value ="' + key + '">' + key + "</option>";
   }
-  //resourcseFields.innerHTML = optionHtml;
-  optionOpHtml = "";
-  for (i in operator_choices) {
-    optionOpHtml +=
-      '<option value ="' +
-      operator_choices[i][0] +
-      '">' +
-      operator_choices[i][1] +
-      "</option>";
-  }
-  condtion.innerHTML = optionOpHtml;
+
   var resources_con = document.getElementById("resources");
   resources_con.style.display = "block";
 
@@ -1083,14 +1061,6 @@ function check_value(_keys_options, attribute) {
     let values = resources_data["image"];
     values.push(attribute);
     $(_keys_options).append(new Option(attribute, attribute));
-  }
-}
-
-function check_attribute(attribute) {
-  //check if the attribute is in the default list, if not it will add it.
-  var elms = document.querySelectorAll("[id='keyFields']");
-  for (var i = 0; i < elms.length; i++) {
-    check_value(elms[i], attribute);
   }
 }
 
