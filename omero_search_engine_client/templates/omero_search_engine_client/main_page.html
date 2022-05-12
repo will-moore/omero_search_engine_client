@@ -103,10 +103,7 @@
    <div id ="conditions">
       <div class="col-md-5">
          <div class="float-right">
-            <input class="form-check-input" type="checkbox" value="" id="case_sensitive" >
-            <label class="form-check-label" for="case_sensitive">
-            Case sensitive
-            </label>
+            {% include "omero_search_engine_client/case_insensitive_checkbox.html" %}
          </div>
 
 
@@ -155,13 +152,14 @@
 <button id="exportResults" class="btn btn-primary"  style="display: none"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
 <br>
 </div>
+<script src="{% static 'omero_search_engine_client/js/search_form_utils.js' %}"></script>
 <script src="{% static 'omero_search_engine_client/js/app.js' %}"></script>
 <script>
    var resources_data;
    var help_contents = {{ help_contents|safe }};
 
    var query_id = "{{ task_id }}";
-   var mode = "{{ mode }}";
+   var query_mode = "{{ mode }}";
    const SEARCH_ENGINE_URL = "{{ search_engine_url }}";
 
 

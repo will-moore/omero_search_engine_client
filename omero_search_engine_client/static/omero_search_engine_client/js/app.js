@@ -32,7 +32,7 @@ var auto_fetch_is_running = false;
 
 //save query json string to the local user storage, so he cal load it again
 function save_query() {
-  query = get_current_query(false);
+  query = get_current_query();
   if (query == false) return;
   else {
     $("#confirm_message").modal("show");
@@ -43,7 +43,7 @@ function save_query() {
 //Save query to user local storage
 function download_query() {
   filename = document.getElementById("queryfilename").value;
-  query = JSON.stringify(get_current_query(false), null, 4);
+  query = JSON.stringify(get_current_query(), null, 4);
   if (filename) {
     filename = filename + ".txt";
     var file_container = document.createElement("a");
@@ -68,7 +68,7 @@ function download_query() {
 
 //
 function reset_query(need_confirmation = true) {
-  query = get_current_query(false);
+  query = get_current_query();
   if (query == false) return;
   if (need_confirmation)
     if (confirm("All the conditions will be discarded, process?") == false) {
@@ -374,52 +374,6 @@ function get_returned_query_from_server() {
   return query_;
 }
 
-function get_current_query(
-  include_addition_information,
-  displaymessage = true
-) {
-  and_conditions = [];
-  or_conditions = [];
-  //get and condition1
-
-  queryandnodes = document.querySelectorAll("#search_form .and_clause");
-  console.log(queryandnodes.length);
-  for (let i = 0; i < queryandnodes.length; i++) {
-    query_dict = {};
-
-    let node = queryandnodes[i];
-    // handle each OR...
-    let ors = node.querySelectorAll(".form-row");
-
-    let or_dicts = [...ors].map((orNode) => {
-      return {
-        name: orNode.querySelector(".keyFields").value,
-        value: orNode.querySelector(".valueFields").value,
-        operator: orNode.querySelector(".condition").value,
-        resource: get_resource(orNode.querySelector(".keyFields").value),
-      };
-    });
-    if (or_dicts.length > 1) {
-      or_conditions.push(or_dicts);
-    } else {
-      and_conditions.push(or_dicts[0]);
-    }
-  }
-
-  query_details = {};
-  var query = {
-    resource: "image",
-    query_details: query_details,
-  };
-
-  query_details["and_filters"] = and_conditions;
-  query_details["or_filters"] = or_conditions;
-  query_details["case_sensitive"] =
-    document.getElementById("case_sensitive").checked;
-  query["mode"] = mode;
-  return query;
-}
-
 function submitQuery(reset = true) {
   if (reset == true) {
     reset_global_variables();
@@ -428,7 +382,7 @@ function submitQuery(reset = true) {
     document.getElementById("results_grid_buttons").style.display = "none";
   }
   if (query_details === undefined || size == 0) {
-    query = get_current_query(true);
+    query = get_current_query();
     if (query == false) return;
   } else query = get_returned_query_from_server();
 
@@ -627,14 +581,6 @@ function set_operator_options(key_value, container) {
   }
 }
 
-function get_resource(attribute) {
-  for (resource in resources_data) {
-    if (resources_data[resource].includes(attribute)) {
-      return resource;
-    }
-  }
-}
-
 function set_key_values(key_value, container) {
   if (key_value == "Any") {
     cached_key_values[key_value] = [];
@@ -829,14 +775,14 @@ Query the search engine using the resourse attribute, when the user double click
 $(async function () {
   $("#commonattr").change(async function () {
     if ($(this).prop("checked")) {
-      mode = "advanced";
+      query_mode = "advanced";
       open = false;
     } else {
-      mode = "searchterms";
+      query_mode = "searchterms";
       open = true;
     }
 
-    resources_data = await load_resources(mode);
+    resources_data = await load_resources(query_mode);
 
     set_tree_nodes(open);
     $("#jstree_resource_div").jstree("destroy").empty();
@@ -1238,17 +1184,6 @@ $("#value_field_search_only").on("click", function (event) {
 
 set_tree_events_handller();
 
-async function load_resources(mode) {
-  let url;
-  if (mode == "advanced") {
-    url = SEARCH_ENGINE_URL + "resources/all/keys/";
-  } else {
-    url_ = SEARCH_ENGINE_URL + "resources/all/keys/";
-    url = url_ + "?mode=" + encodeURIComponent(mode);
-    console.log(url);
-  }
-  return await fetch(url).then((response) => response.json());
-}
 
 function update_key_fields() {
   const keyFields = document.querySelectorAll("#keyFields");
