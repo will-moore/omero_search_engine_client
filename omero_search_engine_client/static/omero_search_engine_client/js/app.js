@@ -455,7 +455,7 @@ function set_query_fields(container) {
   optionHtml = "";
   optionOpHtml = "";
 
-  set_resources("image", container);
+  set_resources(container);
 }
 
 function addConditionRow(key, value, condition, resource, group) {
@@ -561,54 +561,6 @@ function setAutoCompleteValues(data = null) {
   });
 }
 
-//As main attributes supports equals and not equals only
-//This function restrict the use to these two operators
-function set_operator_options(key_value, container) {
-  condition = container.querySelector(".condition");
-
-  condition.value = condition.options[0].text;
-
-  for (i = 0; i < condition.length; i++) {
-    if (main_attributes.includes(key_value)) {
-      if (
-        condition.options[i].text != "equals" &&
-        condition.options[i].text != "not equals"
-      )
-        condition.options[i].style.display = "none";
-    } else {
-      condition.options[i].style.display = "block";
-    }
-  }
-}
-
-function set_key_values(key_value, container) {
-  if (key_value == "Any") {
-    cached_key_values[key_value] = [];
-    set_operator_options(key_value, container);
-    return;
-  }
-
-  container.querySelector(".valueFields").value = "";
-  resource = get_resource(key_value);
-  set_operator_options(key_value, container);
-  if (cached_key_values[key_value] === undefined) {
-    let url =
-      SEARCH_ENGINE_URL +
-      "resources/" +
-      encodeURIComponent(resource) +
-      "/getannotationvalueskey/?key=" +
-      encodeURIComponent(key_value);
-    fetch(url).then(function (response) {
-      {
-        response.json().then(function (data) {
-          data.sort();
-          cached_key_values[key_value] = data;
-        });
-      }
-    });
-  }
-}
-
 function setFieldValues(data = null) {
   let value_fields = document.activeElement; //document.getElementById('valueFields'+id);
   container = document.activeElement.parentNode.parentNode;
@@ -679,18 +631,13 @@ function setFieldValues(data = null) {
   }
 }
 
-function set_resources(resource, container) {
+function set_resources(container) {
   let __keys_options = container.querySelector(".keyFields");
   optionHtml = '<option value ="Any">Any</option>';
   for (const [key, value] of Object.entries(resources_data)) {
-    // if (key == resource) {
     if (value == null) {
-      __keys_options.innerHTML = optionHtml;
       break;
     }
-    //if (key=="image")
-    //      //#value.unshift("Project name");
-    //      value.push("Project name");
     value.sort();
     for (i in value) {
       optionHtml +=
@@ -836,7 +783,7 @@ $(function () {
 
   // Hide the X button if there's only 1 in the form
   function hideRemoveIfOnlyOneLeft() {
-    let $btns = $("button.remove");
+    let $btns = $("button.remove_row");
     if ($btns.length == 1) {
       $btns.css("visibility", "hidden");
     } else {
@@ -862,13 +809,15 @@ $(function () {
   });
 
   // X buttons
-  $("#search_form").on("click", ".remove", function (event) {
-    let $row = $(this).closest(".form-row");
+  $("#search_form").on("click", ".remove_row", function (event) {
+    let $row = $(this).closest(".search_or_row");
     let $clause = $row.parent();
     $row.remove();
-    // If no rows left, remove clause...
-    if ($(".form-row", $clause).length === 0) {
+    // If no OR rows left in this 'AND' clause...
+    console.log(`$(".search_or_row", $clause).length`, $(".search_or_row", $clause).length);
+    if ($(".search_or_row", $clause).length === 0) {
       let $and = $clause.prev();
+      console.log('and', $and);
       if ($and.length == 0) {
         // in case we're removing the first row
         $and = $clause.next();
@@ -930,7 +879,7 @@ function addAnd(attribute, operator, value) {
 
 function addOr($and, attribute, operator, value) {
   is_new_query = true;
-  let $row = $(".form-row", $and).last();
+  let $row = $(".search_or_row", $and).last();
   let $newRow = $row.clone();
 
   $row.after($newRow);

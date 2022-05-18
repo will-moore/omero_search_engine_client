@@ -267,30 +267,20 @@ input.editor-checkbox {
   margin: 5px;
 }
 
-.form-row:first-child .or {
+.search_or_row:first-child .or {
   visibility: hidden;
 }
 
-.form-row label {
+.search_or_row label {
   display: none;
 }
-.form-row:first-child label {
+.search_or_row:first-child label {
   display: inline-block;
 }
 
 .or {
   padding-top: 10px;
   text-align: center;
-}
-
-.remove {
-  position: absolute;
-  right: 5px;
-  bottom: 5px;
-  line-height: 1.0;
-  padding-left: 4px;
-  padding-right: 4px;
-  visibility: hidden;
 }
 
 #queryJson {

@@ -84,6 +84,39 @@
             <form id="search_form">
                {% include "omero_search_engine_client/and_clause.html" %}
             </form>
+            <style>
+               .and_clause {
+                   border: solid #aaa 1px;
+                   padding: 5px;
+                   border-radius: 5px;
+                   margin: 5px;
+               }
+               .and_clause * {
+                   box-sizing: border-box;
+               }
+               .search_or_row {
+                   display: flex;
+                   align-items: flex-end;
+                   -ms-flex-wrap: wrap;
+                   flex-wrap: wrap;
+                   gap: 5px;
+               }
+               .search_or_row>div{
+                   flex: 1;
+               }
+               .search_or_row:first-child .or {
+                   visibility: visible;
+               }
+               .search_or_row .or, .search_or_row .search_condition {
+                   flex: 0;
+               }
+               select.condition {
+                   width: fit-content;
+               }
+               .and_clause select.keyFields, .and_clause input.valueFields {
+                   width: 100%;
+               }
+           </style>
             <button id="addAND" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Add group">
                add AND
             </button>
