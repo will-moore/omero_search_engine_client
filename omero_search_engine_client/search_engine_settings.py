@@ -28,9 +28,10 @@ import json
 SEARCH_ENGINE_SETTINGS = {
     "omero.web.searchengine.url":
         ["SEARCH_ENGINE_URL",
-         "https://idr-testing.openmicroscopy.org/searchengineapi/api/v1",
+         None,
          str_slash,
-         "Base URL for elastic search API endpoints"],
+         ("Base URL for elastic search API endpoints "
+          "E.g. https://server/searchengineapi/api/v1")],
 }
 
 process_custom_settings(sys.modules[__name__], 'SEARCH_ENGINE_SETTINGS')
