@@ -1,0 +1,227 @@
+{% extends "omero_search_engine_client/base.html" %}
+{% block title %}Client for Omero search engine - Index{% endblock %}
+{% block app_content %}
+<section class="container py-4" style="float : left;">
+
+    <div class="row">
+            <div class="pull-right">
+
+
+  <input class="form-check-input" type="checkbox" value="" id="commonattr">
+
+  <label class="form-check-label" for="commonattr">
+    Show all attributes
+  </label>
+
+        </div>
+
+                    <div class="col-md-12">
+                        <div style="float: right">
+                  <form class="form-inline">
+                       <input id ="value_field" class="form-control mr-sm-3" type="search" placeholder="search for any value" aria-label="Search">
+                       <button  id="value_field_search_only" class="btn btn-success " type="submit">Search</button>
+                  </form>
+            </div>
+            <br>
+         <ul id="tabs" class="nav nav-tabs">
+        <li class="nav-item" id="querybuilder_nav">
+            <a href="#querybuilder" data-toggle="tab"  data-target="#querybuilder" class="nav-link md text-Capitalize active">
+            Query Builder</a></li>
+        <li class="nav-item" id="attributebrwoser_nav">
+            <a href="#attributebrwoser" data-toggle="tab" data-target="#attributebrwoser"  class="nav-link md text-Capitalize "> Attribute Browser </a></li>
+        <li class="nav-item"><a href="#templates"  data-toggle="tab" data-target="#templates" class="nav-link md text-Capitalize">Templates</a></li>
+             <li class="nav-item" id="help_nav"><a href="#templates"  data-toggle="tab" data-target="#help" class="nav-link md text-Capitalize">Help</a></li>
+
+
+                     </ul>
+                    <br>
+                    <div id="tabsContent" class="tab-content">
+                        <div id="attributebrwoser" class="tab-pane fade">
+                    <div class="modal-body row">
+
+                      <div class="col-md-3 "style="border-right: 1px solid black;  " >
+
+                          <h4>Attributes browser</h4>
+                          <div id="jstree_resource_div"></div>
+                      </div>
+          <div id="attribute_search_results" class="col-md-9">
+              <div class="m-4" id="help_message">
+</div>
+               <div>
+                         <label id="total_number_in_buckets"></label>
+                   <br>
+                       <div id="grid_key_values"  class="ag-theme-alpine"></div>
+                   <br>
+                </div>
+              <button id="exportsearchResults" class="btn btn-primary"  style="display: none" type="button">Export Results (CSV)</button>
+          </div>
+</div>
+                    </div>
+                <div id="querybuilder" class="tab-pane fade active show">
+                    <div class="row pb-2">
+
+
+<input type="file" name="load_file" id="load_file" style="display: none" />
+<div class="page-header">
+   <!--h4>Query Builder Form<sup>*</sup></h4-->
+</div>
+<br>
+<div id="query">
+   <div  id="queryParent">
+      <div id="resources" style="display: none"  >
+         <div style="float: right" class="col-md-6">
+            <button type="button" class="btn btn-info" data-toggle="tooltip" data-placement="top"
+               title="load the query from user storage" onclick="load_query()">
+               Load
+            </button>
+            <br/>
+            <textarea id="queryJson">JSON</textarea>
+         </div>
+
+         <div id="conanew" class="col-md-6">
+            <div id="template">
+            <br>
+            <form id="search_form">
+               {% include "omero_search_engine_client/and_clause.html" %}
+            </form>
+            <style>
+               .and_clause {
+                   border: solid #aaa 1px;
+                   padding: 5px;
+                   border-radius: 5px;
+                   margin: 5px;
+               }
+               .and_clause * {
+                   box-sizing: border-box;
+               }
+               .search_or_row {
+                   display: flex;
+                   align-items: flex-end;
+                   -ms-flex-wrap: wrap;
+                   flex-wrap: wrap;
+                   gap: 5px;
+               }
+               .search_or_row>div{
+                   flex: 1;
+               }
+               .search_or_row:first-child .or {
+                   visibility: visible;
+               }
+               .search_or_row .or, .search_or_row .search_condition {
+                   flex: 0;
+               }
+               select.condition {
+                   width: fit-content;
+               }
+               .and_clause select.keyFields, .and_clause input.valueFields {
+                   width: 100%;
+               }
+           </style>
+            <button id="addAND" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Add group">
+               add AND
+            </button>
+         </div>
+
+         </div>
+         <br>
+                  <div id="conaneworpar" >
+         <div id="conanewor" class="col-md-5">
+            <div id="ortemplate" >
+      </div>
+         </div>
+                  </div>
+      </div>
+   </div>
+   <br>
+   <div id ="conditions">
+      <div class="col-md-5">
+         <div class="float-right">
+            {% include "omero_search_engine_client/case_insensitive_checkbox.html" %}
+         </div>
+
+
+
+      </div>
+      <br>
+   </div>
+   <div id ="query_buttons">
+      <button type="button" id="submit_" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Submit the query to the server" onclick="submitQuery()">
+      Submit the Query
+      </button>
+
+      <button type="button" id="new_query" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Discard all the condition anstart new query" onclick="reset_query()">
+      Reset the Form
+      </button>
+   </div>
+   <br>
+   <br>
+   <div id="results" class="col-md-4" style="display: none"  >
+      <h4>Results</h4>
+      <br>
+      <label id="no_images"></label>
+      <label id="query_id"></label>
+      <br>
+   </div>
+   <div class="row" id="results_grid_buttons" style="display: none">
+       <button id="reset_results_table_filter"  onclick="resetResultsTabelFilters()" type="button" >Remove Filter/s</button>
+    <button id="display_hide_columns"  onclick="display_hide_grid_columns();" type="button" >Display/Hide Columns</button></div>
+
+
+   <div id="myGrid_2"  class="ag-theme-alpine"></div>
+   <br>
+   <div id="load_results_buttons", style="display: none", class="col-md-7" >
+   <table id="loads_results_table" class="table table-striped">
+      <thead>
+         <tr>
+            <th><button  class="btn btn-primary" id="loadMoreResults"  onclick="loadMoreResultsFunction()" type="button">Load More Results</button></th>
+         </tr>
+         <tr>
+            <th><button id="loadRemainingResults"  onclick="loadRemainingResultsFunction()" type="button" style="display: none">Load All the Results</button></th>
+         </tr>
+      </thead>
+   </table>
+ </div>
+<br>
+<button id="exportResults" class="btn btn-primary"  style="display: none"  onclick="exportToCSV()" type="button">Export Results (CSV)</button>
+<br>
+</div>
+<script src="{% static 'omero_search_engine_client/js/search_form_utils.js' %}"></script>
+<script src="{% static 'omero_search_engine_client/js/app.js' %}"></script>
+<script>
+   var resources_data;
+   var help_contents = {{ help_contents|safe }};
+
+   var query_id = "{{ task_id }}";
+   var query_mode = "{{ mode }}";
+   const SEARCH_ENGINE_URL = "{{ search_engine_url }}";
+
+
+   $(document).ajaxStart(function ()
+   {
+   $('body').addClass('wait');
+
+   }).ajaxComplete(function () {
+
+   $('body').removeClass('wait');
+
+   });
+
+
+     $("form").submit(function (e) {
+         e.preventDefault();
+
+     });
+</script>
+                    </div>
+                </div>
+                <div id="templates" class="tab-pane fade">
+                    <h3>
+Under construction, please visit later!
+                        </h3>
+            </div>
+     <div id="help" class="tab-pane fade">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

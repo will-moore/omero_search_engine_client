@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+{% block head %}
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
+  <!--link rel="stylesheet" href="/resources/demos/style.css"!-->
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+
+
+  <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
+
+ <!-- https://cdnjs.com/libraries/6pac-slickgrid -->
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'omero_search_engine_client/css/style.css' %}" >
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
+
+<!--link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="{% static 'omero_search_engine_client/css/search_form_styles.css' %}">
+
+  <title>
+  {% block title %}
+         {% if title %}
+        {{ title }}
+        {% else %}
+    IDR search engine
+    {% endif %}
+        {% endblock %}
+  </title>
+
+</head>
+{% endblock %}
+
+<body>
+   <div id="main_container" class="container">
+  <div class="jumbotron text-center">
+      <div class="container">
+        <h1>Welcome To the IDR Search Engine</h1>
+        <p>IDR search engine app is used to search metadata (key-value pairs)
+ </p>
+        <a href="#" onclick="display_help()" class="btn btn-primary">Read More</a>
+      </div>
+    </div>
+
+        {% block app_content %}
+
+        {% endblock %}
+    </div>
+<!-- The Modal -->
+  <div class="modal fade" id="displaymessagemodal" role="dialog" >
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h3 id ="messageHeader" class="modal-title">Heading</h3>
+          <button type="button"  class="Cancel" onclick="cancelFunction()" data-dismiss="modal">&times;</button>
+        </div>
+
+       <!-- Modal body -->
+ <div  class="container">
+     <table id="table_display_hide"></table>
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button id ="moelButton" type="messageButton" class="btn btn-success" data-dismiss="modal">OK</button>
+            <button id ="select_all" type="messageButton" class="btn btn-success" data-dismiss="modal">Display all</button>
+            <button id ="deselect_all" type="messageButton" class="btn btn-danger" data-dismiss="modal">Hide all</button>
+            <button id ="moelButton_2" type="messageButton" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+
+        </div>
+     </div>
+  </div>
+  </div>
+
+<div class="modal" id="confirm_message" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Save query</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+            <label for="queryfilename">File name</label>
+            <input type="text" id="queryfilename" name="queryfilename"><br><br>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="download_query()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
