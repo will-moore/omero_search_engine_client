@@ -814,10 +814,13 @@ $(function () {
     let $clause = $row.parent();
     $row.remove();
     // If no OR rows left in this 'AND' clause...
-    console.log(`$(".search_or_row", $clause).length`, $(".search_or_row", $clause).length);
+    console.log(
+      `$(".search_or_row", $clause).length`,
+      $(".search_or_row", $clause).length
+    );
     if ($(".search_or_row", $clause).length === 0) {
       let $and = $clause.prev();
-      console.log('and', $and);
+      console.log("and", $and);
       if ($and.length == 0) {
         // in case we're removing the first row
         $and = $clause.next();
@@ -1132,7 +1135,6 @@ $("#value_field_search_only").on("click", function (event) {
 });
 
 set_tree_events_handller();
-
 
 function update_key_fields() {
   const keyFields = document.querySelectorAll("#keyFields");

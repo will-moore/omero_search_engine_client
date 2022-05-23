@@ -1,4 +1,3 @@
-
 // global variables declared elsewhere:
 // SEARCH_ENGINE_URL
 // resources_data
