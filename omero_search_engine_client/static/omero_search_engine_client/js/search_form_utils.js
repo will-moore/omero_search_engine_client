@@ -4,21 +4,29 @@
 // query_mode
 // cached_key_values - object {'key': ['value'...]} for autocomplete
 
-function set_key_values(key_value, container) {
+class OmeroSearchForm {
+  constructor(SEARCH_ENGINE_URL) {
+    this.SEARCH_ENGINE_URL = SEARCH_ENGINE_URL;
+    this.resources_data = {};
+    this.query_mode = "searchterms";
+    this.cached_key_values = {};
+  }
+
+set_key_values(key_value, container) {
   // E.g. if user chooses key 'Antibody', we set or load the
   // possible Values for use by auto-complete
   if (key_value == "Any") {
-    cached_key_values[key_value] = [];
-    set_operator_options(key_value, container);
+    this.cached_key_values[key_value] = [];
+    this.set_operator_options(key_value, container);
     return;
   }
 
   container.querySelector(".valueFields").value = "";
   const resource = get_resource(key_value);
-  set_operator_options(key_value, container);
-  if (cached_key_values[key_value] === undefined) {
+  this.set_operator_options(key_value, container);
+  if (this.cached_key_values[key_value] === undefined) {
     let url =
-      SEARCH_ENGINE_URL +
+      this.SEARCH_ENGINE_URL +
       "resources/" +
       encodeURIComponent(resource) +
       "/getannotationvalueskey/?key=" +
@@ -27,7 +35,7 @@ function set_key_values(key_value, container) {
       {
         response.json().then(function (data) {
           data.sort();
-          cached_key_values[key_value] = data;
+          this.cached_key_values[key_value] = data;
         });
       }
     });
@@ -36,8 +44,8 @@ function set_key_values(key_value, container) {
 
 //As main attributes supports equals and not equals only
 //This function restrict the use to these two operators
-function set_operator_options(key_value, container) {
-  condition = container.querySelector(".condition");
+set_operator_options(key_value, container) {
+  let condition = container.querySelector(".condition");
 
   condition.value = condition.options[0].text;
 
@@ -54,27 +62,31 @@ function set_operator_options(key_value, container) {
   }
 }
 
-async function load_resources(mode) {
+async load_resources(mode) {
   let url;
   if (mode == "advanced") {
-    url = SEARCH_ENGINE_URL + "resources/all/keys/";
+    url = this.SEARCH_ENGINE_URL + "resources/all/keys/";
   } else {
-    url_ = SEARCH_ENGINE_URL + "resources/all/keys/";
-    url = url_ + "?mode=" + encodeURIComponent(mode);
+    url = this.SEARCH_ENGINE_URL + "resources/all/keys/";
+    url = url + "?mode=" + encodeURIComponent(mode);
   }
-  return await fetch(url).then((response) => response.json());
+  this.resources_data = await fetch(url).then((response) => response.json());
+  if (this.resources_data.error != undefined) {
+    alert(this.resources_data.error);
+  }
+  return this.resources_data;
 }
 
-function get_resource(key) {
+get_resource(key) {
   // e.g. find if 'Antibody' key comes from 'image', 'project' etc
-  for (resource in resources_data) {
-    if (resources_data[resource].includes(key)) {
+  for (resource in this.resources_data) {
+    if (this.resources_data[resource].includes(key)) {
       return resource;
     }
   }
 }
 
-function get_current_query(form_id = "search_form") {
+get_current_query(form_id = "search_form") {
   let and_conditions = [];
   let or_conditions = [];
   //get and condition1
@@ -112,6 +124,8 @@ function get_current_query(form_id = "search_form") {
   query_details["or_filters"] = or_conditions;
   query_details["case_sensitive"] =
     document.getElementById("case_sensitive").checked;
-  query["mode"] = query_mode;
+  query["mode"] = this.query_mode;
   return query;
+}
+
 }
