@@ -724,7 +724,6 @@ Query the search engine using the resourse attribute, when the user double click
 let $andClause;
 let searchForm;
 
-
 $(async function () {
   // on.ready()...
 
@@ -767,7 +766,6 @@ $(async function () {
   resources_con.style.display = "block";
 
   set_query_fields(_keys_options.parentNode.parentNode);
-
 
   // clone empty form row before any changes
   // used for building form
@@ -979,7 +977,9 @@ it will get he attribute and value pair and set the query builder for using them
   if (resource === undefined) resource = get_resource(rowNode.data.Attribute);
   if (resource === undefined) resource = "image";
   if (searchForm.resources_data.hasOwnProperty(resource)) {
-    if (searchForm.resources_data[resource].indexOf(rowNode.data.Attribute) == -1)
+    if (
+      searchForm.resources_data[resource].indexOf(rowNode.data.Attribute) == -1
+    )
       searchForm.resources_data[resource].push(rowNode.data.Attribute);
   } else searchForm.resources_data[resource] = [rowNode.data.Attribute];
   query = get_current_query();
