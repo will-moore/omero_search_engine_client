@@ -1,3 +1,6 @@
+// class instance
+let searchForm;
+
 var querystarttime;
 var queryendtime;
 var resource;
@@ -32,7 +35,7 @@ var auto_fetch_is_running = false;
 
 //save query json string to the local user storage, so he cal load it again
 function save_query() {
-  query = get_current_query();
+  query = searchForm.get_current_query();
   if (query == false) return;
   else {
     $("#confirm_message").modal("show");
@@ -43,7 +46,7 @@ function save_query() {
 //Save query to user local storage
 function download_query() {
   filename = document.getElementById("queryfilename").value;
-  query = JSON.stringify(get_current_query(), null, 4);
+  query = JSON.stringify(searchForm.get_current_query(), null, 4);
   if (filename) {
     filename = filename + ".txt";
     var file_container = document.createElement("a");
@@ -68,7 +71,7 @@ function download_query() {
 
 //
 function reset_query(need_confirmation = true) {
-  query = get_current_query();
+  query = searchForm.get_current_query();
   if (query == false) return;
   if (need_confirmation)
     if (confirm("All the conditions will be discarded, process?") == false) {
@@ -382,7 +385,7 @@ function submitQuery(reset = true) {
     document.getElementById("results_grid_buttons").style.display = "none";
   }
   if (query_details === undefined || size == 0) {
-    query = get_current_query();
+    query = searchForm.get_current_query();
     if (query == false) return;
   } else query = get_returned_query_from_server();
 
@@ -448,7 +451,7 @@ function set_query_fields(container) {
     setAutoCompleteValues(null);
   });
   valueFields_.addEventListener("change", (e) => {
-    query = get_current_query();
+    query = searchForm.get_current_query();
     $("#queryJson").val(JSON.stringify(query, undefined, 4));
   });
 
@@ -722,7 +725,6 @@ Query the search engine using the resourse attribute, when the user double click
 }
 
 let $andClause;
-let searchForm;
 
 $(async function () {
   // on.ready()...
@@ -789,7 +791,7 @@ $(async function () {
   function updateForm() {
     hideRemoveIfOnlyOneLeft();
 
-    query = get_current_query();
+    query = searchForm.get_current_query();
     is_new_query = true;
     $("#queryJson").val(JSON.stringify(query, undefined, 4));
   }
@@ -982,7 +984,7 @@ it will get he attribute and value pair and set the query builder for using them
     )
       searchForm.resources_data[resource].push(rowNode.data.Attribute);
   } else searchForm.resources_data[resource] = [rowNode.data.Attribute];
-  query = get_current_query();
+  query = searchForm.get_current_query();
   if (
     query["query_details"]["or_filters"].length == 0 &&
     query["query_details"]["and_filters"].length == 1
@@ -995,7 +997,7 @@ it will get he attribute and value pair and set the query builder for using them
   addAnd(rowNode.data.Attribute, "equals", rowNode.data.Value);
 
   display_hide_remove_buttons();
-  query = get_current_query();
+  query = searchForm.get_current_query();
   var querybuilderTab = document.querySelector("#tabs  #querybuilder_nav a");
   var tab = new bootstrap.Tab(querybuilderTab);
   tab.show();

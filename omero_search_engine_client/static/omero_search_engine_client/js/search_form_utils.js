@@ -22,7 +22,7 @@ class OmeroSearchForm {
     }
 
     container.querySelector(".valueFields").value = "";
-    const resource = get_resource(key_value);
+    const resource = this.get_resource(key_value);
     this.set_operator_options(key_value, container);
     if (this.cached_key_values[key_value] === undefined) {
       let url =
@@ -31,14 +31,12 @@ class OmeroSearchForm {
         encodeURIComponent(resource) +
         "/getannotationvalueskey/?key=" +
         encodeURIComponent(key_value);
-      fetch(url).then(function (response) {
-        {
-          response.json().then(function (data) {
-            data.sort();
-            this.cached_key_values[key_value] = data;
-          });
-        }
-      });
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          data.sort();
+          this.cached_key_values[key_value] = data;
+        });
     }
   }
 
@@ -93,8 +91,6 @@ class OmeroSearchForm {
 
     let queryandnodes = document.querySelectorAll(`#${form_id} .and_clause`);
     for (let i = 0; i < queryandnodes.length; i++) {
-      query_dict = {};
-
       let node = queryandnodes[i];
       // handle each OR...
       let ors = node.querySelectorAll(".search_or_row");
@@ -104,7 +100,7 @@ class OmeroSearchForm {
           name: orNode.querySelector(".keyFields").value,
           value: orNode.querySelector(".valueFields").value,
           operator: orNode.querySelector(".condition").value,
-          resource: get_resource(orNode.querySelector(".keyFields").value),
+          resource: this.get_resource(orNode.querySelector(".keyFields").value),
         };
       });
       if (or_dicts.length > 1) {
