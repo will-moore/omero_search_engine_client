@@ -1,8 +1,3 @@
-// global variables declared elsewhere:
-// SEARCH_ENGINE_URL
-// resources_data
-// query_mode
-// cached_key_values - object {'key': ['value'...]} for autocomplete
 
 class OmeroSearchForm {
   constructor(SEARCH_ENGINE_URL) {
@@ -60,7 +55,7 @@ class OmeroSearchForm {
     }
   }
 
-  async load_resources(mode) {
+  async load_resources(mode="searchterms") {
     let url;
     if (mode == "advanced") {
       url = this.SEARCH_ENGINE_URL + "resources/all/keys/";
@@ -77,7 +72,7 @@ class OmeroSearchForm {
 
   get_resource(key) {
     // e.g. find if 'Antibody' key comes from 'image', 'project' etc
-    for (resource in this.resources_data) {
+    for (let resource in this.resources_data) {
       if (this.resources_data[resource].includes(key)) {
         return resource;
       }
@@ -110,7 +105,7 @@ class OmeroSearchForm {
       }
     }
 
-    query_details = {};
+    let query_details = {};
     var query = {
       resource: "image",
       query_details: query_details,
