@@ -1,4 +1,3 @@
-
 class OmeroSearchForm {
   constructor(SEARCH_ENGINE_URL) {
     this.SEARCH_ENGINE_URL = SEARCH_ENGINE_URL;
@@ -55,7 +54,7 @@ class OmeroSearchForm {
     }
   }
 
-  async load_resources(mode="searchterms") {
+  async load_resources(mode = "searchterms") {
     let url;
     if (mode == "advanced") {
       url = this.SEARCH_ENGINE_URL + "resources/all/keys/";
