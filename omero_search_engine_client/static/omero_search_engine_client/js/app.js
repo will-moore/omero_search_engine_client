@@ -1,6 +1,3 @@
-// class instance
-let searchForm;
-
 var querystarttime;
 var queryendtime;
 var resource;
@@ -35,7 +32,7 @@ var auto_fetch_is_running = false;
 
 //save query json string to the local user storage, so he cal load it again
 function save_query() {
-  query = searchForm.get_current_query();
+  query = get_current_query();
   if (query == false) return;
   else {
     $("#confirm_message").modal("show");
@@ -46,7 +43,7 @@ function save_query() {
 //Save query to user local storage
 function download_query() {
   filename = document.getElementById("queryfilename").value;
-  query = JSON.stringify(searchForm.get_current_query(), null, 4);
+  query = JSON.stringify(get_current_query(), null, 4);
   if (filename) {
     filename = filename + ".txt";
     var file_container = document.createElement("a");
@@ -71,7 +68,7 @@ function download_query() {
 
 //
 function reset_query(need_confirmation = true) {
-  query = searchForm.get_current_query();
+  query = get_current_query();
   if (query == false) return;
   if (need_confirmation)
     if (confirm("All the conditions will be discarded, process?") == false) {
@@ -385,7 +382,7 @@ function submitQuery(reset = true) {
     document.getElementById("results_grid_buttons").style.display = "none";
   }
   if (query_details === undefined || size == 0) {
-    query = searchForm.get_current_query();
+    query = get_current_query();
     if (query == false) return;
   } else query = get_returned_query_from_server();
 
@@ -445,13 +442,13 @@ function set_query_fields(container) {
 
   keys_options_.onchange = function () {
     key_value = this.value;
-    searchForm.set_key_values(key_value, container);
+    set_key_values(key_value, container);
   };
   valueFields_.addEventListener("focus", (e) => {
     setAutoCompleteValues(null);
   });
   valueFields_.addEventListener("change", (e) => {
-    query = searchForm.get_current_query();
+    query = get_current_query();
     $("#queryJson").val(JSON.stringify(query, undefined, 4));
   });
 
@@ -539,7 +536,7 @@ function adjust_autocomplete_values(value) {
     key_value = container.querySelector(".keyFields");
     if (get_resource(attr) == undefined) {
       $(key_value).append(new Option(attr, attr));
-      searchForm.resources_data["image"].push(attr);
+      resources_data["image"].push(attr);
     }
     key_value.value = attr;
 
@@ -637,7 +634,7 @@ function setFieldValues(data = null) {
 function set_resources(container) {
   let __keys_options = container.querySelector(".keyFields");
   optionHtml = '<option value ="Any">Any</option>';
-  for (const [key, value] of Object.entries(searchForm.resources_data)) {
+  for (const [key, value] of Object.entries(resources_data)) {
     if (value == null) {
       break;
     }
@@ -649,7 +646,7 @@ function set_resources(container) {
   }
   __keys_options.innerHTML = optionHtml;
   key_value = __keys_options.value;
-  searchForm.set_key_values(key_value, container);
+  set_key_values(key_value, container);
 }
 
 function set_tree_nodes(mode = true) {
@@ -660,8 +657,7 @@ function set_tree_nodes(mode = true) {
     text: "Resource",
     state: { opened: true },
   });
-  for (let resource in searchForm.resources_data) {
-    console.log("resource", resource);
+  for (resource in resources_data) {
     tree_nodes.push({
       id: resource,
       parent: "Resource",
@@ -669,12 +665,12 @@ function set_tree_nodes(mode = true) {
       state: { opened: mode },
     });
 
-    for (i in searchForm.resources_data[resource].sort()) {
-      if (searchForm.resources_data[resource][i].trim().length > 22)
-        text = searchForm.resources_data[resource][i].substr(0, 22) + "...";
-      else text = searchForm.resources_data[resource][i];
+    for (i in resources_data[resource].sort()) {
+      if (resources_data[resource][i].trim().length > 22)
+        text = resources_data[resource][i].substr(0, 22) + "...";
+      else text = resources_data[resource][i];
       tree_nodes.push({
-        id: searchForm.resources_data[resource][i],
+        id: resources_data[resource][i],
         parent: resource,
         text: text, //resources_data[resource][i]
         title: text,
@@ -723,16 +719,7 @@ Query the search engine using the resourse attribute, when the user double click
     });
   });
 }
-
-let $andClause;
-
 $(async function () {
-  // on.ready()...
-
-  // Instantiate the class
-  searchForm = new OmeroSearchForm(SEARCH_ENGINE_URL);
-  await searchForm.load_resources("searchterms");
-
   $("#commonattr").change(async function () {
     if ($(this).prop("checked")) {
       query_mode = "advanced";
@@ -742,7 +729,7 @@ $(async function () {
       open = true;
     }
 
-    await searchForm.load_resources(query_mode);
+    resources_data = await load_resources(query_mode);
 
     set_tree_nodes(open);
     $("#jstree_resource_div").jstree("destroy").empty();
@@ -752,6 +739,14 @@ $(async function () {
     update_key_fields();
   });
 
+  // load resources_data immediately...
+  resources_data = await load_resources("searchterms");
+
+  if (resources_data.error != undefined) {
+    alert(resources_data.error);
+    return;
+  }
+
   set_help_file();
 
   set_tree_nodes();
@@ -760,7 +755,7 @@ $(async function () {
 
   let _keys_options = document.querySelector("#search_form .keyFields");
   optionHtml = "";
-  for (key in searchForm.resources_data) {
+  for (key in resources_data) {
     optionHtml += '<option value ="' + key + '">' + key + "</option>";
   }
 
@@ -768,7 +763,16 @@ $(async function () {
   resources_con.style.display = "block";
 
   set_query_fields(_keys_options.parentNode.parentNode);
+});
+//Used to load query from local storage
+// document.getElementById('load_file').onchange = function () {
+// let file = document.querySelector("#load_file").files[0];
+//   load_query_from_file(file);
+// }
 
+let $andClause;
+
+$(function () {
   // clone empty form row before any changes
   // used for building form
   $("#search_form .and_clause").bind("keydown", function (e) {
@@ -791,7 +795,7 @@ $(async function () {
   function updateForm() {
     hideRemoveIfOnlyOneLeft();
 
-    query = searchForm.get_current_query();
+    query = get_current_query();
     is_new_query = true;
     $("#queryJson").val(JSON.stringify(query, undefined, 4));
   }
@@ -952,7 +956,7 @@ function set_the_query(query_details) {
 function check_value(_keys_options, attribute) {
   _keys_options.value = attribute;
   if (_keys_options.selectedIndex === -1) {
-    let values = searchForm.resources_data["image"];
+    let values = resources_data["image"];
     values.push(attribute);
     $(_keys_options).append(new Option(attribute, attribute));
   }
@@ -978,13 +982,11 @@ it will get he attribute and value pair and set the query builder for using them
   let resource = rowNode.data.Resource;
   if (resource === undefined) resource = get_resource(rowNode.data.Attribute);
   if (resource === undefined) resource = "image";
-  if (searchForm.resources_data.hasOwnProperty(resource)) {
-    if (
-      searchForm.resources_data[resource].indexOf(rowNode.data.Attribute) == -1
-    )
-      searchForm.resources_data[resource].push(rowNode.data.Attribute);
-  } else searchForm.resources_data[resource] = [rowNode.data.Attribute];
-  query = searchForm.get_current_query();
+  if (resources_data.hasOwnProperty(resource)) {
+    if (resources_data[resource].indexOf(rowNode.data.Attribute) == -1)
+      resources_data[resource].push(rowNode.data.Attribute);
+  } else resources_data[resource] = [rowNode.data.Attribute];
+  query = get_current_query();
   if (
     query["query_details"]["or_filters"].length == 0 &&
     query["query_details"]["and_filters"].length == 1
@@ -997,7 +999,7 @@ it will get he attribute and value pair and set the query builder for using them
   addAnd(rowNode.data.Attribute, "equals", rowNode.data.Value);
 
   display_hide_remove_buttons();
-  query = searchForm.get_current_query();
+  query = get_current_query();
   var querybuilderTab = document.querySelector("#tabs  #querybuilder_nav a");
   var tab = new bootstrap.Tab(querybuilderTab);
   tab.show();
@@ -1142,7 +1144,7 @@ function update_key_fields() {
     key = __keys_options.value;
 
     optionHtml = "";
-    for (const [key, value] of Object.entries(searchForm.resources_data)) {
+    for (const [key, value] of Object.entries(resources_data)) {
       if (value == null) {
         __keys_options.innerHTML = optionHtml;
         break;
