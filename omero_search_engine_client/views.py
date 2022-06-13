@@ -28,5 +28,6 @@ def index(request, **kwargs):
         "help_contents": get_help_file_contenets(),
         "mode": "usesearchterms"
     }
+    template = kwargs.get("template", "omero_search_engine_client/main_page.html")
     
-    return render(request, "omero_search_engine_client/main_page.html", context)
+    return render(request, template, context)
