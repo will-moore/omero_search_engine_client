@@ -42,7 +42,7 @@ const FORM_FOOTER_HTML = `
 </label>
 <button id="doElasticSearch">Search</button>
 </div>
-`
+`;
 
 class OmeroSearchForm {
   constructor(formId, SEARCH_ENGINE_URL) {
@@ -54,13 +54,11 @@ class OmeroSearchForm {
 
     // build form
     this.$form = $(`#${formId}`);
-    this.$form.html(AND_CLAUSE_HTML);
+    this.$form.html(`<div class="clauses"></div>`);
+    this.addAnd();
     this.$form.append($(FORM_FOOTER_HTML));
 
-    // auto-complete (for the first row in the form)
-    this.initAutoComplete($(".and_clause"));
-    // load Keys and add to keyField of first row
-    this.loadResources("searchterms", $(".and_clause"));
+    this.buttonHandlers();
   }
 
   async loadResources(mode = "searchterms", $updateElement) {
@@ -109,7 +107,9 @@ class OmeroSearchForm {
           name: orNode.querySelector(".keyFields").value,
           value: orNode.querySelector(".valueFields").value,
           operator: orNode.querySelector(".condition").value,
-          resource: this.findResourceForKey(orNode.querySelector(".keyFields").value),
+          resource: this.findResourceForKey(
+            orNode.querySelector(".keyFields").value
+          ),
         };
       });
       if (or_dicts.length > 1) {
@@ -137,10 +137,14 @@ class OmeroSearchForm {
     // Adds <option> to '.keyFields' for each item in pre-cached resources_data
     let $field = $(".keyFields", $orClause);
     let anyOption = `<option value="Any">Any</option>`;
-    let html = Object.entries(this.resources_data).map((keyValues) => {
-      keyValues[1].sort();
-      return keyValues[1].map(value => `<option value="${value}">${value}</option>`).join("\n");
-    }).join("\n");
+    let html = Object.entries(this.resources_data)
+      .map((keyValues) => {
+        keyValues[1].sort();
+        return keyValues[1]
+          .map((value) => `<option value="${value}">${value}</option>`)
+          .join("\n");
+      })
+      .join("\n");
     $field.html(anyOption + html);
   }
 
@@ -246,5 +250,19 @@ class OmeroSearchForm {
       $select.append($(`<option value="${key}">${key}</option>`));
     }
     $select.val(key);
+  }
+
+  addAnd() {
+    let $andClause = $(AND_CLAUSE_HTML);
+    $(".clauses", this.$form).append($andClause);
+
+    // auto-complete (for the first row in the form)
+    this.initAutoComplete($andClause);
+    // load Keys and add to keyField of first row
+    this.loadResources("searchterms", $andClause);
+  }
+
+  buttonHandlers() {
+    $("#addAND").on("click", event => this.addAnd());
   }
 }
