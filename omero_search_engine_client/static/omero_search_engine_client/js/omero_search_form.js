@@ -1,7 +1,7 @@
 const AND_CLAUSE_HTML = `
 <div class="and_clause">
-  <div class="search_or_row">
-    <div class="or">OR</div>
+  <div class="or_clause">
+    <div class="or no_expand">OR</div>
     <div class="search_key">
         <label for="keyFields">Attribute</label>
         <select id="keyFields" class="form-control keyFields">
@@ -20,15 +20,15 @@ const AND_CLAUSE_HTML = `
         <label for="valueFields">Value</label>
         <input type="text" class="form-control valueFields" id="valueFields" placeholder="type the attribute value">
     </div>
-    <div class="or">
+    <div class="no_expand">
         <button class="remove_row btn btn-sm btn-outline-danger">
           X
         </button>
     </div>
   </div>
-  <a class="addOR" href="#" title="Add OR condition to the group">
+  <button class="addOR" href="#" title="Add OR condition to the group">
     add 'OR'...
-  </a>
+  </button>
 </div>`;
 
 const FORM_FOOTER_HTML = `
@@ -100,7 +100,7 @@ class OmeroSearchForm {
     for (let i = 0; i < queryandnodes.length; i++) {
       let node = queryandnodes[i];
       // handle each OR...
-      let ors = node.querySelectorAll(".search_or_row");
+      let ors = node.querySelectorAll(".or_clause");
 
       let or_dicts = [...ors].map((orNode) => {
         return {
@@ -252,6 +252,17 @@ class OmeroSearchForm {
     $select.val(key);
   }
 
+  displayHideRemoveButtons() {
+    let $btns = $(".remove_row", this.$form);
+    $btns.each(function (index, btn) {
+      if ($btns.length == 1) {
+        $(btn).css("visibility", "hidden");
+      } else {
+        $(btn).css("visibility", "visible");
+      }
+    });
+  }
+
   addAnd() {
     let $andClause = $(AND_CLAUSE_HTML);
     $(".clauses", this.$form).append($andClause);
@@ -260,9 +271,38 @@ class OmeroSearchForm {
     this.initAutoComplete($andClause);
     // load Keys and add to keyField of first row
     this.loadResources("searchterms", $andClause);
+
+    this.displayHideRemoveButtons();
   }
 
+  addOr($andClause) {
+    let $orClause = $(".or_clause", $andClause).last().clone();
+    $(".addOR", $andClause).before($orClause);
+    this.displayHideRemoveButtons();
+  }
+
+  removeOr($orClause) {
+    $orClause.remove();
+    this.displayHideRemoveButtons();
+  }
+
+  // Set-up event handlers on Buttons
   buttonHandlers() {
-    $("#addAND").on("click", event => this.addAnd());
+    $("#addAND").on("click", event => {
+      event.preventDefault();
+      this.addAnd()
+    });
+
+    this.$form.on("click", ".addOR", event => {
+      event.preventDefault();
+      let $andClause = $(event.target).closest(".and_clause");
+      this.addOr($andClause);
+    });
+
+    this.$form.on("click", ".remove_row", event => {
+      event.preventDefault();
+      let $orClause = $(event.target).closest(".or_clause");
+      this.removeOr($orClause);
+    });
   }
 }
