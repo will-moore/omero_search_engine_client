@@ -195,13 +195,21 @@ class OmeroSearchForm {
               console.log(data);
               let results = [{ label: "No results found.", value: -1 }];
               if (key == "Any" && data.data.length > 0) {
-                results = data.data.map((result) => {
+                // only try to show top 100 items...
+                let max_shown = 100;
+                let result_count = data.data.length;
+                results = data.data.slice(0, 100).map((result) => {
                   return {
                     key: result.Key,
                     label: `<b>${result.Value}</b> (${result.Key}) <span style="color:#bbb">${result["Number of images"]}</span>`,
                     value: `${result.Value}`,
                   };
                 });
+                if (result_count > max_shown) {
+                  results.push({
+                    key: -1, label: `...and ${result_count - max_shown} more matches not shown`, value: -1
+                  });
+                }
               } else {
                 // cache for future use
                 self.autoCompleteCache[key] = data;
@@ -281,7 +289,10 @@ class OmeroSearchForm {
 
   addOr($andClause) {
     let $orClause = $(".or_clause", $andClause).last().clone();
+    // Clone the last '.or_clause' and insert it before the ".addOR" button
     $(".addOR", $andClause).before($orClause);
+    // init auto-complete for ALL 'or' rows (re-init for existing rows)
+    this.initAutoComplete($orClause);
     this.displayHideRemoveButtons();
   }
 
