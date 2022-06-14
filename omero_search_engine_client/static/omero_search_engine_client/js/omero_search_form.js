@@ -40,7 +40,7 @@ const FORM_FOOTER_HTML = `
   Case sensitive:
   <input class="form-check-input" type="checkbox" value="" id="case_sensitive" />
 </label>
-<button id="doElasticSearch">Search</button>
+<button type="submit">Search</button>
 </div>
 `;
 
@@ -53,6 +53,7 @@ class OmeroSearchForm {
     this.autoCompleteCache = {};
 
     // build form
+    this.formId = formId;
     this.$form = $(`#${formId}`);
     this.$form.html(`<div class="clauses"></div>`);
     this.addAnd();
@@ -89,12 +90,15 @@ class OmeroSearchForm {
         return resource;
       }
     }
+    // Not found: e.g. this.resources_data only has common 'searchterms'
+    // assume 'image'...
+    return 'image';
   }
 
-  getCurrentQuery(form_id = "search_form") {
+  getCurrentQuery() {
+    let form_id = this.formId;
     let and_conditions = [];
     let or_conditions = [];
-    //get and condition1
 
     let queryandnodes = document.querySelectorAll(`#${form_id} .and_clause`);
     for (let i = 0; i < queryandnodes.length; i++) {
@@ -286,6 +290,34 @@ class OmeroSearchForm {
     this.displayHideRemoveButtons();
   }
 
+  submitSearch() {
+    let query = this.getCurrentQuery();
+    let self = this;
+    console.log(query);
+    $.ajax({
+      type: "POST",
+      url: SEARCH_ENGINE_URL + "resources/submitquery/?return_columns=True",
+      contentType: "application/json;charset=UTF-8",
+      dataType: "json",
+      data: JSON.stringify(query),
+      success: function (data) {
+        if (data["Error"] != "none") {
+          alert(data["Error"]);
+          return;
+        }
+        self.handleSearchResults(data);
+      },
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
+        alert("Status: " + textStatus);
+        alert("Error: " + errorThrown);
+      },
+    });
+  }
+
+  handleSearchResults(data) {
+    console.log("handleSearchResults", data);
+  }
+
   // Set-up event handlers on Buttons
   buttonHandlers() {
     $("#addAND").on("click", event => {
@@ -303,6 +335,11 @@ class OmeroSearchForm {
       event.preventDefault();
       let $orClause = $(event.target).closest(".or_clause");
       this.removeOr($orClause);
+    });
+
+    $("button[type='submit']", this.$form).on("click", event => {
+      event.preventDefault();
+      this.submitSearch();
     });
   }
 }
