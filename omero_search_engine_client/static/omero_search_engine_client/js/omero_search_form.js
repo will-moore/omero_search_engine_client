@@ -45,7 +45,7 @@ const FORM_FOOTER_HTML = `
 `;
 
 class OmeroSearchForm {
-  constructor(formId, SEARCH_ENGINE_URL) {
+  constructor(formId, SEARCH_ENGINE_URL, tableId) {
     this.SEARCH_ENGINE_URL = SEARCH_ENGINE_URL;
     this.resources_data = {};
     this.query_mode = "searchterms";
@@ -59,7 +59,29 @@ class OmeroSearchForm {
     this.addAnd();
     this.$form.append($(FORM_FOOTER_HTML));
 
+    // If tableId, create table element...
+    if (tableId) {
+      this.$table = $(`#${tableId}`);
+    }
+
     this.buttonHandlers();
+    this.pubsub = $({});
+  }
+
+  // pub/sub methods. see https://github.com/cowboy/jquery-tiny-pubsub
+  on() {
+    let o = this.pubsub;
+    o.on.apply(o, arguments);
+  }
+
+  off() {
+    let o = this.pubsub;
+    o.off.apply(o, arguments);
+  }
+
+  trigger() {
+    let o = this.pubsub;
+    o.trigger.apply(o, arguments);
   }
 
   async loadResources(mode = "searchterms", $updateElement) {
@@ -316,7 +338,12 @@ class OmeroSearchForm {
           alert(data["Error"]);
           return;
         }
-        self.handleSearchResults(data);
+        // publish results to subscribers
+        self.trigger("results", data);
+        // can display in table if specified
+        if (self.$table) {
+          self.displayResults(data);
+        }
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
         alert("Status: " + textStatus);
@@ -325,8 +352,53 @@ class OmeroSearchForm {
     });
   }
 
-  handleSearchResults(data) {
-    console.log("handleSearchResults", data);
+  displayResults(data) {
+    console.log("displayResults", data);
+    // TODO: check how errors are handled
+    // if (data.Error && data.Error != "none") {
+    //     $("#dataTable").html(`<tr><td>${data.Error}</td></tr>`);
+    //     return;
+    // }
+
+    // FIXME:
+    let webindex = "https://idr.openmicroscopy.org/webclient/"   // WEBCLIENT.URLS.webindex;
+    let thumbUrl = webindex + "render_thumbnail/";
+    let showFilterIcon = false;
+
+    let results_array = data?.values;
+    if (!results_array) {
+        alert("No results");
+    }
+
+    // Most columns are the names of Keys
+    let keyColumnNames = data.columns.map(col => col.field);
+    // Full list includes Id, Name, Study name...
+    let columnNames = data.columns_def.map(col => col.field);
+
+    let thead = `<th>${new Intl.NumberFormat().format(data.size)} Images</th>`;
+    // thead += ["Name", "Study_name"].map(col => `<th>${col}</th>`).join("");
+    thead += columnNames.map(col => `<th>
+        ${ showFilterIcon && keyColumnNames.includes(col) ?
+          `<button title="Filter by ${col}" class="filterColumn" data-colname="${col}">
+            <img src="{% static "webclient/image/filter-icon-12.png" %}"/>
+        </button>` : ''}
+        ${col}</th>`).join("");
+    thead += "<th></th>";
+    let tbody = data.values.slice(0,100).map(row => {
+        let thumb = `<td><img loading="lazy" src="${thumbUrl}${ row.Id }/" /></td>`;
+        let tds = columnNames.map(col => `<td>${row[col] || ""}</td>`).join("");
+        let browse = `<td class="browse"><a target="_blank" title="Open this Image in another tab" href="${webindex}?show=image-${ row.Id }">Browse</a></td>`;
+        // let tds = row.key_values.map(kv => `<td>${kv.value}</td>`).join("");
+        return `<tr id="image-${ row.id }">${thumb}${ tds }${browse}</tr>`;
+    }).join('\n');
+
+    let table = `
+        <thead>${thead}</thead>
+        <tbody>${tbody}</tbody>
+    `
+    if (this.$table) {
+      this.$table.html(table);
+    }
   }
 
   // Set-up event handlers on Buttons

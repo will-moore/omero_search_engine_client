@@ -9,20 +9,16 @@
 
     <script src="{% static 'omero_search_engine_client/js/omero_search_form.js' %}"></script>
     <link rel="stylesheet" href="{% static 'omero_search_engine_client/css/search_form_styles.css' %}" />
- 
-  </head>
 
-  <body>
     <h1>OMERO search engine client</h1>
 
     <form id="search_form">
 
     </form>
 
-    <table id="results">
+    <table id="results_table">
 
     </table>
-  </body>
 
 
   <script>
@@ -30,11 +26,13 @@
 
     $(function(){
 
-      const searchForm = new OmeroSearchForm("search_form", SEARCH_ENGINE_URL);
+      const searchForm = new OmeroSearchForm("search_form", SEARCH_ENGINE_URL, "results_table");
 
-      // searchForm.on("results", function(results){
-      //   console.log("RESULTS", results);
-      // });
+      // We can subscribe for results (but they will also be rendered in the table)
+      searchForm.on("results", function(event, data){
+        console.log("RESULTS", event, data);
+      });
     });
   </script>
-</html>
+
+{% endblock %}
