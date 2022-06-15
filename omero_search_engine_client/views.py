@@ -29,5 +29,14 @@ def index(request, **kwargs):
         "mode": "usesearchterms"
     }
     template = kwargs.get("template", "omero_search_engine_client/main_page.html")
+
+    try:
+        # If idr-gallery is installed, use it's base template (needs settings config)
+        from idr_gallery.views import get_settings_as_context
+        settings_ctx = get_settings_as_context()
+        context = {**context, **settings_ctx}
+        context["base_template"] = "idr_gallery/base.html"
+    except ImportError:
+        context["base_template"] = "omero_search_engine_client/simple_base.html"
     
     return render(request, template, context)
