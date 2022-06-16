@@ -337,7 +337,12 @@ class OmeroSearchForm {
   }
 
   removeOr($orClause) {
+    let $andClause = $orClause.closest(".and_clause");
     $orClause.remove();
+    // Remove parent 'and_clause' if it has no other 'or_clause'
+    if ($(".or_clause", $andClause).length === 0) {
+      $andClause.remove();
+    }
     this.displayHideRemoveButtons();
   }
 
