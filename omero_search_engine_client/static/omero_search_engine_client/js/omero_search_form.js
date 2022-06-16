@@ -56,7 +56,6 @@ class OmeroSearchForm {
     this.formId = formId;
     this.$form = $(`#${formId}`);
     this.$form.html(`<div class="clauses"></div>`);
-    this.addAnd();
     this.$form.append($(FORM_FOOTER_HTML));
 
     // If tableId, create table element...
@@ -66,6 +65,14 @@ class OmeroSearchForm {
 
     this.buttonHandlers();
     this.pubsub = $({});
+
+    // TODO: wait for loadResources()
+    // then build form...
+    (async function() {
+      await this.loadResources();
+      this.addAnd();
+      this.trigger("ready");
+    }.bind(this))()
   }
 
   // pub/sub methods. see https://github.com/cowboy/jquery-tiny-pubsub
@@ -84,7 +91,7 @@ class OmeroSearchForm {
     o.trigger.apply(o, arguments);
   }
 
-  async loadResources(mode = "searchterms", $updateElement) {
+  async loadResources(mode = "searchterms") {
     let url;
     if (mode == "advanced") {
       url = this.SEARCH_ENGINE_URL + "resources/all/keys/";
@@ -95,11 +102,6 @@ class OmeroSearchForm {
     this.resources_data = await fetch(url).then((response) => response.json());
     if (this.resources_data.error != undefined) {
       alert(this.resources_data.error);
-    }
-
-    // option to update UI...
-    if ($updateElement) {
-      this.setKeyValues($updateElement);
     }
 
     return this.resources_data;
@@ -297,14 +299,30 @@ class OmeroSearchForm {
     });
   }
 
-  addAnd() {
+  setQuery(query) {
+    let {key, value} = query;
+    // Clear form and create new...
+    $(".clauses", this.$form).empty();
+    this.addAnd(query);
+  }
+
+  addAnd(query) {
+    // query is e.g. {key: "Antibody", value: "foo"}
     let $andClause = $(AND_CLAUSE_HTML);
     $(".clauses", this.$form).append($andClause);
 
     // auto-complete (for the first row in the form)
     this.initAutoComplete($andClause);
-    // load Keys and add to keyField of first row
-    this.loadResources("searchterms", $andClause);
+    this.setKeyValues($andClause);
+
+    console.log("addAnd", query);
+    if (query?.key) {
+      // add <option> if not there
+      this.setKeyField($andClause, query.key)
+    }
+    if (query?.value) {
+      $(".valueFields", $andClause).val(query.value);
+    }
 
     this.displayHideRemoveButtons();
   }
@@ -386,10 +404,10 @@ class OmeroSearchForm {
     thead += "<th></th>";
     let tbody = data.values.slice(0,100).map(row => {
         let thumb = `<td><img loading="lazy" src="${thumbUrl}${ row.Id }/" /></td>`;
-        let tds = columnNames.map(col => `<td>${row[col] || ""}</td>`).join("");
+        let tds = columnNames.map(col => `<td>${row[col] ? row[col] : ""}</td>`).join("");
         let browse = `<td class="browse"><a target="_blank" title="Open this Image in another tab" href="${webindex}?show=image-${ row.Id }">Browse</a></td>`;
         // let tds = row.key_values.map(kv => `<td>${kv.value}</td>`).join("");
-        return `<tr id="image-${ row.id }">${thumb}${ tds }${browse}</tr>`;
+        return `<tr id="image-${ row.Id }">${thumb}${ tds }${browse}</tr>`;
     }).join('\n');
 
     let table = `
