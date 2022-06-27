@@ -4,9 +4,25 @@
   padding: 5px;
   border-radius: 5px;
   margin: 5px;
+  position: relative;
+  margin-top: 25px;
 }
 .and_clause * {
   box-sizing: border-box;
+}
+.and_clause:before {
+  position: absolute;
+  content: "AND";
+  top: -19px;
+  font-size: 14px;
+  left: 0;
+  margin-left: 5px;
+}
+.and_clause:first-child {
+  margin-top: 5px;
+}
+.and_clause:first-child:before {
+  display: none;
 }
 .or_clause {
   display: flex;
