@@ -54,3 +54,10 @@ select.condition {
 .and_clause input.valueFields {
   width: 100%;
 }
+
+/* Results table */
+
+.filterColumn {
+  background: transparent;
+  border: none;
+}
