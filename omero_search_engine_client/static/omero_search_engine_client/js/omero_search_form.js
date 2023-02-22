@@ -434,7 +434,7 @@ class OmeroSearchForm {
 
     let table = `
         <thead>${thead}</thead>
-        <tbody>${tbody}</tbody>
+        <tbody class="searchResults">${tbody}</tbody>
     `
     if (this.$table) {
       this.$table.html(table);
