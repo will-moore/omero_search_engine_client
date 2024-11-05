@@ -1,98 +1,53 @@
 <script>
-	import { debounce } from '../util.js';
-  import { getAutoCompleteResults, loadKnownKeys } from '../searchengine.js';
-	import { onMount } from 'svelte';
+	import { on } from 'svelte/events';
+	import FilterPopover from '../components/FilterPopover.svelte';
+	import { queryStore } from '../searchQueryStore.js';
 
-  import AutocompleteItem from '../AutocompleteItem.svelte';
+	let filters = [];
+  let editedFilter = -1;
 
-  import { queryStore } from '../searchQueryStore.js';
-
-	let results = [];
-
-  let filters = [];
-
-  queryStore.subscribeAndFilters(newFilters => {
-    console.log("newFilters", newFilters);
-    filters = newFilters;
+	queryStore.subscribeFilters((newFilters) => {
+		console.log('newFilters', newFilters);
+		filters = newFilters;
+    // editedFilter = queryStore.getFilterBeingEdited();
+	});
+  queryStore.subscribeFilterBeingEdited((filterIndex) => {
+    editedFilter = filterIndex;
   })
-
-	let loading = false;
-
-  // Known keys loaded on mount
-  let knownKeys = {project: [], image: []};
-  let searchKey = 'Any';
-  let operator = 'equals';
-
-  onMount(() => {
-    loadKnownKeys().then(r => {
-      knownKeys = r;
-      console.log('Known keys', knownKeys);
-    });
-  });
-
-
-	let handleKeyup = (event) => {
-		const query = event.target.value;
-		loading = true;
-		console.log('Searching for', query);
-    let allKnownKeys = knownKeys.project.concat(knownKeys.image);
-		getAutoCompleteResults(searchKey, query, allKnownKeys, operator).then(r => {
-      loading = false;
-      console.log('Results', r);
-      results = r;
-    });
-	};
 </script>
 
-<h1>omero-searcher</h1>
+<h1>omero-search-engine-client 2</h1>
 
 Filters:
+<button popovertarget="add-filter-dialog">Add</button>
 
-{#each filters as f}
-  <p>Filter: {f.key} {f.value}</p>
+<FilterPopover />
+
+{#each filters as filterList, index}
+	<p class:edited={editedFilter == index}>
+		{#each filterList as f}
+			<span class="or_filter">{f.key} {f.value} {f.active ? 'Y' : 'N'}</span>
+		{/each}
+		<label
+			><input
+				type="checkbox"
+				title="Toggle Filter"
+				on:change={() => queryStore.toggleFilter(index)}
+			/>Disable</label
+		>
+		<button title="Remove Filter" on:click={() => queryStore.removeFilter(index)}>&times;</button>
+		<button title="Edit Filter" on:click={() => queryStore.editFilter(index)}>Edit</button>
+	</p>
 {/each}
 
-{searchKey}
-<div class="kvp_row">
-	<select bind:value={searchKey}>
-		<option value="Any">Any</option>
-    <optgroup label="Study">
-      {#each knownKeys.project as key}
-        <option value={key}>{key}</option>
-      {/each}
-    </optgroup>
-    <optgroup label="Image">
-      {#each knownKeys.image as key}
-        <option value={key}>{key}</option>
-      {/each}
-    </optgroup>
-	</select>
-  <select bind:value={operator}>
-    <option value="contains">contains</option>
-    <option value="equals">equals</option>
-  </select>
-	<input type="text" on:keyup={debounce(handleKeyup, 500)} placeholder="Search IDR" />
-</div>
-{#if loading}
-	<p>Loading...</p>
-{/if}
-
-Results: {results.length}
-{#if results.length > 0}
-	<h2>Results</h2>
-	<ul>
-		{#each results as result}
-      <li><AutocompleteItem result={result} /></li>
-		{/each}
-	</ul>
-{/if}
-
 <style>
-	.kvp_row {
-    width: 500px;
-		display: flex;
-		flex-direction: row;
-		margin-bottom: 1em;
-    gap: 10px;
+  .edited {
+    border: solid red 1px;
+  }
+	.or_filter {
+		background-color: #f0f0f0;
+		padding: 0.2em;
+		margin: 0.2em;
+		border: solid grey 1px;
 	}
 </style>
