@@ -13,11 +13,12 @@ export class SearchQueryStore {
 
     // Add a new AND filter (list) to the store
     addFilter({key, value, dtype, operator = 'equals', resource = 'image'}) {
-        let newFilter = {key, value, dtype, operator, resource, active: true};
+        // NB: api uses 'name' instead of 'key' https://github.com/ome/omero_search_engine/issues/42
+        let newFilter = {name:key, value, dtype, operator, resource, active: true};
         let editedFilter = this.getFilterBeingEdited();
         console.log("STORE addFilter: editedFilter", editedFilter, newFilter);
         if (editedFilter == -1) {
-            let newOrFilters = [newFilter];  
+            let newOrFilters = [newFilter];
             this.filters.update(filters => [...filters, newOrFilters]);
             // return the index of the new filter (last in the list)
             editedFilter = get(this.filters).length - 1;
@@ -36,10 +37,11 @@ export class SearchQueryStore {
     }
 
     getQuery() {
-        // TODO: ignore filters that are not active
-        let or_filters = get(this.filters).filter(f => f.length > 1);
-        let and_filters = get(this.filters)
-            .filter(f => f.length === 1).map(f => f[0]);
+        // ignore filters that are not active:
+        // TODO: recursively filter individual filters instead of whole or_filter list;
+        let filters = get(this.filters).filter(f => f[0].active);
+        let or_filters = filters.filter(f => f.length > 1);
+        let and_filters = filters.filter(f => f.length === 1).map(f => f[0]);
         return {
             resource: 'image',
             query_details: {

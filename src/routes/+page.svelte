@@ -3,6 +3,8 @@
   import { faBan, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
 	import FilterPopover from '../components/FilterPopover.svelte';
 	import Nav from '../components/Nav.svelte';
+  import LeftResultsPanel from '../components/LeftResultsPanel.svelte';
+  import RightPanel from '../components/RightPanel.svelte';
 	import { queryStore } from '../searchQueryStore.js';
 
 	let filters = $state([]);
@@ -24,12 +26,13 @@
 
 <div class="main">
 	<div class="sidebar">
+    <div class="filter_panel">
 		<h3>
 			Filters
 			<button class="addBtn" popovertarget="add-filter-dialog">Add</button>
 		</h3>
 		{#each filters as filterList, index}
-			{@const uniqueKeys = Array.from(new Set(filterList.map((f) => f.key)))}
+			{@const uniqueKeys = Array.from(new Set(filterList.map((f) => f.name)))}
 			<div class="and_filter" class:edited={editedFilter == index}>
 				<div class="filter_content">
 					{#if uniqueKeys.length == 1}
@@ -39,9 +42,9 @@
 						{#if idx > 0}
 							<span>or</span>
 						{/if}
-						<span class="or_filter" class:active={f.active} title="{f.key} {f.operator} {f.value}">
+						<span class="or_filter" class:active={f.active} title="{f.name} {f.operator} {f.value}">
 							{#if uniqueKeys.length > 1}
-								<strong>{f.key}:</strong>
+								<strong>{f.name}:</strong>
 							{/if}
 							{f.value}{f.operator == "contains" ? "*" : ""}
 						</span>
@@ -61,11 +64,19 @@
 				</div>
 			</div>
 		{/each}
+      </div>
+      <!-- Show Projects and Screens -->
+      <div class="container_panel">
+        <LeftResultsPanel />
+      </div>
 	</div>
+
 	<div class="content">
-		<p>Results will be displayed here</p>
+		
 	</div>
-	<div class="sidebar"></div>
+	<div class="sidebar">
+    <RightPanel />
+  </div>
 </div>
 
 <style>
@@ -79,7 +90,18 @@
 	.sidebar {
 		flex: 0 0 400px;
 		margin: 10px;
+    display: flex;
+    flex-direction: column;
 	}
+  .fiter_panel {
+    flex: 0 0 auto;
+  }
+  .container_panel {
+    flex: auto 1 1;
+    overflow: auto;
+    /* larger content pushes it higher, but at least we get a scrollbar */
+    height: 300px;
+  }
 	.content {
 		flex: auto 1 1;
 		border: solid grey 1px;
@@ -116,7 +138,7 @@
     display: flex;
     flex-direction: row;
     flex: 0 0 auto;
-    padding: 7px 3px;
+    padding: 4px 3px;
     height: fit-content;
   }
 	.filter_buttons button {

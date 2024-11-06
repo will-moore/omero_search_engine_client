@@ -251,3 +251,15 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator) {
 
 	return results;
 }
+
+export function submitSearch(query) {
+	let url = `${SEARCH_ENGINE_URL}resources/submitquery/containers/`;
+	let options = {
+		method: 'POST',
+		body: JSON.stringify(query),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	};
+	return fetch(url, options).then((rsp) => rsp.json());
+}
