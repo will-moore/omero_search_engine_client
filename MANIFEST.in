@@ -1,3 +1,0 @@
-include README.rst
-include LICENSE
-recursive-include omero_search_engine_client *
