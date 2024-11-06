@@ -1,53 +1,144 @@
 <script>
-	import { on } from 'svelte/events';
+  import Fa from 'svelte-fa';
+  import { faBan, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
 	import FilterPopover from '../components/FilterPopover.svelte';
+	import Nav from '../components/Nav.svelte';
 	import { queryStore } from '../searchQueryStore.js';
 
-	let filters = [];
-  let editedFilter = -1;
+	let filters = $state([]);
+	let editedFilter = $state(queryStore.getFilterBeingEdited());
 
 	queryStore.subscribeFilters((newFilters) => {
 		console.log('newFilters', newFilters);
 		filters = newFilters;
-    // editedFilter = queryStore.getFilterBeingEdited();
+		// editedFilter = queryStore.getFilterBeingEdited();
 	});
-  queryStore.subscribeFilterBeingEdited((filterIndex) => {
-    editedFilter = filterIndex;
-  })
+	queryStore.subscribeFilterBeingEdited((filterIndex) => {
+		editedFilter = filterIndex;
+	});
 </script>
 
-<h1>omero-search-engine-client 2</h1>
-
-Filters:
-<button popovertarget="add-filter-dialog">Add</button>
+<Nav />
 
 <FilterPopover />
 
-{#each filters as filterList, index}
-	<p class:edited={editedFilter == index}>
-		{#each filterList as f}
-			<span class="or_filter">{f.key} {f.value} {f.active ? 'Y' : 'N'}</span>
+<div class="main">
+	<div class="sidebar">
+		<h3>
+			Filters
+			<button class="addBtn" popovertarget="add-filter-dialog">Add</button>
+		</h3>
+		{#each filters as filterList, index}
+			{@const uniqueKeys = Array.from(new Set(filterList.map((f) => f.key)))}
+			<div class="and_filter" class:edited={editedFilter == index}>
+				<div class="filter_content">
+					{#if uniqueKeys.length == 1}
+						<strong>{uniqueKeys[0]}:</strong>
+					{/if}
+					{#each filterList as f, idx}
+						{#if idx > 0}
+							<span>or</span>
+						{/if}
+						<span class="or_filter" class:active={f.active} title="{f.key} {f.operator} {f.value}">
+							{#if uniqueKeys.length > 1}
+								<strong>{f.key}:</strong>
+							{/if}
+							{f.value}{f.operator == "contains" ? "*" : ""}
+						</span>
+					{/each}
+				</div>
+
+				<div class="filter_buttons">
+					<button title="Add Filters" on:click={() => queryStore.editFilter(index)}>
+            <Fa icon={faPlus} color="#666" />
+          </button>
+          <button title="Disable filter" on:click={() => queryStore.toggleFilter(index)}>
+            <Fa icon={faBan} color="#666" />
+          </button>
+          <button title="Remove Filter" on:click={() => queryStore.removeFilter(index)}
+						><Fa icon={faTrash} color="#666" /></button
+					>
+				</div>
+			</div>
 		{/each}
-		<label
-			><input
-				type="checkbox"
-				title="Toggle Filter"
-				on:change={() => queryStore.toggleFilter(index)}
-			/>Disable</label
-		>
-		<button title="Remove Filter" on:click={() => queryStore.removeFilter(index)}>&times;</button>
-		<button title="Edit Filter" on:click={() => queryStore.editFilter(index)}>Edit</button>
-	</p>
-{/each}
+	</div>
+	<div class="content">
+		<p>Results will be displayed here</p>
+	</div>
+	<div class="sidebar"></div>
+</div>
 
 <style>
-  .edited {
-    border: solid red 1px;
+	.main {
+		flex: auto 1 1;
+		display: flex;
+		flex-direction: row;
+		width: 100%;
+		background: #f1f0f4;
+	}
+	.sidebar {
+		flex: 0 0 400px;
+		margin: 10px;
+	}
+	.content {
+		flex: auto 1 1;
+		border: solid grey 1px;
+		border-width: 0 1px;
+	}
+	h3 {
+		margin-bottom: 10px;
+	}
+	.addBtn {
+    float: right;
+		padding: 4px 12px;
+		font-size: 14px;
+		border: 0;
+		background-color: var(--button-bg);
+		color: var(--button-color);
+		border-radius: 5px;
+		cursor: pointer;
+	}
+	.and_filter {
+		border: solid lightgray 1px;
+		border-radius: 5px;
+		padding: 5px;
+		padding-bottom: 2px;
+		font-size: 14px;
+		margin-bottom: 7px;
+		background-color: white;
+		display: flex;
+		flex-direction: row;
+	}
+  .filter_content {
+    flex: auto 1 1;
   }
+  .filter_buttons {
+    display: flex;
+    flex-direction: row;
+    flex: 0 0 auto;
+    padding: 7px 3px;
+    height: fit-content;
+  }
+	.filter_buttons button {
+		border: none;
+    background-color: transparent;
+	}
+	.edited {
+		border: solid black 1px;
+	}
 	.or_filter {
 		background-color: #f0f0f0;
 		padding: 0.2em;
-		margin: 0.2em;
-		border: solid grey 1px;
+		margin: 0 3px 3px 0;
+		border: solid rgb(177, 175, 175) 1px;
+		border-radius: 5px;
+		display: inline-block;
+    opacity: 0.4;
+	}
+  .active {
+    opacity: 1;
+  }
+	strong {
+		font-weight: 600;
 	}
 </style>

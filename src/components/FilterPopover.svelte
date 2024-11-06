@@ -3,7 +3,7 @@
 	import { getAutoCompleteResults, loadKnownKeys } from '../searchengine.js';
 	import { onMount } from 'svelte';
 
-	import AutocompleteItem from '../AutocompleteItem.svelte';
+	import AutocompleteList from './AutocompleteList.svelte';
 
 	import { queryStore } from '../searchQueryStore.js';
 
@@ -28,14 +28,15 @@
 
 		popover.addEventListener('toggle', (event) => {
 			console.log('Popover toggled', event);
-			if (event.newState == "closed") {
+			if (event.newState == 'closed') {
+				filterIndex = -1;
 				queryStore.editFilter(-1);
 			}
 		});
 
 		queryStore.subscribeFilterBeingEdited((filterIndex) => {
 			console.log('FilterPopover Editing filter', filterIndex);
-			if (filterIndex != -1) {
+			if (filterIndex != -1 && popover) {
 				popover.showPopover();
 			}
 		});
@@ -55,63 +56,96 @@
 
 	function handleAutocompleteClick(result) {
 		console.log('FilterPopover Adding filter', result);
+		result.operator = operator;
 		filterIndex = queryStore.addFilter(result);
 	}
 </script>
 
 <div bind:this={popover} id="add-filter-dialog" popover>
-	<h2>{filterIndex == -1 ? 'Add Filter' : `Edit Filter: ${filterIndex}`}</h2>
+	<div class="popover_content">
+		<div class="left_panel">
+			<h2>{filterIndex == -1 ? 'Add Filter' : `Edit Filter: ${filterIndex}`}</h2>
 
-	<div class="kvp_row">
-		<select bind:value={searchKey}>
-			<option value="Any">Any</option>
-			<optgroup label="Study">
-				{#each knownKeys.project as key}
-					<option value={key}>{key}</option>
-				{/each}
-			</optgroup>
-			<optgroup label="Image">
-				{#each knownKeys.image as key}
-					<option value={key}>{key}</option>
-				{/each}
-			</optgroup>
-		</select>
-		<select bind:value={operator}>
-			<option value="contains">contains</option>
-			<option value="equals">equals</option>
-		</select>
-		<input type="text" on:keyup={debounce(handleKeyup, 500)} placeholder="Search IDR" />
-	</div>
-	{#if loading}
-		<p>Loading...</p>
-	{/if}
+			<div class="kvp_row">
+				<select bind:value={searchKey}>
+					<option value="Any">Any Key</option>
+					<optgroup label="Study">
+						{#each knownKeys.project as key}
+							<option value={key}>{key}</option>
+						{/each}
+					</optgroup>
+					<optgroup label="Image">
+						{#each knownKeys.image as key}
+							<option value={key}>{key}</option>
+						{/each}
+					</optgroup>
+				</select>
+				<input
+					type="text"
+					on:keyup={debounce(handleKeyup, 500)}
+					placeholder="type to find values..."
+				/>
+			</div>
+			{#if loading}
+				<p>Loading...</p>
+			{/if}
 
-	<div class="matches">
-		<ul>
-			{#each results as result}
-				<li><AutocompleteItem {result} handleClick={handleAutocompleteClick} /></li>
-			{/each}
-		</ul>
+			<div class="matches">
+				<AutocompleteList handleClick={handleAutocompleteClick} items={results} />
+			</div>
+		</div>
+		<div class="right_panel"></div>
 	</div>
 </div>
 
 <style>
 	.matches {
-		height: 300px;
-		max-height: 300px;
+		height: 400px;
+		max-height: 400px;
 		overflow-y: auto;
 	}
 	.kvp_row {
-		width: 500px;
+		width: 100%;
 		display: flex;
 		flex-direction: row;
 		margin-bottom: 1em;
 		gap: 10px;
 	}
+	.kvp_row select {
+		flex: 34% 1 1;
+	}
+	.kvp_row input {
+		flex: 66% 1 1;
+	}
 	#add-filter-dialog {
 		width: 50%;
-		height: 50%;
+		min-width: 800px;
+		/* height: 70%; */
 		overflow: auto;
 		box-shadow: 5px 4px 10px -5px #737373;
-  }
+		margin: auto;
+		margin-bottom: 50px;
+		border: solid 1px black;
+		border-radius: 10px;
+	}
+	.popover_content {
+		width: 100%;
+		max-width: 100%;
+		padding: 15px;
+		display: flex;
+		flex-direction: row;
+	}
+	.left_panel,
+	.right_panel {
+		overflow: auto;
+	}
+	.left_panel {
+		flex: 75% 0 0;
+		padding-right: 15px;
+	}
+	.right_panel {
+		flex: 25% 0 0;
+		border-left: solid 1px #eee;
+		padding-left: 15px;
+	}
 </style>

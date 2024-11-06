@@ -2,6 +2,10 @@
 import {getJson} from './util.js';
 const SEARCH_ENGINE_URL = 'https://idr.openmicroscopy.org/searchengine/api/v1/';
 
+const NAME_KEY = "name";
+
+const CONTAINER_TYPE = "container";
+
 const DISPLAY_TYPES = {
   image: "image",
   project: "experiment",

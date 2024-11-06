@@ -13,9 +13,9 @@ export class SearchQueryStore {
 
     // Add a new AND filter (list) to the store
     addFilter({key, value, dtype, operator = 'equals', resource = 'image'}) {
-        console.log("addFilter", key, value, dtype, operator, resource);
         let newFilter = {key, value, dtype, operator, resource, active: true};
         let editedFilter = this.getFilterBeingEdited();
+        console.log("STORE addFilter: editedFilter", editedFilter, newFilter);
         if (editedFilter == -1) {
             let newOrFilters = [newFilter];  
             this.filters.update(filters => [...filters, newOrFilters]);
