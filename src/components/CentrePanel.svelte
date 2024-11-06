@@ -41,7 +41,7 @@
 </script>
 
 <ul>
-	{#each imagesJson as image}
+	{#each imagesJson as image (image.id)}
 		<li class="studyThumb" class:selected={selectedImage?.id == image.id}>
 			<a
 				aria-label="Image: {image.name}"
@@ -63,6 +63,8 @@
 <style>
 	ul {
 		padding: 15px;
+    /* actual height is greater, but this forces a scrollbar on parent */
+    height: 100px;
 	}
 	.studyThumb {
 		display: inline-block;

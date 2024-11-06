@@ -94,9 +94,6 @@
     display: flex;
     flex-direction: column;
 	}
-  .fiter_panel {
-    flex: 0 0 auto;
-  }
   .container_panel {
     flex: auto 1 1;
     overflow: auto;
@@ -105,8 +102,10 @@
   }
 	.content {
 		flex: auto 1 1;
-		border: solid grey 1px;
+		border: solid #ddd 1px;
 		border-width: 0 1px;
+    background-color: white;
+    overflow: auto;
 	}
 	h3 {
 		margin-bottom: 10px;
