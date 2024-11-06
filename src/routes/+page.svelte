@@ -6,6 +6,7 @@
   import LeftResultsPanel from '../components/LeftResultsPanel.svelte';
   import RightPanel from '../components/RightPanel.svelte';
 	import { queryStore } from '../searchQueryStore.js';
+	import CentrePanel from '../components/CentrePanel.svelte';
 
 	let filters = $state([]);
 	let editedFilter = $state(queryStore.getFilterBeingEdited());
@@ -72,7 +73,7 @@
 	</div>
 
 	<div class="content">
-		
+		<CentrePanel />
 	</div>
 	<div class="sidebar">
     <RightPanel />

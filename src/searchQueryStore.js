@@ -36,12 +36,16 @@ export class SearchQueryStore {
         return get(this.filters);
     }
 
-    getQuery() {
+    getQuery(containerName) {
         // ignore filters that are not active:
         // TODO: recursively filter individual filters instead of whole or_filter list;
         let filters = get(this.filters).filter(f => f[0].active);
         let or_filters = filters.filter(f => f.length > 1);
         let and_filters = filters.filter(f => f.length === 1).map(f => f[0]);
+        if (containerName) {
+            // {name: "name", value: "idr0012-fuchs-cellmorph/screenA", operator: "equals", resource: "container"}
+            and_filters.push({name: "name", value: containerName, operator: "equals", resource: "container"});
+        }
         return {
             resource: 'image',
             query_details: {
@@ -84,7 +88,14 @@ export class SearchQueryStore {
     }
 }
 
+// Single instance of the query store
 export const queryStore = new SearchQueryStore();
+
+// Selected container. E.g. {id: 123, type: "screen", name: "idr0012-fuchs-cellmorph/screenA"}
+export const selectedContainerStore = writable(null);
+
+// Selected image. E.g. {id: 123, name: "image.tiff"}
+export const selectedImageStore = writable(null);
 
 // let d = {
 // 	resource: 'image',

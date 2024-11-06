@@ -1,13 +1,14 @@
 <script>
 	import { onMount } from 'svelte';
 
-	import { queryStore } from '../searchQueryStore.js';
+	import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
 	import { submitSearch } from '../searchengine.js';
 
 	import folder16png from '../lib/assets/folder16.png';
 	import folderScreen16png from '../lib/assets/folder_screen16.png';
 
 	let resultContainers = [];
+  let selectedContainer = null;
 
 	onMount(() => {
 		console.log('LeftResultsPanel mounte - Initial Search...');
@@ -21,7 +22,8 @@
 	});
 
 	async function doSearch(query) {
-		let data = await submitSearch(query);
+    let containers = true;
+		let data = await submitSearch(query, containers);
 		console.log('Search result', data);
 		// sort results by name
 		data.results.results.sort((a, b) => a.name.localeCompare(b.name));
@@ -30,14 +32,15 @@
 
   function handleClick(container) {
     console.log('Clicked', container);
-
+    selectedContainer = container;
+    selectedContainerStore.set(container);
   }
 </script>
 
 <div class="scrollable">
 	<ul>
 		{#each resultContainers as container}
-			<li>
+			<li class:selected={container.name == selectedContainer?.name}>
           <div class="container_icon">
 					<img
 						alt="Container icon"
@@ -69,9 +72,12 @@
 		display: flex;
 		flex-direction: row;
     gap: 1px;
-		width: 100%;
+		width: fit-content;
     margin: 3px;
 	}
+  .selected {
+    background-color: #B3BDCC;
+  }
   .container_icon {
     flex: 0 0 auto;
     width: 20px;

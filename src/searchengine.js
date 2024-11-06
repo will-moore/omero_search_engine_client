@@ -1,6 +1,8 @@
 
 import {getJson} from './util.js';
-const SEARCH_ENGINE_URL = 'https://idr.openmicroscopy.org/searchengine/api/v1/';
+
+export const BASE_URL = "https://idr.openmicroscopy.org/"
+const SEARCH_ENGINE_URL = `${BASE_URL}searchengine/api/v1/`;
 
 const NAME_KEY = "name";
 
@@ -252,8 +254,11 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator) {
 	return results;
 }
 
-export function submitSearch(query) {
-	let url = `${SEARCH_ENGINE_URL}resources/submitquery/containers/`;
+export function submitSearch(query, containers=false) {
+	let url = `${SEARCH_ENGINE_URL}resources/submitquery/`;
+	if (containers) {
+		url += `containers/`;
+	}
 	let options = {
 		method: 'POST',
 		body: JSON.stringify(query),
