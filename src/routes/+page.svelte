@@ -29,8 +29,8 @@
 	<div class="sidebar">
     <div class="filter_panel">
 		<h3>
-			Filters
-			<button class="addBtn" popovertarget="add-filter-dialog">Add</button>
+			Studies
+			<button class="addBtn" popovertarget="add-filter-dialog">Add Filter</button>
 		</h3>
 		{#each filters as filterList, index}
 			{@const uniqueKeys = Array.from(new Set(filterList.map((f) => f.name)))}
