@@ -42,7 +42,12 @@
 {#if selectedImage}
 		<div class="details">
 			<h3>{selectedImage.name}</h3>
-			<h4>Image ID: {selectedImage.id}</h4>
+			<h4>
+        Image ID: {selectedImage.id}
+        <a class="viewer_link" href="{BASE_URL}webclient/img_detail/{selectedImage.id}" target="_blank">
+          Full Viewer
+        </a>
+      </h4>
 		</div>
 
 		<div class="scrollable">
@@ -72,6 +77,19 @@
 
 <style>
 
+  .viewer_link {
+    border: solid #aaa 1px;
+    display: block;
+    border-radius: 5px;
+    text-decoration: none;
+    padding: 1px 3px;
+    float: right;
+    font-size: 13px;
+    color: inherit;
+  }
+  .viewer_link:visited {
+    color: inherit;
+  }
   .details {
     flex: auto 0 0;
     padding-bottom: 10px;

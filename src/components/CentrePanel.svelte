@@ -38,6 +38,12 @@
     selectedImage = image;
     selectedImageStore.set(image);
   }
+
+  function handleDoubleClick(image) {
+    console.log('handleDoubleClick', handleDoubleClick);
+    let url = `${BASE_URL}webclient/img_detail/${image.id}`;
+    window.open(url, '_blank').focus();
+  }
 </script>
 
 <ul>
@@ -48,6 +54,7 @@
 				target="_blank"
 				href="{BASE_URL}webclient/img_detail/{image.id}"
 				on:click|preventDefault={() => handleClick(image)}
+        on:dblclick={() => handleDoubleClick(image)}
 			>
 				<img
 					alt="Thumbnail for {image.name}"
