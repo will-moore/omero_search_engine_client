@@ -43,12 +43,12 @@
 						{#if idx > 0}
 							<span>or</span>
 						{/if}
-						<span class="or_filter" class:active={f.active} title="{f.name} {f.operator} {f.value}">
+						<button on:click={() => queryStore.toggleOrFilter(index, idx)} class="or_filter" class:active={f.active} title="{f.name} {f.operator} {f.value}">
 							{#if uniqueKeys.length > 1}
 								<strong>{f.name}:</strong>
 							{/if}
 							{f.value}{f.operator == "contains" ? "*" : ""}
-						</span>
+						</button>
 					{/each}
 				</div>
 
@@ -150,7 +150,7 @@
 	}
 	.or_filter {
 		background-color: #f0f0f0;
-		padding: 0.2em;
+		padding: 2px 5px;
 		margin: 1px 3px 1px 0;
 		border: solid rgb(177, 175, 175) 1px;
 		border-radius: 5px;
