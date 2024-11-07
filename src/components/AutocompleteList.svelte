@@ -2,29 +2,18 @@
 
 
 <script>
-	// import { send, receive } from './transition.js';
-
-	// import {queryStore} from '../searchQueryStore.js';
-
-	// let { items, handleClick, filterIndex } = $props();
-
 	export let items;
 	export let handleClick;
-
-	// function handleOperatorChange(event) {
-	// 	console.log('Operator change', event.target.value);
-	// }
 </script>
 
-Length: {items.length}
 <ul class="items">
 	{#each items as item (item)}
 		<li>
 			<label>
-				<!-- <input type="checkbox" bind:checked={item.picked}/> -->
 				<button on:click={() => handleClick(item)}>
 					<strong>{item.key}:</strong>
 					{item.value}
+					<span style="opacity: 0.3">({item.count})</span>
 				</button>
 			</label>
 		</li>
@@ -56,5 +45,6 @@ Length: {items.length}
 		word-wrap: break-word;
 		cursor: pointer;
 		text-align: left;
+		color: inherit;
 	}
 </style>

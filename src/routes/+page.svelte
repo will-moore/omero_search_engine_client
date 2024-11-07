@@ -1,6 +1,6 @@
 <script>
   import Fa from 'svelte-fa';
-  import { faBan, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
+  import { faBan, faTrash, faPen } from '@fortawesome/free-solid-svg-icons';
 	import FilterPopover from '../components/FilterPopover.svelte';
 	import Nav from '../components/Nav.svelte';
   import LeftResultsPanel from '../components/LeftResultsPanel.svelte';
@@ -53,8 +53,8 @@
 				</div>
 
 				<div class="filter_buttons">
-					<button title="Add Filters" on:click={() => queryStore.editFilter(index)}>
-            <Fa icon={faPlus} color="#666" />
+					<button title="Edit Filters" on:click={() => queryStore.editFilter(index)}>
+            <Fa icon={faPen} color="#666" />
           </button>
           <button title="Disable filter" on:click={() => queryStore.toggleFilter(index)}>
             <Fa icon={faBan} color="#666" />
@@ -124,12 +124,12 @@
 		border: solid lightgray 1px;
 		border-radius: 5px;
 		padding: 5px;
-		padding-bottom: 2px;
 		font-size: 14px;
 		margin-bottom: 7px;
 		background-color: white;
 		display: flex;
 		flex-direction: row;
+    align-items: center;
 	}
   .filter_content {
     flex: auto 1 1;
@@ -151,7 +151,7 @@
 	.or_filter {
 		background-color: #f0f0f0;
 		padding: 0.2em;
-		margin: 0 3px 3px 0;
+		margin: 1px 3px 1px 0;
 		border: solid rgb(177, 175, 175) 1px;
 		border-radius: 5px;
 		display: inline-block;

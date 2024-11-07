@@ -37,11 +37,18 @@ export class SearchQueryStore {
     }
 
     getQuery(containerName) {
+        // Build the query object from the filters, optionally adding a filter for the container name
+
         // ignore filters that are not active:
-        // TODO: recursively filter individual filters instead of whole or_filter list;
-        let filters = get(this.filters).filter(f => f[0].active);
+        // First, filter out any OR filters that are not active, then filter out any lists that are empty
+        let filters = get(this.filters)
+            .map(or_filters => or_filters.filter(f => f.active))
+            .filter(or_filters => or_filters.length > 0);
+        // split the filter lists into AND and OR filters
         let or_filters = filters.filter(f => f.length > 1);
         let and_filters = filters.filter(f => f.length === 1).map(f => f[0]);
+
+        // if we're searching within a container, add a filter for the container name
         if (containerName) {
             // {name: "name", value: "idr0012-fuchs-cellmorph/screenA", operator: "equals", resource: "container"}
             and_filters.push({name: "name", value: containerName, operator: "equals", resource: "container"});
@@ -58,12 +65,38 @@ export class SearchQueryStore {
     }
 
     toggleFilter(index) {
+        // for a given AND filter (list of OR filters), toggle the active state of all OR filters
         this.filters.update(filters => {
             let newFilters = [...filters];
+            // if any are active, set all to inactive, otherwise set all to active
+            let active = newFilters[index].some(f => f.active);
             newFilters[index] = newFilters[index].map(f => {
-                f.active = !f.active;
+                f.active = !active;
                 return f;
             });
+            return newFilters;
+        });
+    }
+
+    updateFilterOperator(index, or_index, value) {
+        this.filters.update(filters => {
+            let newFilters = [...filters];
+            newFilters[index][or_index].operator = value;
+            return newFilters;
+        });
+    }
+    toggleOrFilter(index, or_index) {
+        this.filters.update(filters => {
+            let newFilters = [...filters];
+            let active = newFilters[index][or_index].active;
+            newFilters[index][or_index].active = !active;
+            return newFilters;
+        });
+    }
+    removeOrFilter(index, or_index) {
+        this.filters.update(filters => {
+            let newFilters = [...filters];
+            newFilters[index] = newFilters[index].filter((f, i) => i !== or_index);
             return newFilters;
         });
     }

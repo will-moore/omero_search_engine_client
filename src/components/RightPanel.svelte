@@ -29,6 +29,9 @@
 	});
 
 	async function loadImage(image) {
+    if (!image) {
+      return;
+    }
 		let url = `${BASE_URL}webclient/api/annotations/?type=map&image=${image.id}`;
 		let data = await getJson(url);
 		console.log('Annotations', data);
