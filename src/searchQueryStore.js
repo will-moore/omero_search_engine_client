@@ -13,8 +13,11 @@ export class SearchQueryStore {
 
     // Add a new AND filter (list) to the store
     addFilter({key, value, dtype, operator = 'equals', resource = 'image'}) {
+        if (dtype === "project" || dtype === "screen") {
+            resource = "container";
+        }
         // NB: api uses 'name' instead of 'key' https://github.com/ome/omero_search_engine/issues/42
-        let newFilter = {name:key, value, dtype, operator, resource, active: true};
+        let newFilter = {name:key, value, operator, resource, active: true};
         let editedFilter = this.getFilterBeingEdited();
         console.log("STORE addFilter: editedFilter", editedFilter, newFilter);
         if (editedFilter == -1) {
@@ -39,10 +42,16 @@ export class SearchQueryStore {
     getQuery(containerName) {
         // Build the query object from the filters, optionally adding a filter for the container name
 
+        // for each filter, pick out the keys we need
+        let pickKeys = (filterObj) => {
+            let {name, value, operator, resource} = filterObj;
+            return {name, value, operator, resource};
+        }
+
         // ignore filters that are not active:
         // First, filter out any OR filters that are not active, then filter out any lists that are empty
         let filters = get(this.filters)
-            .map(or_filters => or_filters.filter(f => f.active))
+            .map(or_filters => or_filters.filter(f => f.active).map(pickKeys))
             .filter(or_filters => or_filters.length > 0);
         // split the filter lists into AND and OR filters
         let or_filters = filters.filter(f => f.length > 1);
