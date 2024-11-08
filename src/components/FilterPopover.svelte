@@ -21,6 +21,8 @@
   let operator = 'equals';
   let popover;
 
+  let controller = new AbortController();
+
   onMount(() => {
     loadKnownKeys().then((r) => {
       knownKeys = r;
@@ -46,11 +48,14 @@
   });
 
   let handleKeyup = (event) => {
+    // abort any previous requests
+    controller.abort();
+    controller = new AbortController();
     const query = event.target.value;
     loading = true;
     console.log('Searching for', query);
     let allKnownKeys = knownKeys.project.concat(knownKeys.image);
-    getAutoCompleteResults(searchKey, query, allKnownKeys, operator).then((r) => {
+    getAutoCompleteResults(searchKey, query, allKnownKeys, operator, controller).then((r) => {
       loading = false;
       console.log('Results', r);
       results = r;
@@ -71,7 +76,7 @@
 </script>
 
 <div bind:this={popover} id="add-filter-dialog" popover>
-  <button class="close" title="Close" on:click={hidePopover}>&times;</button>
+  <button class="close" title="Close" onclick={hidePopover}>&times;</button>
   <div class="popover_content">
     <div class="left_panel">
       <h2>Add Filter</h2>
@@ -92,7 +97,7 @@
         </select>
         <input
           type="text"
-          on:keyup={debounce(handleKeyup, 500)}
+          onkeyup={debounce(handleKeyup, 500)}
           placeholder="type to find values..."
         />
       </div>

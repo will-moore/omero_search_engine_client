@@ -109,7 +109,7 @@ function mapNames(rsp, type, key, searchTerm, operator) {
 	});
 }
 
-export async function getAutoCompleteResults(key, query, knownKeys, operator) {
+export async function getAutoCompleteResults(key, query, knownKeys, operator, controller) {
 	let params = { value: query };
 	let paramsStr = new URLSearchParams(params).toString();
 	let kvp_url = `${SEARCH_ENGINE_URL}resources/all/searchvalues/?` + paramsStr;
@@ -125,7 +125,7 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator) {
 		urls.push(names_url);
 	}
 
-	const promises = urls.map((p) => fetch(p).then((rsp) => rsp.json()));
+	const promises = urls.map((p) => fetch(p, {signal: controller.signal} ).then((rsp) => rsp.json()));
 	const responses = await Promise.all(promises);
 
 	const data = responses[0];

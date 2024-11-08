@@ -35,7 +35,8 @@
     if (selectedContainer && !selectedContainer.name) {
       let container = resultContainers.find((c) => c.id == selectedContainer.id && c.type == selectedContainer.type);
       if (container) {
-        selectedContainerStore.set(container);
+        // add a flag to ignore the right panel
+        selectedContainerStore.set({...container, ignoreRightPanel: true});
       }
     }
 	}

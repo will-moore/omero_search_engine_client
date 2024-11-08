@@ -29,13 +29,17 @@
     loadObject(obj);
   });
   selectedContainerStore.subscribe((container) => {
+    if (container.ignoreRightPanel) {
+      return;
+    }
     selectedObject = container;
     annotations = [];
     loadObject(container);
   });
 
   async function loadObject(obj) {
-    if (!obj) {
+    console.log("RIGHT panel loadObject", obj);
+    if (!obj?.id || !obj?.type) {
       return;
     }
     let url = `${BASE_URL}webclient/api/annotations/?type=map&${obj.type}=${obj.id}`;

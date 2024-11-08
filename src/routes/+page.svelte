@@ -105,24 +105,34 @@
   if (searchParams.has("show")) {
     let show = searchParams.getAll("show");
     console.log("URLSearchParams show...", show);
+    let imgObj;
+    let containerObj;
     show.forEach((s) => {
       let [type, id] = s.split("-");
       if (type == "image") {
-        selectedImageStore.set({ id: id });
+        imgObj = { type: type, id: id };
       } else {
-        selectedContainerStore.set({ type: type, id: id });
+        containerObj = { type: type, id: id };
       }
     });
-    // if we have a selected image, we need to load the container
-    if (get(selectedImageStore) && !get(selectedContainerStore)) {
-      loadHierarchy({ id: get(selectedImageStore).id, type: "image" }).then(paths => {
+    // if we have ONLY selected image, we need to load the container
+    if (imgObj && !containerObj) {
+      loadHierarchy(imgObj).then(paths => {
         console.log('Hierarchy paths', paths);
         // we only care about the first path
         let container = paths[0]?.find((p) => (p.type == "project" || p.type == "screen"));
         if (container) {
           selectedContainerStore.set(container);
+          selectedImageStore.set(imgObj);
         }
       });
+    } else if (containerObj) {
+      console.log("Setting selectedContainer -->", containerObj);
+      selectedContainerStore.set(containerObj);
+      if (imgObj) {
+        console.log("Setting selectedImage -->", imgObj);
+        setTimeout(() => selectedImageStore.set(imgObj), 100);
+      }
     }
   }
   
