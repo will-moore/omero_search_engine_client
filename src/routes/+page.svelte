@@ -2,15 +2,16 @@
   import Fa from 'svelte-fa';
   import { faBan, faTrash, faPen } from '@fortawesome/free-solid-svg-icons';
   import JsonURL from "@jsonurl/jsonurl";
-  // import { pushState } from '$app/navigation';
+  import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
 
   import FilterPopover from '../components/FilterPopover.svelte';
   import Nav from '../components/Nav.svelte';
   import LeftResultsPanel from '../components/LeftResultsPanel.svelte';
   import RightPanel from '../components/RightPanel.svelte';
-  import { queryStore } from '../searchQueryStore.js';
+  import { queryStore, selectedContainerStore, selectedImageStore } from '../searchQueryStore.js';
   import CentrePanel from '../components/CentrePanel.svelte';
-  import { onMount } from 'svelte';
+  import { loadHierarchy } from '../util.js';
 
   let filters = $state([]);
   let editedFilter = $state(queryStore.getFilterBeingEdited());
@@ -24,22 +25,35 @@
     let filterJson = queryStore.getFilters();
     // Prefer NOT to use URLSearchParams as it will encode the query string
     let url = window.location.pathname;
+    let params = [];
     if (filterJson.length > 0) {
       let query = JsonURL.stringify(filterJson, { AQF: true });
-      url += `?query=${query}`;
+      params.push(`query=${query}`);
+    }
+    // add the selected image AND container
+    let selectedContainer = get(selectedContainerStore);
+    let selectedImage = get(selectedImageStore);
+    if (selectedImage) {
+      params.push(`show=image-${selectedImage.id}`);
+    }
+    if (selectedContainer) {
+      params.push(`show=${selectedContainer.type}-${selectedContainer.id}`);
+    }
+    if (params.length > 0) {
+      url += "?" + params.join("&");
     }
     // state can be used by onpopstate() to restore the filters on back/forward
     // URL is for users to share the link / refresh page.
-    history.pushState({query: filterJson}, "", url);
+    history.pushState({query: filterJson, image: selectedImage, container: selectedContainer}, "", url);
   }
 
   function onpopstate(event) {
-    let filterJson = event.state;
-    console.log('popstate state', filterJson);
+    // On back/forward, we need to restore the filters and selected objects
+    console.log('popstate state', event.state);
     ignoreFilterChange = true;
-    if (filterJson.query) {
-      queryStore.setFilters(filterJson.query);
-    }
+    queryStore.setFilters(event.state.query);
+    selectedContainerStore.set(event.state.container);
+    selectedImageStore.set(event.state.image);
     setTimeout(() => {
       ignoreFilterChange = false;
     }, 100);
@@ -55,6 +69,14 @@
     });
     queryStore.subscribeFilterBeingEdited((filterIndex) => {
       editedFilter = filterIndex;
+    });
+    selectedContainerStore.subscribe((container) => {
+      console.log('Selected Container', container);
+      pushStateFilters();
+    });
+    selectedImageStore.subscribe((image) => {
+      console.log('Selected Image', image);
+      pushStateFilters();
     });
   });
 
@@ -78,6 +100,29 @@
     console.log("URLSearchParams key:", key, "value:", value, "operator:", operator);
     if (key && value) {
       queryStore.addFilter({ key: key, value: value, dtype: "image", operator: operator });
+    }
+  }
+  if (searchParams.has("show")) {
+    let show = searchParams.getAll("show");
+    console.log("URLSearchParams show...", show);
+    show.forEach((s) => {
+      let [type, id] = s.split("-");
+      if (type == "image") {
+        selectedImageStore.set({ id: id });
+      } else {
+        selectedContainerStore.set({ type: type, id: id });
+      }
+    });
+    // if we have a selected image, we need to load the container
+    if (get(selectedImageStore) && !get(selectedContainerStore)) {
+      loadHierarchy({ id: get(selectedImageStore).id, type: "image" }).then(paths => {
+        console.log('Hierarchy paths', paths);
+        // we only care about the first path
+        let container = paths[0]?.find((p) => (p.type == "project" || p.type == "screen"));
+        if (container) {
+          selectedContainerStore.set(container);
+        }
+      });
     }
   }
   
@@ -107,7 +152,7 @@
             {#if idx > 0}
               <span>or</span>
             {/if}
-            <button on:click={() => queryStore.toggleOrFilter(index, idx)} class="or_filter" class:active={f.active} title="{f.name} {f.operator} {f.value}">
+            <button onclick={() => queryStore.toggleOrFilter(index, idx)} class="or_filter" class:active={f.active} title="{f.name} {f.operator} {f.value}">
               {#if uniqueKeys.length > 1}
                 <strong>{f.name}:</strong>
               {/if}
@@ -117,13 +162,13 @@
         </div>
 
         <div class="filter_buttons">
-          <button title="Edit Filters" on:click={() => queryStore.editFilter(index)}>
+          <button title="Edit Filters" onclick={() => queryStore.editFilter(index)}>
             <Fa icon={faPen} color="#666" />
           </button>
-          <button title="Disable filter" on:click={() => queryStore.toggleFilter(index)}>
+          <button title="Disable filter" onclick={() => queryStore.toggleFilter(index)}>
             <Fa icon={faBan} color="#666" />
           </button>
-          <button title="Remove Filter" on:click={() => queryStore.removeFilter(index)}
+          <button title="Remove Filter" onclick={() => queryStore.removeFilter(index)}
             ><Fa icon={faTrash} color="#666" /></button
           >
         </div>

@@ -17,9 +17,14 @@
 	selectedContainerStore.subscribe((obj_id) => {
 		loadImages();
 	});
+  // selected image can change due to browser history or click below
+  selectedImageStore.subscribe((image) => {
+    selectedImage = image;
+  });
+
 	async function loadImages() {
 		let obj = get(selectedContainerStore);
-		if (!obj) {
+		if (!obj?.name) {
 			imagesJson = [];
 			return;
 		}
@@ -35,7 +40,6 @@
 	}
 
   function handleClick(image) {
-    selectedImage = image;
     selectedImageStore.set(image);
   }
 

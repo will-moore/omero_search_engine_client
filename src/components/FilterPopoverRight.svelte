@@ -33,7 +33,7 @@ Filters at idx: {JSON.stringify(filters[filterIndex])} -->
 		<div class="or_filter">
       <div class="keyvalue" class:active={f.active}>
 			{f.name}
-			<select bind:value={f.operator} on:change={(event) => handleOperatorChange(or_index, event)}>
+			<select bind:value={f.operator} onchange={(event) => handleOperatorChange(or_index, event)}>
 				<option value="equals">equals</option>
 				<option value="contains">contains</option>
 			</select>
@@ -41,10 +41,10 @@ Filters at idx: {JSON.stringify(filters[filterIndex])} -->
       </div>
 
       <div class="filter_buttons">
-        <button title="Disable filter" on:click={() => queryStore.toggleOrFilter(filterIndex, or_index)}>
+        <button title="Disable filter" onclick={() => queryStore.toggleOrFilter(filterIndex, or_index)}>
           <Fa icon={faBan} color="#666" />
         </button>
-        <button title="Remove Filter" on:click={() => queryStore.removeOrFilter(filterIndex, or_index)}>
+        <button title="Remove Filter" onclick={() => queryStore.removeOrFilter(filterIndex, or_index)}>
           <Fa icon={faTrash} color="#666" />
         </button>
       </div>

@@ -10,16 +10,17 @@
 	let resultContainers = [];
   let selectedContainer = null;
 
-	onMount(() => {
-		console.log('LeftResultsPanel mounte - Initial Search...');
-		doSearch(queryStore.getQuery());
-	});
-
 	queryStore.subscribeFilters((newFilters) => {
+    // This is called when filters change AND when we initially subscribe
 		let query = queryStore.getQuery();
 		console.log('SEARCHING....', query);
 		doSearch(query);
 	});
+  // When the selected container changes (e.g. click below OR history back/foward)
+  // we need to update the filters
+  selectedContainerStore.subscribe((container) => {
+    selectedContainer = container;
+  });
 
 	async function doSearch(query) {
     let containers = true;
@@ -28,11 +29,19 @@
 		// sort results by name
 		data.results.results.sort((a, b) => a.name.localeCompare(b.name));
 		resultContainers = data.results.results;
+
+    // If we have selectedContainer (e.g. from URL), need to set the name so it can be used for
+    // center panel query (URL only gives us the id and type)
+    if (selectedContainer && !selectedContainer.name) {
+      let container = resultContainers.find((c) => c.id == selectedContainer.id && c.type == selectedContainer.type);
+      if (container) {
+        selectedContainerStore.set(container);
+      }
+    }
 	}
 
   function handleClick(container) {
     console.log('Clicked', container);
-    selectedContainer = container;
     selectedContainerStore.set(container);
   }
 </script>
@@ -40,14 +49,14 @@
 <div class="scrollable">
 	<ul>
 		{#each resultContainers as container}
-			<li class:selected={container.name == selectedContainer?.name}>
+			<li class:selected={container.id == selectedContainer?.id && container.type == selectedContainer?.type}>
           <div class="container_icon">
 					<img
 						alt="Container icon"
 						src={container.type == 'screen' ? folderScreen16png : folder16png}
 					/>
           </div>
-					<button on:click={() => handleClick(container)} class="container_text">
+					<button onclick={() => handleClick(container)} class="container_text">
 						{container.name}
 						<span class="children_count">{container['image count']}</span>
 					</button>
