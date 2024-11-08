@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { BASE_URL } from '../searchengine.js';
-	import { selectedImageStore } from '../searchQueryStore.js';
+	import { selectedImageStore, queryStore } from '../searchQueryStore.js';
 	import { getJson } from '../util.js';
 
 	let selectedImage = null;
@@ -64,7 +64,16 @@
 								{#each ann.values as v}
 									<tr class="tablerow">
 										<td>{v[0]}</td>
-										<td>{v[1]}</td>
+										<td>
+                      <!-- Link to this image with filter by KVP: ?key=Gene+Symbol&value=pax7&operator=equals -->
+                      <!-- but actual link click just adds filter -->
+                      <a class="kvp_link"
+                        on:click|preventDefault={() => queryStore.addFilter({ key: v[0], value: v[1], dtype: "image", operator: "equals" })}
+                         title="Filter by this key-value pair"
+                         href="{window.location.origin + window.location.pathname}?key={v[0]}&value={v[1]}&operator=equals&show=image-{selectedImage.id}">
+                        {v[1]}
+                      </a>
+                    </td>
 									</tr>
 								{/each}
 							</tbody>
@@ -87,7 +96,14 @@
     font-size: 13px;
     color: inherit;
   }
-  .viewer_link:visited {
+  .kvp_link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .kvp_link:hover {
+    text-decoration: underline;
+  }
+  a:visited {
     color: inherit;
   }
   .details {
