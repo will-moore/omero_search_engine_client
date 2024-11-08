@@ -61,6 +61,8 @@
     console.log('FilterPopover Adding filter', result);
     result.operator = operator;
     filterIndex = queryStore.addFilter(result);
+    // if we created a new filter, need to update index so we're editing it
+    queryStore.editFilter(filterIndex);
   }
 
   function hidePopover() {
