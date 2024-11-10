@@ -2,6 +2,7 @@
   import { get } from 'svelte/store';
   import { queryStore, selectedContainerStore, selectedImageStore } from '../searchQueryStore.js';
   import { BASE_URL, submitSearch } from '../searchengine.js';
+  import { getJson } from '../util.js';
 
   let selectedImage = null;
 
@@ -10,6 +11,8 @@
   let total_pages = 1;
   let pagination = null;
   let controller = new AbortController();
+
+  let thumbnailStore = {'-1': 'data:image/jpeg;base64,/9j/4AAQSkZJ'};
 
   // if either the filters or the selected container changes, we need to reload the images
   queryStore.subscribeFilters((newFilters) => {
@@ -34,12 +37,26 @@
     controller = new AbortController();
     let data = await submitSearch(query, false, { signal: controller.signal });
     imagesJson = data.results.results;
+    loadThumbnails(imagesJson);
 
     // Store pagination info...
     total_pages = data.results.total_pages;
     pagination = data.results.pagination;
     // TODO: To load next page of images, we can just do
     // query.pagination = pagination;
+  }
+
+  async function loadThumbnails(imgsJson) {
+    let ids = imgsJson.map((img) => img.id);
+    // webclient/get_thumbnails/?id=7928932&id=7928933
+    let url = `${BASE_URL}webclient/get_thumbnails/?id=`;
+    let batchSize = 50;
+    for(let i = 0; i < ids.length; i += batchSize) {
+      let batch = ids.slice(i, i + batchSize);
+      console.log('batch', batch);
+      let data = await getJson(url + batch.join('&id='));
+      thumbnailStore = {...thumbnailStore, ...data};
+    }
   }
 
   function handleClick(image) {
@@ -55,6 +72,7 @@
 
 <ul>
   {#each imagesJson as image (image.id)}
+    {@const thumbSrc = thumbnailStore[image.id]}
     <li class="studyThumb" class:selected={selectedImage?.id == image.id}>
       <a
         aria-label="Image: {image.name}"
@@ -63,12 +81,13 @@
         on:click|preventDefault={() => handleClick(image)}
         on:dblclick={() => handleDoubleClick(image)}
       >
-        <img
-          alt="Thumbnail for {image.name}"
-          title={image.name}
-          src="{BASE_URL}webclient/render_thumbnail/{image.id}/"
-          loading="lazy"
-        />
+        {#if thumbSrc }
+          <img
+            alt="Thumbnail for {image.name}"
+            title={image.name}
+            src="{thumbSrc}"
+          />
+        {/if}
       </a>
     </li>
   {/each}
