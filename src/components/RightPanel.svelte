@@ -10,6 +10,8 @@
 
   let annotations = [];
 
+  let controller = new AbortController();
+
   onMount(() => {
     let maprConigUrl = `${BASE_URL}mapr/api/config/`;
     getJson(maprConigUrl).then((data) => {
@@ -39,11 +41,13 @@
 
   async function loadObject(obj) {
     console.log("RIGHT panel loadObject", obj);
+    controller.abort();
     if (!obj?.id || !obj?.type) {
       return;
     }
     let url = `${BASE_URL}webclient/api/annotations/?type=map&${obj.type}=${obj.id}`;
-    let data = await getJson(url);
+    controller = new AbortController();
+    let data = await getJson(url, { signal: controller.signal});
     annotations = data.annotations;
   }
   function titleCase(str) {

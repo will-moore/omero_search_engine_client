@@ -1,8 +1,8 @@
 
 import { BASE_URL } from "./searchengine";
 
-export async function getJson(url) {
-    const response = await fetch(url);
+export async function getJson(url, options = {}) {
+    const response = await fetch(url, options);
     return await response.json();
 }
 
