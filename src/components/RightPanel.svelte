@@ -31,7 +31,7 @@
     loadObject(obj);
   });
   selectedContainerStore.subscribe((container) => {
-    if (container.ignoreRightPanel) {
+    if (container?.ignoreRightPanel) {
       return;
     }
     selectedObject = container;
