@@ -1,24 +1,23 @@
+import { getJson } from './util.js';
 
-import {getJson} from './util.js';
-
-export const BASE_URL = "https://idr.openmicroscopy.org/"
+export const BASE_URL = 'https://idr.openmicroscopy.org/';
 const SEARCH_ENGINE_URL = `${BASE_URL}searchengine/api/v1/`;
 
-const NAME_KEY = "name";
+const NAME_KEY = 'name';
 
-const CONTAINER_TYPE = "container";
+const CONTAINER_TYPE = 'container';
 
 const DISPLAY_TYPES = {
-  image: "image",
-  project: "experiment",
-  screen: "screen",
-  container: "experiments/screen",
+	image: 'image',
+	project: 'experiment',
+	screen: 'screen',
+	container: 'experiments/screen'
 };
 
 export async function loadKnownKeys() {
-  let url = `${SEARCH_ENGINE_URL}resources/all/keys/?mode=searchterms`;
-  let data = await getJson(url);
-  return data;
+	let url = `${SEARCH_ENGINE_URL}resources/all/keys/?mode=searchterms`;
+	let data = await getJson(url);
+	return data;
 }
 
 function autocompleteSort(key, queryVal, knownKeys = []) {
@@ -109,7 +108,7 @@ function mapNames(rsp, type, key, searchTerm, operator) {
 	});
 }
 
-export async function getAutoCompleteResults(key, query, knownKeys, operator) {
+export async function getAutoCompleteResults(key, query, knownKeys, operator, controller) {
 	let params = { value: query };
 	let paramsStr = new URLSearchParams(params).toString();
 	let kvp_url = `${SEARCH_ENGINE_URL}resources/all/searchvalues/?` + paramsStr;
@@ -125,7 +124,9 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator) {
 		urls.push(names_url);
 	}
 
-	const promises = urls.map((p) => fetch(p).then((rsp) => rsp.json()));
+	const promises = urls.map((p) =>
+		fetch(p, { signal: controller.signal }).then((rsp) => rsp.json())
+	);
 	const responses = await Promise.all(promises);
 
 	const data = responses[0];
@@ -254,7 +255,7 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator) {
 	return results;
 }
 
-export function submitSearch(query, containers=false) {
+export function submitSearch(query, containers = false, opts = {}) {
 	let url = `${SEARCH_ENGINE_URL}resources/submitquery/`;
 	if (containers) {
 		url += `containers/`;
@@ -264,7 +265,8 @@ export function submitSearch(query, containers=false) {
 		body: JSON.stringify(query),
 		headers: {
 			'Content-Type': 'application/json'
-		}
+		},
+		...opts
 	};
 	return fetch(url, options).then((rsp) => rsp.json());
 }

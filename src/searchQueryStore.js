@@ -25,7 +25,7 @@ export class SearchQueryStore {
             this.filters.update(filters => [...filters, newOrFilters]);
             // return the index of the new filter (last in the list)
             editedFilter = get(this.filters).length - 1;
-            this.editFilter(editedFilter);
+            // this.editFilter(editedFilter);
         } else {
             this.filters.update((filters) => {
                 // add the newFilter to the OR filters at the given index
@@ -127,6 +127,9 @@ export class SearchQueryStore {
     }
     subscribeFilterBeingEdited(run) {
         return this.filterBeingEdited.subscribe(run);
+    }
+    setFilters(filters) {
+        this.filters.set(filters);
     }
 }
 
