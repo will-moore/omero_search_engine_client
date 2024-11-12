@@ -1,18 +1,23 @@
 <script>
   import { get } from 'svelte/store';
-  import { queryStore, selectedContainerStore, selectedImageStore } from '../searchQueryStore.js';
-  import { BASE_URL, submitSearch } from '../searchengine.js';
-  import { getJson } from '../util.js';
+  import VirtualList from 'svelte-tiny-virtual-list';
 
-  let selectedImage = null;
+  import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
+  import { submitSearch } from '../searchengine.js';
+  import ThumbnailRow from './ThumbnailRow.svelte';
+  import { onMount } from 'svelte';
+
+  const THUMB_SIZE = 64;
+  let panelHeight = 0;
+  let panelWidth = 0;
 
   let imagesJson = [];
 
-  let total_pages = 1;
-  let pagination = null;
-  let controller = new AbortController();
+  // re-calculated based on panelWidth
+  $: thumbColumns = 7;
 
-  let thumbnailStore = {'-1': 'data:image/jpeg;base64,/9j/4AAQSkZJ'};
+  let pagination = null;
+  let controller;
 
   // if either the filters or the selected container changes, we need to reload the images
   queryStore.subscribeFilters((newFilters) => {
@@ -21,100 +26,102 @@
   selectedContainerStore.subscribe((obj_id) => {
     loadImages();
   });
-  // selected image can change due to browser history or click below
-  selectedImageStore.subscribe((image) => {
-    selectedImage = image;
-  });
 
-  async function loadImages() {
+  async function loadImages(clear = true) {
+    console.log('loadImages... clear', clear);
     let obj = get(selectedContainerStore);
     if (!obj?.name) {
       imagesJson = [];
+      pagination = null;
       return;
     }
     let query = queryStore.getQuery(obj.name);
-    controller.abort();
+    if (!clear && pagination) {
+      if (pagination.current_page >= pagination.total_pages) {
+        return;
+      }
+      // include pagination so we get the next page...
+      query.pagination = pagination;
+    }
+    if (controller) {
+      controller.abort();
+    }
     controller = new AbortController();
     let data = await submitSearch(query, false, { signal: controller.signal });
-    imagesJson = data.results.results;
-    loadThumbnails(imagesJson);
 
+    console.log('LOADIMAGES -> data images', data.results.results.length, data);
     // Store pagination info...
-    total_pages = data.results.total_pages;
+    // total_pages = data.results.total_pages;
     pagination = data.results.pagination;
-    // TODO: To load next page of images, we can just do
-    // query.pagination = pagination;
-  }
 
-  async function loadThumbnails(imgsJson) {
-    let ids = imgsJson.map((img) => img.id);
-    // webclient/get_thumbnails/?id=7928932&id=7928933
-    let url = `${BASE_URL}webclient/get_thumbnails/?id=`;
-    let batchSize = 50;
-    for(let i = 0; i < ids.length; i += batchSize) {
-      let batch = ids.slice(i, i + batchSize);
-      console.log('batch', batch);
-      let data = await getJson(url + batch.join('&id='));
-      thumbnailStore = {...thumbnailStore, ...data};
+    if (clear) {
+      // replace the existing images
+      imagesJson = data.results.results;
+    } else {
+      // add the new images to the existing ones
+      imagesJson = [...imagesJson, ...data.results.results];
     }
   }
 
-  function handleClick(image) {
-    selectedImageStore.set(image);
+  function calculateColumns() {
+    thumbColumns = Math.floor(panelWidth / (THUMB_SIZE + 15));
   }
 
-  function handleDoubleClick(image) {
-    console.log('handleDoubleClick', handleDoubleClick);
-    let url = `${BASE_URL}webclient/img_detail/${image.id}`;
-    window.open(url, '_blank').focus();
+  onMount(() => {
+    calculateColumns();
+  });
+
+  function handleRowRendered(index) {
+    if (index >= imagesJson.length) {
+      console.log('LOAD MORE IMAGES?', pagination.current_page, pagination.total_pages);
+      if (pagination.current_page < pagination.total_pages) {
+        console.log('LOAD MORE IMAGES!');
+        loadImages(false);
+      }
+    }
   }
 </script>
 
-<ul>
-  {#each imagesJson as image (image.id)}
-    {@const thumbSrc = thumbnailStore[image.id]}
-    <li class="studyThumb" class:selected={selectedImage?.id == image.id}>
-      <a
-        aria-label="Image: {image.name}"
-        target="_blank"
-        href="{BASE_URL}webclient/img_detail/{image.id}"
-        on:click|preventDefault={() => handleClick(image)}
-        on:dblclick={() => handleDoubleClick(image)}
-      >
-        {#if thumbSrc }
-          <img
-            alt="Thumbnail for {image.name}"
-            title={image.name}
-            src="{thumbSrc}"
-          />
-        {/if}
-      </a>
-    </li>
-  {/each}
-</ul>
+<svelte:window on:resize={calculateColumns} />
+
+<div class="header">
+  <!-- {imagesJson.length} / {thumbColumns} - height {panelHeight} -->
+</div>
+
+<div
+  bind:clientHeight={panelHeight}
+  bind:clientWidth={panelWidth}
+  class="wrapper"
+  style="--thumbSize: {THUMB_SIZE}px"
+>
+  <VirtualList
+    width="100%"
+    height={panelHeight - 15}
+    itemCount={Math.ceil(imagesJson.length / thumbColumns)}
+    itemSize={THUMB_SIZE + 10}
+  >
+    <div class="row" slot="item" let:index let:style {style}>
+      <ThumbnailRow
+        handleRendered={handleRowRendered}
+        index={(index + 1) * thumbColumns}
+        images={imagesJson.slice(index * thumbColumns, (index + 1) * thumbColumns)}
+      />
+    </div>
+  </VirtualList>
+</div>
 
 <style>
-  ul {
-    padding: 15px;
-    /* actual height is greater, but this forces a scrollbar on parent */
-    height: 100px;
+  .header {
+    flex: 0 0 40px;
+    background-color: #f1f0f4;
+    border-bottom: solid #ddd 1px;
   }
-  .studyThumb {
-    display: inline-block;
-    width: 64px;
-    height: 64px;
-    margin: 1px;
-    padding: 0;
-    position: relative;
-    background-color: #ddd;
+  .wrapper {
+    flex: auto 1 1;
+    /* height: 100%; */
+    margin: 0 10px 0 10px;
   }
-  .studyThumb img {
-    max-width: 100%;
-    height: auto;
-    display: inline-block;
-    vertical-align: middle;
-  }
-  .selected img {
-    border: 4px solid #3875d7;
+  .row {
+    text-align: center;
   }
 </style>
