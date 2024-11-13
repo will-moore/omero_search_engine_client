@@ -209,6 +209,7 @@
   }
   .sidebar {
     flex: 0 0 400px;
+    max-width: 400px;
     margin: 10px;
     display: flex;
     flex-direction: column;
@@ -225,6 +226,8 @@
     border-width: 0 1px;
     background-color: white;
     overflow: auto;
+    display: flex;
+    flex-direction: column;
   }
   h3 {
     margin-bottom: 10px;

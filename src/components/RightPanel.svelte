@@ -10,7 +10,7 @@
 
   let annotations = [];
 
-  let controller = new AbortController();
+  let controller;
 
   onMount(() => {
     let maprConigUrl = `${BASE_URL}mapr/api/config/`;
@@ -41,7 +41,9 @@
 
   async function loadObject(obj) {
     console.log("RIGHT panel loadObject", obj);
-    controller.abort();
+    if (controller) {
+      controller.abort();
+    }
     if (!obj?.id || !obj?.type) {
       return;
     }
