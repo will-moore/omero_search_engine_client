@@ -133,16 +133,16 @@
 
 <style>
 	.header {
-		flex: 0 0 40px;
+		flex: 0 0 auto;
 		background-color: #f1f0f4;
 		border-bottom: solid #ddd 1px;
 	}
 	.wrapper {
-    /* 300px to force scrollbar */
-    height: 300px;
+		/* 300px to force scrollbar */
+		height: 300px;
 		flex: auto 1 1;
 		margin: 0 10px 0 10px;
-    overflow: auto;
+		overflow: auto;
 	}
 	.row {
 		text-align: center;
