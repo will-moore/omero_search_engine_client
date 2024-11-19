@@ -112,7 +112,10 @@
 	style="--thumbSize: {THUMB_SIZE}px"
 >
 	{#if groups.length > 0}
-		<Groups parentQuery={queryWithoutContainer} />
+    <!-- Force re-render if first group changes -->
+		{#key groups[0]}
+			<Groups parentQuery={queryWithoutContainer} key={groups[0]} />
+		{/key}
 	{:else}
 		<VirtualList
 			width="100%"

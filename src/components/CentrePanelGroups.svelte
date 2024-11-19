@@ -1,4 +1,6 @@
 <script>
+  import Fa from 'svelte-fa';
+  import { faTrash } from '@fortawesome/free-solid-svg-icons';
   import form_select_bg_img from "../lib/assets/selectCaret.svg";
   import { groupStore } from '../groupQueryStore';
 
@@ -23,25 +25,39 @@
 <select bind:value={groupby_option} onchange={handleKeyChoice} style="--form-select-bg-img: url('{form_select_bg_img}')">
   <option value="-">Group by...</option>
   {#each keys as key}
-    <option value={key}>{key}</option>
+    <option value={key} disabled={groups.includes(key)}>
+      {key}
+    </option>
   {/each}
 </select>
 
-<div>
+<div class="groups_list">
   {#each groups as group, idx}
     {#if idx > 0} &gt; {/if}
-    <span>{group}</span>
+    <button onclick={() => groupStore.removeGroup(idx)} title="Remove 'Group by'">
+      {group}
+      <span class="delete"><Fa icon={faTrash} color="#666" /></span>
+    </button>
   {/each}
 </div>
 
 <style>
-  span {
+  button {
     border: solid grey 1px;
-    padding: 0 5px;
-    margin: 5px;
+    padding: 0 5px 0 15px;
+    margin: 5px 5px 4px 5px;
     border-radius: 5px;
-    display: inline-block;
     font-size: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+  button .delete {
+    visibility: hidden;
+  }
+  button:hover .delete {
+    visibility: visible;
   }
 
   select {
@@ -61,5 +77,12 @@
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px 12px;
+  }
+  .groups_list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
   }
 </style>

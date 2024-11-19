@@ -12,6 +12,13 @@ export class GroupQueryStore {
         this.groups.update(groups => [...groups, key]);
     }
 
+    removeGroup(index) {
+        this.groups.update(groups => {
+            groups.splice(index, 1);
+            return groups;
+        });
+    }
+
     subscribeGroups(run) {
         return this.groups.subscribe(run);
     }

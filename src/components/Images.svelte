@@ -1,5 +1,6 @@
 <script>
   import { get } from 'svelte/store';
+  import { fade } from 'svelte/transition';
   import VirtualList from 'svelte-tiny-virtual-list';
 
   import { selectedContainerStore } from '../searchQueryStore.js';
@@ -23,6 +24,7 @@
 
   let pagination = null;
   let controller;
+  let loading = false;
 
   // if either the filters or the selected container changes, we need to reload the images
   // queryStore.subscribeFilters((newFilters) => {
@@ -46,22 +48,28 @@
     if (controller) {
       controller.abort();
     }
+    console.log('loadImages... query', query, clear);
+    loading = true;
     controller = new AbortController();
     let data = await submitSearch(query, false, { signal: controller.signal });
 
-    console.log('LOADIMAGES -> data images', data.results.results.length, data);
     // Store pagination info...
     // total_pages = data.results.total_pages;
     pagination = data.results.pagination;
 
+    loading = false;
+    let resultImages = data.results?.results || [];
+    if (resultImages.length == 0) {
+      console.log("NO IMAGES FOUND!", query);
+    }
     if (clear) {
       // replace the existing images
-      imagesJson = data.results.results;
+      imagesJson = resultImages;
     } else {
       // add the new images to the existing ones
-      imagesJson = [...imagesJson, ...data.results.results];
+      imagesJson = [...imagesJson, ...resultImages];
     }
-    console.log("imagesJson", imagesJson[0]);
+    console.log("imagesJson", imagesJson);
   }
 
   function calculateColumns() {
@@ -86,6 +94,11 @@
 
 <svelte:window on:resize={calculateColumns} />
 
+{#if loading}
+  <div in:fade={{ delay:1000, duration: 1000 }}>Loading images...</div>
+{:else if imagesJson.length == 0}
+  <div>No Images found</div>
+{/if}
 <div
   bind:clientHeight={panelHeight}
   bind:clientWidth={panelWidth}
