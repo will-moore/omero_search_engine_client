@@ -14,27 +14,39 @@
 	let panelHeight = 0;
 	let panelWidth = 0;
 
+	/**
+	 * @type {string | any[]}
+	 */
 	let imagesJson = [];
 
 	// Group images by these keys
+	/**
+	 * @type {string | any[]}
+	 */
 	let groups = [];
-	let queryWithoutContainer = null;
+	$: queryWithoutContainer = null;
 
 	// re-calculated based on panelWidth
 	$: thumbColumns = 7;
 
+	/**
+	 * @type {{ current_page: number; total_pages: number; } | null}
+	 */
 	let pagination = null;
+	/**
+	 * @type {AbortController}
+	 */
 	let controller;
 
 	// if either the filters or the selected container changes, we need to reload the images
-	queryStore.subscribeFilters((newFilters) => {
+	queryStore.subscribeFilters((/** @type {any} */ newFilters) => {
 		loadImages();
 	});
 	selectedContainerStore.subscribe((obj_id) => {
 		loadImages();
 	});
 
-	groupStore.subscribeGroups((newGroups) => {
+	groupStore.subscribeGroups((/** @type {any[]} */ newGroups) => {
 		console.log('CentrePanel.svelte -> groups', newGroups);
 		groups = newGroups;
 	});
@@ -49,6 +61,11 @@
 			pagination = null;
 			return;
 		}
+    // If we have groups, don't need to load images...
+    if (groups.length > 0) {
+      // TODO: Need to force re-render of Groups...
+      return;
+    }
 		let query = queryStore.getQuery(obj.name);
 		if (!clear && pagination) {
 			if (pagination.current_page >= pagination.total_pages) {
@@ -86,6 +103,9 @@
 		calculateColumns();
 	});
 
+	/**
+	 * @param {number} index
+	 */
 	function handleRowRendered(index) {
 		if (index >= imagesJson.length) {
 			console.log('LOAD MORE IMAGES?', pagination.current_page, pagination.total_pages);
@@ -101,7 +121,7 @@
 
 <div class="header">
 	{#if imagesJson.length > 0}
-		<CentrePanelGroups keys={imagesJson[0].key_values.map((kv) => kv.name)} />
+		<CentrePanelGroups keys={imagesJson[0].key_values.map((/** @type {{ name: any; }} */ kv) => kv.name)} />
 	{/if}
 </div>
 

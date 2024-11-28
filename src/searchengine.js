@@ -274,6 +274,7 @@ export function submitSearch(query, containers = false, opts = {}) {
 
 export function getKeyValues(query, key, containerName, opts = {}) {
 
+	console.log("getKeyValues() query, key, containerName, opts", query, key, containerName, opts);
 	let url = `${SEARCH_ENGINE_URL}resources/image/container_filterkeyvalues/`;
 	url += `?container_name=${containerName}&key=${key}`;
 

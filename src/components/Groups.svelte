@@ -6,7 +6,7 @@
 	import { get } from 'svelte/store';
 
 	import { groupStore } from '../groupQueryStore';
-	import { selectedContainerStore } from '../searchQueryStore.js';
+	import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
 	import { getKeyValues, addKeyValueQuery } from '../searchengine.js';
 	import Images from './Images.svelte';
 
@@ -37,7 +37,7 @@
 		let key = groups[groupsIndex];
 		let containerName = get(selectedContainerStore).name;
 
-		console.log('parentQuery, key, containerName', parentQuery, key, containerName);
+		console.log('<Groups> onMount() parentQuery, key, containerName', parentQuery, key, containerName);
 
 		getKeyValues(parentQuery, key, containerName).then((data) => {
 			loading = false;
