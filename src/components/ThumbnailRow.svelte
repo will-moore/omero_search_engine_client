@@ -43,6 +43,7 @@
 		</a>
 	</div>
 {/each}
+<span class="imgIndex">{index}</span>
 
 <style>
 	.studyThumb {
@@ -64,5 +65,9 @@
 	}
 	.selected img {
 		border: 4px solid #3875d7;
+	}
+
+	.imgIndex {
+		color: #aaa;
 	}
 </style>

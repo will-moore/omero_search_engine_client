@@ -23,9 +23,7 @@
 		groups = newGroups;
 	});
 
-	selectedContainerStore.subscribe((container) => {
-		// groupStore.setGroups([]);
-	});
+	
 
 	// All the values for the first group...
 	let values = [];
@@ -95,8 +93,10 @@
 					{/key}
 				{:else}
 					<!-- To show images in this group, we use the current search query,
-          combined wth container AND key=value for this group -->
-					<Images query={addKeyValueQuery(parentQuery, groups[groupsIndex], val.value)} />
+                    combined with container AND key=value for this group -->
+					<div style="height: 200px; display: flex; flex-direction: column">
+						<Images parentQuery={addKeyValueQuery(parentQuery, groups[groupsIndex], val.value)} />
+					</div>
 				{/if}
 			{/if}
 		</div>

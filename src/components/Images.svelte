@@ -3,13 +3,14 @@
   import { fade } from 'svelte/transition';
   import VirtualList from 'svelte-tiny-virtual-list';
 
-  import { selectedContainerStore } from '../searchQueryStore.js';
+  import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
   import { submitSearch } from '../searchengine.js';
   import ThumbnailRow from './ThumbnailRow.svelte';
   import { onMount } from 'svelte';
   import { addKeyValueQuery } from '../searchengine.js';
 
-  export let query;
+  export let parentQuery = undefined;
+  export let setPrototypeImage = undefined;
 
   // NB: THUMB_SIZE is also defined in ThumbnailRow.svelte
   const THUMB_SIZE = 64;
@@ -27,17 +28,32 @@
   let loading = false;
 
   // if either the filters or the selected container changes, we need to reload the images
-  // queryStore.subscribeFilters((newFilters) => {
-  //   loadImages();
-  // });
-  // selectedContainerStore.subscribe((obj_id) => {
-  //   loadImages();
-  // });
+  queryStore.subscribeFilters((newFilters) => {
+    console.log("Images.svelte::: queryStore newFilters - parentQuery:", parentQuery)
+    loadImages();
+  });
+  selectedContainerStore.subscribe((obj_id) => {
+    console.log("Images.svelte::: selectedContainerStore newFilters - parentQuery:", parentQuery)
+    loadImages();
+  });
 
   async function loadImages(clear = true) {
 
     let obj = get(selectedContainerStore);
-    query = addKeyValueQuery(query, "name", obj.name, "container");
+    if (!obj?.name) {
+      imagesJson = [];
+      pagination = null;
+      return;
+    }
+    let baseQuery = {};
+    if (parentQuery == undefined) {
+      console.log('loadImages... parentQuery is undefined');
+      baseQuery = queryStore.getQuery();
+    } else {
+      // deepcopy the parentQuery
+      baseQuery = JSON.parse(JSON.stringify(parentQuery));
+    }
+    let query = addKeyValueQuery(baseQuery, "name", obj.name, "container");
     if (!clear && pagination) {
       if (pagination.current_page >= pagination.total_pages) {
         return;
@@ -65,6 +81,9 @@
     if (clear) {
       // replace the existing images
       imagesJson = resultImages;
+      if (setPrototypeImage) {
+        setPrototypeImage(imagesJson[0]);
+      }
     } else {
       // add the new images to the existing ones
       imagesJson = [...imagesJson, ...resultImages];
@@ -78,7 +97,6 @@
 
   onMount(() => {
     calculateColumns();
-    loadImages();
   });
 
   function handleRowRendered(index) {
@@ -103,17 +121,18 @@
   bind:clientHeight={panelHeight}
   bind:clientWidth={panelWidth}
   class="wrapper"
+  style="--thumbSize: {THUMB_SIZE}px"
 >
   <VirtualList
     width="100%"
-    height={200}
+    height={panelHeight - 5}
     itemCount={Math.ceil(imagesJson.length / thumbColumns)}
     itemSize={THUMB_SIZE + 10}
   >
     <div class="row" slot="item" let:index let:style {style}>
       <ThumbnailRow
         handleRendered={handleRowRendered}
-        index={(index + 1) * thumbColumns}
+        index={Math.min(imagesJson.length, (index + 1) * thumbColumns)}
         images={imagesJson.slice(index * thumbColumns, (index + 1) * thumbColumns)}
       />
     </div>

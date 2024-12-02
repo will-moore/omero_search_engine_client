@@ -3,6 +3,7 @@
   import { faTrash } from '@fortawesome/free-solid-svg-icons';
   import form_select_bg_img from "../lib/assets/selectCaret.svg";
   import { groupStore } from '../groupQueryStore';
+  import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
 
   export let keys = [];
 
@@ -14,9 +15,19 @@
     groups = newGroups;
   });
 
+  // Clear groups when selected container changes
+  selectedContainerStore.subscribe((container) => {
+		groupStore.setGroups([]);
+	});
+  // Clear groups when query changes.
+  // This may not ALWAYS be needed but it's safest, since this can completely change the data we see.
+  queryStore.subscribeFilters((newFilters) => {
+    groupStore.setGroups([]);
+  });
+
   function handleKeyChoice(event) {
     let key = event.target.value;
-    groupStore.addGroup(key);
+    groupStore.addGroup(key); 
     // reset <select>
     groupby_option = "-";
   }
