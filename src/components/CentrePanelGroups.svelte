@@ -3,7 +3,8 @@
   import { faTrash } from '@fortawesome/free-solid-svg-icons';
   import form_select_bg_img from "../lib/assets/selectCaret.svg";
   import { groupStore } from '../groupQueryStore';
-  import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
+  import { queryStore } from '../searchQueryStore.js';
+  import { selectedContainerStore } from '../containerStore.js';
 
   export let keys = [];
 
