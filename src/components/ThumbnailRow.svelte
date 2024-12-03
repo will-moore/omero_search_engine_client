@@ -1,6 +1,6 @@
 <script>
 	import { selectedImageStore } from '../searchQueryStore.js';
-	import { BASE_URL } from '../searchengine.js';
+	import { BASE_URL, OMERO_URL } from '../searchengine.js';
 	import { onMount } from 'svelte';
 
 	export let images = [];
@@ -22,23 +22,24 @@
 		selectedImageStore.set(image);
 	}
 
-	function handleDoubleClick(image) {
-		console.log('handleDoubleClick', handleDoubleClick);
-		let url = image.image_url;
-		window.open(url, '_blank').focus();
+	function handleDoubleClick(image_url) {
+		window.open(image_url, '_blank').focus();
 	}
 </script>
 
 {#each images as image (image.id)}
 	{@const thumb_url =
 		image?.key_values?.find((kvp) => kvp.name == 'thumb_url')?.value ||
-		`${BASE_URL}webclient/render_thumbnail/${image.id}/`}
+		`${OMERO_URL}webclient/render_thumbnail/${image.id}/`}
+  {@const image_url =
+		image?.key_values?.find((kvp) => kvp.name == 'image_url')?.value ||
+		`${OMERO_URL}webclient/img_detail/${image.id}/`}
 	<a
 		aria-label="Image: {image.name}"
 		target="_blank"
-		href="{BASE_URL}webclient/img_detail/{image.id}"
+		href={image_url}
 		on:click|preventDefault={() => handleClick(image)}
-		on:dblclick={() => handleDoubleClick(image)}
+		on:dblclick={() => handleDoubleClick(image_url)}
 	>
 		<div class="studyThumb" class:selected={selectedImage?.id == image.id}>
 			<img src={thumb_url} alt={image.name} />
