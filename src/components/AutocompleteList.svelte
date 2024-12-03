@@ -14,6 +14,7 @@
 					<strong>{item.key}:</strong>
 					{item.value}
 					<span style="opacity: 0.3">({item.count})</span>
+					({item.data_source})
 				</button>
 			</label>
 		</li>

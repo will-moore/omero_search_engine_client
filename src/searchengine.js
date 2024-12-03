@@ -180,17 +180,22 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator, co
 			})</span>`,
 			value: `${result.Value}`,
 			dtype: type,
+			data_source: result.data_source,
 			count
 		};
 	});
 	// If we searched the 2nd Name/Description endpoint, concat the results...
-	if (responses[1]) {
-		const projectNameHits = mapNames(responses[1].project, 'project', key, query, operator);
-		const screenNameHits = mapNames(responses[1].screen, 'screen', key, query, operator);
-		const nameHits = projectNameHits.concat(screenNameHits);
-		// TODO: sort nameHits...
-		results = nameHits.concat(results);
-	}
+	let rsp = responses[1];
+	let nameHits = [];
+	// rsp is e.g. {"project":{"idr":[],"ssbd":[]},"screen":{"idr":[]}}
+	Object.values(rsp.project).forEach((projects) => {
+		let hits = mapNames(projects, 'project', key, query, operator);
+		nameHits = nameHits.concat(hits);
+	});
+	Object.values(rsp.screen).forEach((screens) => {
+		let hits = mapNames(screens, 'screen', key, query, operator);
+		nameHits = nameHits.concat(hits);
+	});
 
 	// filter to remove annotation.csv KV pairs
 	results = results.filter((item) => !item.value.includes('annotation.csv'));

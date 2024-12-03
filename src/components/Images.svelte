@@ -3,7 +3,8 @@
   import { fade } from 'svelte/transition';
   import VirtualList from 'svelte-tiny-virtual-list';
 
-  import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
+  import { queryStore } from '../searchQueryStore.js';
+  import { selectedContainerStore } from '../containerStore.js';
   import { submitSearch } from '../searchengine.js';
   import ThumbnailRow from './ThumbnailRow.svelte';
   import { onMount } from 'svelte';
@@ -146,6 +147,8 @@
     margin: 0 10px 0 10px;
   }
   .row {
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
   }
 </style>
