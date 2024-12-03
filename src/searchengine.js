@@ -1,6 +1,6 @@
 import { getJson } from './util.js';
 
-export const BASE_URL = 'https://idr.openmicroscopy.org/';
+export const BASE_URL = 'https://idr-testing.openmicroscopy.org/';
 const SEARCH_ENGINE_URL = `${BASE_URL}searchengine/api/v1/`;
 
 const NAME_KEY = 'name';
@@ -269,4 +269,34 @@ export function submitSearch(query, containers = false, opts = {}) {
 		...opts
 	};
 	return fetch(url, options).then((rsp) => rsp.json());
+}
+
+
+export function getKeyValues(query, key, containerName, opts = {}) {
+
+	console.log("getKeyValues() query, key, containerName, opts", query, key, containerName, opts);
+	let url = `${SEARCH_ENGINE_URL}resources/image/container_filterkeyvalues/`;
+	url += `?container_name=${containerName}&key=${key}`;
+
+	let options = {
+		method: 'POST',
+		body: JSON.stringify(query),
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		...opts
+	};
+	return fetch(url, options).then((rsp) => rsp.json());
+}
+
+
+export function addKeyValueQuery(query, key, value, resource="image") {
+	let newQuery = JSON.parse(JSON.stringify(query));
+	newQuery.query_details.and_filters.push({
+		name: key,
+		value: value,
+		operator: "equals",
+		resource
+	});
+	return newQuery;
 }

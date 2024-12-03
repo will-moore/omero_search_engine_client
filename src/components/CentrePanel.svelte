@@ -1,127 +1,70 @@
 <script>
-  import { get } from 'svelte/store';
-  import VirtualList from 'svelte-tiny-virtual-list';
+	import { groupStore } from '../groupQueryStore';
+	import { queryStore } from '../searchQueryStore.js';
+	import CentrePanelGroups from './CentrePanelGroups.svelte';
+	import Groups from './Groups.svelte';
+	import Images from './Images.svelte';
 
-  import { queryStore, selectedContainerStore } from '../searchQueryStore.js';
-  import { submitSearch } from '../searchengine.js';
-  import ThumbnailRow from './ThumbnailRow.svelte';
-  import { onMount } from 'svelte';
+	const THUMB_SIZE = 64;
 
-  const THUMB_SIZE = 64;
-  let panelHeight = 0;
-  let panelWidth = 0;
+	// Group images by these keys
+	/**
+	 * @type {string | any[]}
+	 */
+	let groups = [];
+	$: queryWithoutContainer = queryStore.getQuery();
 
-  let imagesJson = [];
+  /**
+   * When images are loaded in <Images>, this gets populated for the <CentrePanelGroups> component
+   * @type {string[]}
+   */
+	$: imageKeys = [];
 
-  // re-calculated based on panelWidth
-  $: thumbColumns = 7;
+	function setPrototypeImage(prototypeImage) {
+		if (prototypeImage) {
+			imageKeys = prototypeImage.key_values.map((/** @type {{ name: any; }} */ kv) => kv.name);
+		} else {
+			imageKeys = [];
+		}
+	}
 
-  let pagination = null;
-  let controller;
+	// if the filters changes, we need to update the query we pass down to the groups
+	queryStore.subscribeFilters(() => {
+		queryWithoutContainer = queryStore.getQuery();
+	});
 
-  // if either the filters or the selected container changes, we need to reload the images
-  queryStore.subscribeFilters((newFilters) => {
-    loadImages();
-  });
-  selectedContainerStore.subscribe((obj_id) => {
-    loadImages();
-  });
-
-  async function loadImages(clear = true) {
-    console.log('loadImages... clear', clear);
-    let obj = get(selectedContainerStore);
-    if (!obj?.name) {
-      imagesJson = [];
-      pagination = null;
-      return;
-    }
-    let query = queryStore.getQuery(obj.name);
-    if (!clear && pagination) {
-      if (pagination.current_page >= pagination.total_pages) {
-        return;
-      }
-      // include pagination so we get the next page...
-      query.pagination = pagination;
-    }
-    if (controller) {
-      controller.abort();
-    }
-    controller = new AbortController();
-    let data = await submitSearch(query, false, { signal: controller.signal });
-
-    console.log('LOADIMAGES -> data images', data.results.results.length, data);
-    // Store pagination info...
-    // total_pages = data.results.total_pages;
-    pagination = data.results.pagination;
-
-    if (clear) {
-      // replace the existing images
-      imagesJson = data.results.results;
-    } else {
-      // add the new images to the existing ones
-      imagesJson = [...imagesJson, ...data.results.results];
-    }
-  }
-
-  function calculateColumns() {
-    thumbColumns = Math.floor(panelWidth / (THUMB_SIZE + 15));
-  }
-
-  onMount(() => {
-    calculateColumns();
-  });
-
-  function handleRowRendered(index) {
-    if (index >= imagesJson.length) {
-      console.log('LOAD MORE IMAGES?', pagination.current_page, pagination.total_pages);
-      if (pagination.current_page < pagination.total_pages) {
-        console.log('LOAD MORE IMAGES!');
-        loadImages(false);
-      }
-    }
-  }
+	groupStore.subscribeGroups((/** @type {any[]} */ newGroups) => {
+		groups = newGroups;
+	});
 </script>
 
-<svelte:window on:resize={calculateColumns} />
-
 <div class="header">
-  <!-- {imagesJson.length} / {thumbColumns} - height {panelHeight} -->
+	<CentrePanelGroups keys={imageKeys} />
 </div>
 
-<div
-  bind:clientHeight={panelHeight}
-  bind:clientWidth={panelWidth}
-  class="wrapper"
-  style="--thumbSize: {THUMB_SIZE}px"
->
-  <VirtualList
-    width="100%"
-    height={panelHeight - 15}
-    itemCount={Math.ceil(imagesJson.length / thumbColumns)}
-    itemSize={THUMB_SIZE + 10}
-  >
-    <div class="row" slot="item" let:index let:style {style}>
-      <ThumbnailRow
-        handleRendered={handleRowRendered}
-        index={(index + 1) * thumbColumns}
-        images={imagesJson.slice(index * thumbColumns, (index + 1) * thumbColumns)}
-      />
-    </div>
-  </VirtualList>
-</div>
+{#if groups.length > 0}
+	<!-- Force re-render if first group changes.
+    Groups are cleared in CentrePanelGroups when selected container or query changes -->
+	{#key groups[0]}
+		<div class="wrapper" style="--thumbSize: {THUMB_SIZE}px">
+			<Groups parentQuery={queryWithoutContainer} key={groups[0]} />
+		</div>
+	{/key}
+{:else}
+	<Images {setPrototypeImage} />
+{/if}
 
 <style>
-  .header {
-    flex: 0 0 40px;
-    background-color: #f1f0f4;
-    border-bottom: solid #ddd 1px;
-  }
-  .wrapper {
-    flex: auto 1 1;
-    /* height: 100%; */
-    margin: 0 10px 0 10px;
-  }
-  .row {
-    text-align: center;
-  }
+	.header {
+		flex: 0 0 auto;
+		background-color: #f1f0f4;
+		border-bottom: solid #ddd 1px;
+	}
+	.wrapper {
+		/* 300px to force scrollbar */
+		height: 300px;
+		flex: auto 1 1;
+		margin: 0 10px 0 10px;
+		overflow: auto;
+	}
 </style>
