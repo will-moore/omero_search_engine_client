@@ -188,15 +188,9 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator, co
 	// If we searched the 2nd Name/Description endpoint, concat the results...
 	let rsp = responses[1];
 	let nameHits = [];
-	// rsp is e.g. {"project":{"idr":[],"ssbd":[]},"screen":{"idr":[]}}
-	Object.values(rsp.project).forEach((projects) => {
-		let hits = mapNames(projects, 'project', key, query, operator);
-		nameHits = nameHits.concat(hits);
-	});
-	Object.values(rsp.screen).forEach((screens) => {
-		let hits = mapNames(screens, 'screen', key, query, operator);
-		nameHits = nameHits.concat(hits);
-	});
+
+	nameHits = nameHits.concat(mapNames(rsp.project, 'project', key, query, operator));
+	nameHits = nameHits.concat(mapNames(rsp.screen, 'screen', key, query, operator));
 
 	// filter to remove annotation.csv KV pairs
 	results = results.filter((item) => !item.value.includes('annotation.csv'));
