@@ -1,6 +1,5 @@
 <script>
   import { queryStore } from '../searchQueryStore.js';
-  import { submitSearch } from '../searchengine.js';
   import { selectedContainerStore, containerStore } from '../containerStore.js';
 
   import folder16png from '../lib/assets/folder16.png';
@@ -32,6 +31,11 @@
 </script>
 
 <div class="scrollable">
+  {#if resultContainers.length == 0}
+    <!-- Spinner appears in middle of page since position is absolute -->
+    <div class="spinner"></div>
+    <p>Loading containers...</p>
+  {/if}
   <ul>
     {#each resultContainers as container}
       <li class:selected={container.id == selectedContainer?.id && container.type == selectedContainer?.type}>
@@ -97,5 +101,27 @@
     border-radius: 2px;
     display: inline-block;
     padding: 0 3px;
+  }
+
+  @keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+  .spinner:after {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: -20px;
+    margin-left: -20px;
+    border-radius: 50%;
+    border: 5px solid rgba(180, 180, 180, 0.6);
+    border-top-color: rgba(0, 0, 0, 0.6);
+    animation: spinner 0.6s linear infinite;
   }
 </style>
