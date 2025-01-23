@@ -78,10 +78,10 @@ function mapNames(rsp, type, key, searchTerm, operator) {
 		// If we searched for Any, show all results.
 		// "Attribute" form field will be filled (Name or Desc) if user picks item
 		if (attribute == 'Any') {
-			attribute = name.toLowerCase().includes(searchTerm) ? NAME_KEY : 'description';
+			attribute = name?.toLowerCase().includes(searchTerm) ? NAME_KEY : 'description';
 		}
 		let value = name;
-		if (attribute == 'description') {
+		if (attribute == 'description' && desc) {
 			// truncate Description around matching word...
 			let start = desc.toLowerCase().indexOf(searchTerm);
 			let targetLength = 80;
