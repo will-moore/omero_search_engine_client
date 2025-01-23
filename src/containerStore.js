@@ -16,7 +16,7 @@ export class ContainerStore {
 		let data = await submitSearch(query, containers, { signal: this.controller.signal });
 		console.log('containerStore Search result', data);
 		// sort results by name
-		data.results.results.sort((a, b) => a.name.localeCompare(b.name));
+		data.results.results.sort((a, b) => a.name?.localeCompare(b.name) || -1);
 		let resultContainers = data.results.results;
 		this.containers.set(resultContainers);
 
