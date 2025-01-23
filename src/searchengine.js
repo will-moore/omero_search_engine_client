@@ -1,10 +1,10 @@
 import { getJson } from './util.js';
 
-// export const BASE_URL = 'https://idr-testing.openmicroscopy.org/';
+export const BASE_URL = 'https://idr-testing.openmicroscopy.org/';
 // NB: TEMPORARY - use localhost for testing
-export const BASE_URL = 'http://localhost:1080/';
+// export const BASE_URL = 'http://localhost:1080/';
 
-const SEARCH_ENGINE_URL = `${BASE_URL}searchengine/api/v1/`;
+export const SEARCH_ENGINE_URL = `${BASE_URL}searchengine2/api/v1/`;
 export const OMERO_URL = 'https://idr-testing.openmicroscopy.org/';
 
 const NAME_KEY = 'name';
