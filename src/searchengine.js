@@ -67,6 +67,9 @@ function mapNames(rsp, type, key, searchTerm, operator) {
 	//   });
 	// }
 	// Need to filter out containers without images
+	if (!rsp.filter) {
+		console.error('rsp should be a list', rsp);
+	}
 	rsp = rsp.filter((resultObj) => {
 		return !(resultObj.no_images === 0);
 	});
