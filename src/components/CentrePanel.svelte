@@ -30,7 +30,11 @@
 
 	// if the filters changes, we need to update the query we pass down to the groups
 	queryStore.subscribeFilters(() => {
-		queryWithoutContainer = queryStore.getQuery();
+		// Since we add the container name to /container_filterkeyvalues/ URL we don't need to
+		// include any filters that are container specific. So we exclude them...
+		// https://github.com/ome/omero_search_engine/pull/102#issuecomment-2611377390
+		let ingoreContainerFilters = true;
+		queryWithoutContainer = queryStore.getQuery(null, ingoreContainerFilters);
 	});
 
 	groupStore.subscribeGroups((/** @type {any[]} */ newGroups) => {

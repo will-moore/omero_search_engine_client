@@ -39,7 +39,7 @@ export class SearchQueryStore {
         return get(this.filters);
     }
 
-    getQuery(containerName) {
+    getQuery(containerName, ingoreContainerFilters = false) {
         // Build the query object from the filters, optionally adding a filter for the container name
 
         // for each filter, pick out the keys we need
@@ -48,10 +48,20 @@ export class SearchQueryStore {
             return {name, value, operator, resource};
         }
 
+        let includeFilter = (filterObj) => {
+            if (!filterObj.active) {
+                return false;
+            }
+            if (ingoreContainerFilters && filterObj.resource === 'container') {
+                return false;
+            }
+            return true
+        }
+
         // ignore filters that are not active:
         // First, filter out any OR filters that are not active, then filter out any lists that are empty
         let filters = get(this.filters)
-            .map(or_filters => or_filters.filter(f => f.active).map(pickKeys))
+            .map(or_filters => or_filters.filter(includeFilter).map(pickKeys))
             .filter(or_filters => or_filters.length > 0);
         // split the filter lists into AND and OR filters
         let or_filters = filters.filter(f => f.length > 1);
