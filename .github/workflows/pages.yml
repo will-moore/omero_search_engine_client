@@ -17,7 +17,6 @@ jobs:
 
       - name: Install and Build 🔧
         run: |
-          cd omero_search_engine_client
           npm install
           npm run build
       - name: Deploy 🚀
@@ -25,5 +24,5 @@ jobs:
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: omero_search_engine_client/build
+          FOLDER: build
           CLEAN: true
