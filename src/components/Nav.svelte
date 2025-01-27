@@ -51,9 +51,6 @@
       text-decoration: none;
       display: block;
     }
-    .logolink, img {
-      height: 30px;
-    }
     .github img, .github {
       height: 20px;
     }
