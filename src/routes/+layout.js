@@ -5,3 +5,4 @@ export const ssr = false;
 
 // See https://svelte.dev/docs/kit/adapter-static#Options
 export const prerender = true;
+export const trailingSlash = "always";
