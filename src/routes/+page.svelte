@@ -150,7 +150,7 @@
     <div class="filter_panel">
     <h3>
       Studies
-      <button class="addBtn" popovertarget="add-filter-dialog">Add Filter</button>
+      <button class="addBtn" popovertarget="add-filter-dialog">Filter by...</button>
     </h3>
     {#each filters as filterList, index}
       {@const uniqueKeys = Array.from(new Set(filterList.map((f) => f.name)))}

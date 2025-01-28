@@ -84,7 +84,7 @@
     border: 1px solid 333333;
     border-radius: 0.375rem;
     margin: 3px;
-    float: left;
+    float: right;
     background-image: var(--form-select-bg-img);
     background-repeat: no-repeat;
     background-position: right 0.75rem center;

@@ -11,6 +11,7 @@
 		<li>
 			<label>
 				<button on:click={() => handleClick(item)}>
+					{item.dtype == "container" ? "Container" : ""}
 					<strong>{item.key}:</strong>
 					{item.value}
 					<span style="opacity: 0.3">({item.count})</span>

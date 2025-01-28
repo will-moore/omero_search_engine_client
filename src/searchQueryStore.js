@@ -13,7 +13,7 @@ export class SearchQueryStore {
 
     // Add a new AND filter (list) to the store
     addFilter({key, value, dtype, operator = 'equals', resource = 'image'}) {
-        if (dtype === "project" || dtype === "screen") {
+        if (dtype === "project" || dtype === "screen" || dtype === "container") {
             resource = "container";
         }
         // NB: api uses 'name' instead of 'key' https://github.com/ome/omero_search_engine/issues/42

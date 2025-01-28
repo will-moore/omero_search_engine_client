@@ -53,67 +53,6 @@ function autocompleteSort(key, queryVal, knownKeys = []) {
 	};
 }
 
-// projects or screens might match Name or Description.
-function mapNames(rsp, type, key, searchTerm, operator) {
-	// rsp is a list of [ {id, name, description}, ]
-	searchTerm = searchTerm.toLowerCase();
-
-	// use_description not enabled yet (see below)
-	// if (key == "description") {
-	//   // results from resources/all/names/?use_description=true will include searches by name
-	//   // need to check they really match description.
-	//   rsp = rsp.filter((resultObj) => {
-	//     return resultObj.description.toLowerCase().includes(searchTerm);
-	//   });
-	// }
-	// Need to filter out containers without images
-	if (!rsp.filter) {
-		console.error('rsp should be a list', rsp);
-	}
-	rsp = rsp.filter((resultObj) => {
-		return !(resultObj.no_images === 0);
-	});
-
-	return rsp.map((resultObj) => {
-		let name = resultObj.name;
-		let desc = resultObj.description;
-		let attribute = key;
-		// If we searched for Any, show all results.
-		// "Attribute" form field will be filled (Name or Desc) if user picks item
-		if (attribute == 'Any') {
-			attribute = name?.toLowerCase().includes(searchTerm) ? NAME_KEY : 'description';
-		}
-		let value = name;
-		if (attribute == 'description' && desc) {
-			// truncate Description around matching word...
-			let start = desc.toLowerCase().indexOf(searchTerm);
-			let targetLength = 80;
-			let padding = (targetLength - searchTerm.length) / 2;
-			if (start - padding < 0) {
-				start = 0;
-			} else {
-				start = start - padding;
-			}
-			let truncated = desc.substr(start, targetLength);
-			if (start > 0) {
-				truncated = '...' + truncated;
-			}
-			if (start + targetLength < desc.length) {
-				truncated = truncated + '...';
-			}
-			value = desc;
-			name = truncated;
-		}
-
-		return {
-			key: attribute,
-			label: `${attribute} <span style="color:#bbb">${operator}</span> <b>${name}</b> <span style="color:#bbb">(1 ${DISPLAY_TYPES[type]})</span>`,
-			value,
-			count: 1,
-			dtype: type
-		};
-	});
-}
 
 export async function getAutoCompleteResults(key, query, knownKeys, operator, controller) {
 	let params = { value: query };
@@ -177,11 +116,6 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator, co
 		let gt = operator == 'contains' ? '&#8805; ' : '';
 		return {
 			key: result.Key,
-			label: `${result.Key} <span style="color:#bbb">${operator}</span> <b>${
-				result.Value
-			}</b> <span style="color:#bbb">(${gt}${count} ${DISPLAY_TYPES[type]}${
-				count != 1 ? 's' : ''
-			})</span>`,
 			value: `${result.Value}`,
 			dtype: type,
 			data_source: result.data_source,
@@ -192,8 +126,26 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator, co
 	let rsp = responses[1];
 	let nameHits = [];
 
-	nameHits = nameHits.concat(mapNames(rsp.project, 'project', key, query, operator));
-	nameHits = nameHits.concat(mapNames(rsp.screen, 'screen', key, query, operator));
+	nameHits = nameHits.concat(rsp.project);
+	nameHits = nameHits.concat(rsp.screen);
+	console.log("nameHits", nameHits)
+	if (nameHits.length > 0) {
+		let data_sources = nameHits.reduce((prev, current) => prev.add(current.data_source), new Set());
+		// If we have some name matches, give option to filter by name
+		console.log("data_sources", data_sources);
+		let key = "name";
+		let type = CONTAINER_TYPE;
+		const nameOption = {
+			key: key,
+			value: query,
+			count: nameHits.length,
+			dtype: type,
+			data_source: [...data_sources].join(", "),
+			operator: 'contains'
+		};
+		console.log("nameOption", nameOption)
+		results.unshift(nameOption);
+	}
 
 	// filter to remove annotation.csv KV pairs
 	results = results.filter((item) => !item.value.includes('annotation.csv'));

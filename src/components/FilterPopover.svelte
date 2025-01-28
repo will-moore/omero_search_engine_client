@@ -64,7 +64,9 @@
 
   function handleAutocompleteClick(result) {
     console.log('FilterPopover Adding filter', result);
-    result.operator = operator;
+    if (!result.operator) {
+      result.operator = operator;
+    }
     filterIndex = queryStore.addFilter(result);
     // if we created a new filter, need to update index so we're editing it
     queryStore.editFilter(filterIndex);
@@ -79,7 +81,7 @@
   <button class="close" title="Close" onclick={hidePopover}>&times;</button>
   <div class="popover_content">
     <div class="left_panel">
-      <h2>Add Filter</h2>
+      <h2>Filter by...</h2>
 
       <div class="kvp_row">
         <select bind:value={searchKey}>
