@@ -2,10 +2,9 @@ Omero search engine client
 --------------------------
 This web application has a graphic user interface which is used to:
 
-* build an OMERO query to search metadata (key-value pairs)
-* send the query to the search engine (https://github.com/ome/omero_search_engine)
-* display the results when the they are ready.
-* export the results to csv file (default file name is export.csv).
+* Build an OMERO query to search metadata (key-value pairs)
+* Send the query to the search engine (https://github.com/ome/omero_search_engine)
+* Display the results
 
 This is currently a work in progress and is not yet ready for production use.
 The app is built using SvelteKit and is a static site; not currently an omoro-web app.
@@ -13,8 +12,9 @@ The app is built using SvelteKit and is a static site; not currently an omoro-we
 Deploy preview
 --------------
 
-You can access a static build of the app at https://omero-search-engine-client.netlify.app/
+The `main` branch is deployed at https://will-moore.github.io/omero_search_engine_client/.
 
+The gh-pages deployment was set-up with help from https://github.com/metonym/sveltekit-gh-pages/tree/master
 
 Development
 -----------
