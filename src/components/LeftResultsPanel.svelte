@@ -47,6 +47,9 @@
           </div>
           <button onclick={() => handleClick(container)} class="container_text">
             {container.name}
+            {#if container.data_source}
+              <span>({container.data_source})</span>
+            {/if}
             <span class="children_count">{container['image count']}</span>
           </button>
       </li>
