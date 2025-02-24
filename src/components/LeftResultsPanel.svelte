@@ -15,7 +15,6 @@
   queryStore.subscribeFilters((newFilters) => {
     // This is called when filters change AND when we initially subscribe
     let query = queryStore.getQuery();
-    console.log('SEARCHING....', query);
     containerStore.loadContainers(query);
   });
   // When the selected container changes (e.g. click below OR history back/foward)

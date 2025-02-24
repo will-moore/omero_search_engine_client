@@ -12,7 +12,6 @@
   let groups = [];
 
   groupStore.subscribeGroups((newGroups) => {
-    console.log('CentrePanelGroups.svelte -> groups', newGroups);
     groups = newGroups;
   });
 

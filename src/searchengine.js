@@ -215,6 +215,9 @@ export async function getAutoCompleteResults(key, query, knownKeys, operator, co
 
 export function submitSearch(query, containers = false, opts = {}) {
 	let url = `${SEARCH_ENGINE_URL}resources/submitquery/`;
+	// For debugging, log the query
+	console.log("QUERY", url);
+	console.log(JSON.stringify(query, null, 2));
 	if (containers) {
 		url += `containers/`;
 	}

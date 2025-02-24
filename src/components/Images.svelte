@@ -29,12 +29,10 @@
   let loading = false;
 
   // if either the filters or the selected container changes, we need to reload the images
-  queryStore.subscribeFilters((newFilters) => {
-    console.log("Images.svelte::: queryStore newFilters - parentQuery:", parentQuery)
+  queryStore.subscribeFilters(() => {
     loadImages();
   });
-  selectedContainerStore.subscribe((obj_id) => {
-    console.log("Images.svelte::: selectedContainerStore newFilters - parentQuery:", parentQuery)
+  selectedContainerStore.subscribe(() => {
     loadImages();
   });
 
@@ -65,7 +63,6 @@
     if (controller) {
       controller.abort();
     }
-    console.log('loadImages... query', query, clear);
     loading = true;
     controller = new AbortController();
     let data = await submitSearch(query, false, { signal: controller.signal });

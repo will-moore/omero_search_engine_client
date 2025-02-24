@@ -2,8 +2,6 @@
     import omeroSvg from "../lib/assets/omero.svg";
     import githubLogo from "../lib/assets/github-mark-white.svg";
     let base = import.meta.env.BASE_URL;
-  
-    console.log('Nav base', base);
   </script>
   
   <!-- base element used to define relative links -->
